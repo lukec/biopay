@@ -1,0 +1,21 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.js" type="javascript"></script>
+<script>
+  $(function() {
+  });
+</script>
+<div id="page">
+      [% INCLUDE layouts/sidebar.tt %]
+
+      <div id="content">
+        <div id="header">
+          <h1>Vancouver Biodiesel Co-op</h1>
+          <h2>Member Bio-Payment Cyber ePortal!</h2>
+        </div>
+
+        <h1>Congrats!</h1>
+        <h2>You're now a member of the biodiesel co-op!</h2>
+
+        <p>We have sent you an email with details about your membership, including how to access the pump.</p>
+        <p>If you have any problems or questions, contact <a href="mailto:members@vancouverbiodiesel.org">members@vancouverbiodiesel.org</a></p>
+      </div>
+</div>

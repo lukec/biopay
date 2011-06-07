@@ -1,0 +1,13 @@
+      <div id="sidebar">
+        <ul id="sidebar-items">
+          <li>
+            <h3>About the Co-op</h3>
+            <ul class="links">
+              <li><a href="http://www.vancouverbiodiesel.org/">Biodiesel Co-op Homepage</a></li>
+              <li><a href="http://vancouverbiodiesel.org/faq.html">Co-op FAQ</a></li>
+              <li><a href="http://twitter.com/vanbiodiesel/">Co-op on Twitter</a></li>
+              <li><a href="http://en.wikipedia.org/wiki/Biodiesel">Biodiesel on Wikipedia</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
