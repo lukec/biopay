@@ -7,12 +7,4 @@ get '/' => sub {
     template 'index';
 };
 
-get '/member/signup' => sub {
-    template 'signup';
-};
-
-post '/member/signup' => sub {
-    template 'signup_complete';
-};
-
 true;

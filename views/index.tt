@@ -1,24 +1,10 @@
-<div id="page">
-      [% INCLUDE layouts/sidebar.tt %]
+<h1>Vancouver Biodiesel Co-op Billing Tool</H1>
+<p>Welcome to the VBC Billing Tool.  This service processes biodiesel
+purchases for Co-op members.  At present time, this service is available
+to Co-op Admin staff only.
+</p>
+<p>
+  As a co-op member, when you purchase biodiesel from a Vancouver Biodiesel Co-op pump, the cost of the fuel will be
+  charged to the credit card you gave the co-op when you joined.
+</p>
 
-      <div id="content">
-        <div id="header">
-          <h1>Vancouver Biodiesel Co-op</h1>
-          <h2>Member Bio-Payment Cyber ePortal!</h2>
-        </div>
-
-        <div id="biopay">
-          <h1>New Members</h1>
-          <h3><a href="/member/signup" id="signup_link">Sign up as a member and start using biodiesel!</a></h3>
-
-          <br />
-          <h1>Current Members</h1>
-          <h2>These services are available to members only.</h2>
-
-          <ul>          
-            <li> <h3><a href="#">Update payment info</a></h3> </li>
-            <li> <h3><a href="#">Cancel membership</a></h3> </li>
-          </ul>
-        </div>
-      </div>
-</div>
