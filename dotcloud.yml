@@ -1,5 +1,2 @@
 www:
     type: perl
-
-myredis:
-  type: redis
