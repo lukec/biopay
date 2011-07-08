@@ -1,0 +1,26 @@
+Biopay Notes
+
+Member Data Model
+* First Name
+* Last Name
+* Phone Number
+* Email
+* Start date
+* Dues paid until
+* Member #
+* PIN - not stored
+* payment profile hash
+* Frozen?
+
+Pumps
+* Pump #
+* Name
+* Location
+
+Transactions
+* Transaction #
+* Member #
+* Litres
+* Pump #
+* Date
+* Paid?
