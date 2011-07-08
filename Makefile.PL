@@ -18,6 +18,7 @@ WriteMakefile(
         'Dancer::Plugin::Auth::RBAC'     => 0,
         'Plack'      => 0,
         'Template'   => 0,
+        'AnyEvent::CouchDB' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'biopay-*' },
