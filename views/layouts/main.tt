@@ -21,15 +21,7 @@
                 <img id="headerimg" src="/images/header.png" alt="Vancouver Biodiesel Co-op Header" />
             </header>
 
-            <div id="sidebar">
-              <ul id="sidebar-items">
-                <li>
-                  <h3>Vancouver Biodiesel Co-op</h3>
-                  <p>Our co-op sells 100% recycled, <a href="http://astm.org">ASTM certified</a>, locally sourced biodiesel fuel to our members.</p>
-                  <p>This system processes fuel payments and annual membership dues for co-op members.  It is owned and operated by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact us <a href="mailto:info@vancouverbiodiesel.org">via email</a> or phone Recyling Alternative.
-                </li>
-              </ul>
-            </div>
+            [% INCLUDE layouts/sidebar.tt %]
             <div id="main" role="main">
                 [% content %]
             </div>
