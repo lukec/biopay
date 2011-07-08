@@ -1,4 +1,5 @@
 <h1>Vancouver Biodiesel Co-op Billing Tool</H1>
+[% IF message %]<div class="message">[% message %]</div>[% END %]
 <p>Welcome to the VBC Billing Tool.  This service processes biodiesel
 purchases for Co-op members.  At present time, this service is available
 to Co-op Admin staff only.
@@ -6,4 +7,9 @@ to Co-op Admin staff only.
 <p>
   This system processes biodiesel fuel purchases and annual membership dues for co-op members.  It is owned and operated by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact us <a href="mailto:info@vancouverbiodiesel.org">via email</a> or phone Recyling Alternative.
 </p>
-
+<hr />
+<p>
+  <ul><li>
+  <a href="/login">Co-op Admin Login</a>
+  </li></ul>
+</p>

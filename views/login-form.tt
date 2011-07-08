@@ -1,0 +1,8 @@
+<h1>Vancouver Biodiesel Co-op Billing Login</H1>
+[% IF message %]<div class="message">[% message %]</div>[% END %]
+<p>Login to the Billing system:</p>
+<form action="/login" method="POST">
+Username: <input type="text" name="username" width=20 /><br />
+Password: <input type="password" name="password" width=20 /><br />
+<input type="submit" value="Login!" />
+</form>

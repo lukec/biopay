@@ -25,3 +25,20 @@ engines:
     end_tag:   '%]'
 
 auto_page: 1
+
+plugins:
+  CouchDB:
+    uri: "http://webapp:F6gdSj8ktsdYm9vM@biopay.iriscouch.com/biopay"
+  Auth::RBAC:
+    credentials:
+      class: CouchDB
+    permissions:
+      class: Config
+      options:
+        control:
+          admin:
+            permissions:
+              manage accounts:
+                operations: ["view"]
+
+session: "YAML"

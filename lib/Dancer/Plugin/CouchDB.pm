@@ -3,9 +3,9 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 use AnyEvent::CouchDB ();
 
-register couch => sub {
+register couchdb => sub {
     my $conf = plugin_setting;
-    return AnyEvent::CouchDB::couch($conf->{uri});
+    return AnyEvent::CouchDB::couchdb($conf->{uri});
 };
 
 register_plugin;

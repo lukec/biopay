@@ -15,6 +15,7 @@ WriteMakefile(
         'Test::More' => 0,
         'YAML'       => 0,
         'Dancer'     => 1.3051,
+        'Dancer::Plugin::Auth::RBAC'     => 0,
         'Plack'      => 0,
         'Template'   => 0,
     },
