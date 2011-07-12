@@ -1,0 +1,137 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Control::CLI;
+use DateTime;
+use Dancer qw/:syntax/;
+use FindBin;
+use Cwd qw/realpath/;
+use Data::Dumper;
+use Math::Round qw/round/;
+use lib "$FindBin::Bin/../lib";
+use Dancer::Plugin::CouchDB;
+
+Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::load();
+
+my $DEBUG = 0;
+
+my $couch = couchdb() or die "Couldn't load couch!";
+my $price = fetch_fuel_price();
+
+my $cli = new Control::CLI('/dev/ttyS0');
+$cli->connect(  BaudRate        => 9600,
+		Parity          => 'none',
+		DataBits        => 8,
+		StopBits        => 1,
+		Handshake       => 'none',
+	     );
+
+$cli->put("\cC");
+if (clean_read('?') =~ m/last mag card read/) {
+    print "Already logged in ...\n";
+}
+else {
+    clean_read('P');
+    clean_read("MASTER\r");
+    my $output = clean_read('?');
+    unless ($output =~ m/last mag card/) {
+	die "Could not log in - received '$output'";
+    }
+}
+
+print "Fetching recent transactions ...\n";
+my $records = fetch_transactions();
+for my $txn (@$records) {
+    my $id = $txn->{_id};
+
+    print "Saving $txn->{as_string} to the couch\n";
+    eval { $couch->save_doc($txn)->recv };
+    if ($@) {
+	if ($@ =~ m/^409/) {
+	    warn "Conflict detected for $id - skipping.\n";
+	    next;
+	}
+	die "Failed to save $id to the couch: $@";
+    }
+}
+
+exit;
+
+sub fetch_transactions {
+    my $lines = clean_read('B');
+    my @records;
+    for my $line (split "\r\n", $lines) {
+	chomp $line;
+	next unless $line =~ m/^\d+,/;
+	my @fields = split ",", $line;
+
+#  0    1    2        3     4 5 6 7      8       9
+# 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
+	my $dt = to_datetime($fields[3], $fields[4]);
+	my $txn = {
+	    transaction_id => to_num($fields[1]),
+	    member_id => to_num($fields[2]),
+	    epoch_time => $dt->epoch,
+	    _id => "txn:$fields[1]-" . $dt->ymd . '-' . $fields[4],
+	    litres => to_num($fields[9]),
+	    pump => "RA",
+	    date => "$dt",
+	    paid => 0,
+	    price_per_litre => $price,
+	};
+	unless ($txn->{member_id}) {
+	    warn "No member_id on txn_id:$txn->{transaction_id} - skipping.";
+	    next;
+	}
+	$txn->{price} = sprintf "%01.2f", 
+	    			round($txn->{litres} * $price * 100) / 100;
+	next if $txn->{price} eq "0.00";
+	$txn->{as_string} = "txn:$txn->{transaction_id} "
+	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
+	push @records, $txn;
+    }
+    return \@records;
+}
+
+sub to_num {
+    my $val = shift;
+    $val =~ s/^0+//;
+    $val = "0" . $val if $val =~ m/^\./;
+    return $val;
+}
+
+sub to_datetime {
+    my ($date, $time) = @_;
+    my ($m, $d, $y) = split '/', $date;
+    my ($h, $min) = split ':', $time;
+    $y += 2000;
+    my $dt = DateTime->new(
+	    year => $y, month => $m, day => $d,
+	    hour => $h, minute => $min,
+	    );
+    $dt->set_time_zone('America/Vancouver');
+    return $dt;
+}
+
+sub clean_read {
+    my $text = shift;
+    $cli->put($text);
+    my $output = $cli->readwait(
+	Blocking => 1,
+	Read_attempts => 10,
+    );
+    warn "Received: '$output'\n" if $DEBUG;
+    return $output;
+}
+
+sub fetch_fuel_price {
+    my $doc = eval { $couch->open_doc("fuel_price")->recv };
+    if ($@) {
+	if ($@ =~ m/^404/) {
+	    die "Could not load the fuel_price! Make sure it exists.";
+	}
+	else { die "Failed to load fuel_price: $@" };
+    }
+    return $doc->{price_per_litre} || die "No price per litre found!";
+}
