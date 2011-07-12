@@ -24,8 +24,6 @@ engines:
     start_tag: '[%'
     end_tag:   '%]'
 
-auto_page: 1
-
 plugins:
   CouchDB:
     uri: "http://webapp:F6gdSj8ktsdYm9vM@biopay.iriscouch.com/biopay"
