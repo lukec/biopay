@@ -1,4 +1,4 @@
-package biopay;
+package Biopay;
 use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Auth::RBAC;
