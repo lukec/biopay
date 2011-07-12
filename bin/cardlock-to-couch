@@ -70,7 +70,8 @@ sub fetch_transactions {
 # 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
 	my $dt = to_datetime($fields[3], $fields[4]);
 	my $txn = {
-	    transaction_id => to_num($fields[1]),
+	    Type => 'txn',
+	    txn_id => to_num($fields[1]),
 	    member_id => to_num($fields[2]),
 	    epoch_time => $dt->epoch,
 	    _id => "txn:$fields[1]-" . $dt->ymd . '-' . $fields[4],
@@ -81,13 +82,13 @@ sub fetch_transactions {
 	    price_per_litre => $price,
 	};
 	unless ($txn->{member_id}) {
-	    warn "No member_id on txn_id:$txn->{transaction_id} - skipping.";
+	    warn "No member_id on txn_id:$txn->{txn_id} - skipping.";
 	    next;
 	}
 	$txn->{price} = sprintf "%01.2f", 
 	    			round($txn->{litres} * $price * 100) / 100;
-	next if $txn->{price} eq "0.00";
-	$txn->{as_string} = "txn:$txn->{transaction_id} "
+	$txn->{paid} = 1 if $txn->{price} eq "0.00";
+	$txn->{as_string} = "txn:$txn->{txn_id} "
 	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
 	push @records, $txn;
     }
