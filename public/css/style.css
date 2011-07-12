@@ -172,8 +172,16 @@ footer {
     font-size: 10px;
 }
 
-
-
+.transactions td,th {
+    padding-left: 5px;
+}
+.transactions td {
+    text-align: right;
+}
+.transaction td {
+    padding-left: 5px;
+    text-align: right;
+}
 
 
 
