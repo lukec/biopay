@@ -1,0 +1,21 @@
+<h1>Biodiesel Membership</h1>
+[% IF members.size %]
+<p>Biodiesel Co-op Membership:</p>
+<table class="members">
+  <tr>
+      <th>Member ID</th>
+      <th>Name</th>
+      <th>Frozen</th>
+  </tr>
+  [% FOREACH member IN members %]
+    <tr>
+        <td align="right"><a href="/members/[% member.member_id %]">[% member.member_id %]</a></td>
+        <td>[% member.name %]</td>
+        <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
+    </tr>
+  [% END %]
+</table>
+[% ELSE %]
+<p>There are no members at this time.</p>
+<p><a href="/members/create">Create a member</a></p>
+[% END %]

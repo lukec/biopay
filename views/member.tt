@@ -1,0 +1,42 @@
+<h1>Biodiesel Member [% member.member_id %]</h1>
+<p>Details for member [% member.member_id %]:</p>
+
+[% IF member.empty %]
+<p>There is no member data stored yet. <a href="/members/create?member_id=[% member.member_id %]">Create this member!</a></p>
+[% ELSE %]
+<table class="transaction">
+  <tr>
+    <td><strong>ID</strong></td>
+    <td>[% member.member_id %]</td>
+  </tr>
+  <tr>
+    <td><strong>Name</strong></td>
+    <td>[% member.name %]</td>
+  </tr>
+  <tr>
+    <td><strong>Phone</strong></td>
+    <td>[% member.phone_num %]</td>
+  </tr>
+  <tr>
+    <td><strong>Email</strong></td>
+    <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
+  </tr>
+  <tr>
+    <td><strong>Joined</strong></td>
+    <td>$[% member.start_pretty_date %]</td>
+  </tr>
+  <tr>
+    <td><strong>Dues Until</strong></td>
+    <td>$[% member.dues_until_pretty %]</td>
+  </tr>
+  <tr>
+    <td><strong>Frozen?</strong></td>
+    <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
+  </tr>
+</table>
+[% END %]
+
+<p>
+<a href="/members">Back to members list</a><br />
+<a href="/admin">Back to admin section</a><br />
+</p>

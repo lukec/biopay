@@ -3,6 +3,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Auth::RBAC;
 use Biopay::Transaction;
+use Biopay::Member;
 
 our $VERSION = '0.1';
 
@@ -54,6 +55,20 @@ get '/unpaid' => sub {
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
     template 'txn', { txn => $txn };
+};
+
+get '/members' => sub {
+    my $members = Biopay::Member->All;
+    template 'members', { members => $members };
+};
+
+get '/members/create' => sub {
+    template 'member-create', { member_id => params->{member_id} };
+};
+
+get '/members/:member_id' => sub {
+    my $member = Biopay::Member->By_id(params->{member_id});
+    template 'member', { member => $member };
 };
 
 sub is_admin {

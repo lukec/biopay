@@ -19,6 +19,8 @@ has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_datetime'    => (is => 'ro', isa => 'DateTime', lazy_build => 1);
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 
+sub empty { 0 }
+
 sub By_id {
     my $class = shift;
     my $member_id = shift;
@@ -27,6 +29,17 @@ sub By_id {
     return Biopay::EmptyMember->new(member_id => $member_id)
         unless $results->{total_rows} > 0;
     return $class->new( $results->{rows}[0]{value} );
+}
+
+sub All {
+    my $class = shift;
+    my $results = couchdb->view('members/by_id')->recv;
+
+    my @members;
+    for my $member_hash (@{ $results->{rows} }) {
+        push @members, $class->new( $member_hash->{value} );
+    }
+    return \@members;
 }
 
 method _build_name { join ' ', $self->first_name, $self->last_name }
@@ -48,4 +61,5 @@ use methods;
 
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
 
+sub empty { 1 }
 sub name { 'No name yet' }
