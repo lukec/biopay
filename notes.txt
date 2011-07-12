@@ -12,12 +12,8 @@ Member Data Model
 * payment profile hash
 * Frozen?
 
-Pumps
-* Pump #
-* Name
-* Location
-
 Transactions
+* Key: txn:YYYY-MM-DD-hh-mm
 * Transaction #
 * Member #
 * Litres
