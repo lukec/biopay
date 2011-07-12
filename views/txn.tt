@@ -12,7 +12,7 @@
   </tr>
   <tr>
     <td><strong>Member</strong></td>
-    <td><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
+    <td><a href="/members/[% txn.member_id %]">[% txn.member_id %] - [% txn.member.name %]</a></td>
   </tr>
   <tr>
     <td><strong>Litres</strong></td>

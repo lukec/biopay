@@ -1,13 +1,13 @@
 Biopay Notes
 
 Member Data Model
+* Member #
 * First Name
 * Last Name
 * Phone Number
 * Email
 * Start date
 * Dues paid until
-* Member #
 * PIN - not stored
 * payment profile hash
 * Frozen?
