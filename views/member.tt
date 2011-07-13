@@ -22,7 +22,7 @@
   </tr>
   <tr>
     <td><strong>Phone</strong></td>
-    <td>[% member.phone_num %]</td>
+    <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>
   </tr>
   <tr>
     <td><strong>Email</strong></td>
