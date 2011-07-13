@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use base qw/Dancer::Plugin::Auth::RBAC::Credentials/;
 use Dancer::Plugin::CouchDB;
+use Dancer::Plugin::Bcrypt;
 
 sub authorize {
     my ($self, $options, @arguments) = @_;
@@ -26,7 +27,7 @@ sub authorize {
         my $users = $db->view('auth/by_username', { key => "$login" })->recv;
         my $doc = $users->{rows}[0];
         my $user = defined $doc ? $doc->{value} : undef;
-        if (defined($user) and ($password eq $user->{password})) {
+        if (defined($user) and bcrypt_validate_password($password, $user->{password})) {
             my $session_data = {
                 id    => $user->{id},
                 username  => $user->{username},
