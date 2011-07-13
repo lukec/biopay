@@ -45,6 +45,8 @@ my $records = fetch_transactions();
 for my $txn (@$records) {
     my $id = $txn->{_id};
 
+    autovivify_member($txn->{member_id});
+
     print "Saving $txn->{as_string} to the couch\n";
     eval { $couch->save_doc($txn)->recv };
     if ($@) {
@@ -135,4 +137,18 @@ sub fetch_fuel_price {
 	else { die "Failed to load fuel_price: $@" };
     }
     return $doc->{price_per_litre} || die "No price per litre found!";
+}
+
+sub autovivify_member {
+    my $member_id = shift;
+    my $key = "member:$member_id";
+    my $doc = eval { $couch->open_doc($key)->recv };
+    if ($@) {
+	$couch->save_doc({
+		_id => $key,
+		Type => 'member',
+		member_id => $member_id,
+	    }
+	);
+    }
 }
