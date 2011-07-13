@@ -7,6 +7,11 @@ use Biopay::Member;
 
 our $VERSION = '0.1';
 
+sub host {
+    'http' . (request->host =~ m/localhost/ ? '' : 's')
+    . '://' . request->host
+}
+
 before sub {
     my $path = request->path_info;
     return if session('bio');
@@ -34,8 +39,7 @@ get '/login' => sub {
     template 'login' => { 
         message => param('message') || '',
         path => param('path'),
-        host => request->host,
-        ssl  => request->host !~ m/localhost/,
+        host => host(),
     };
 };
 
@@ -50,7 +54,7 @@ post '/login' => sub {
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
         session bio => { username => $user };
-        return redirect param('path') || "/admin";
+        return redirect host() . param('path') || "/admin";
     }
     debug "Found the $user user, but they are not an admin.";
     return forward "/login", {}, { method => 'GET' };
