@@ -10,10 +10,10 @@ die "Couldn't find services file: $services_file!" unless -e $services_file;
 my $service_content < io $services_file;
 my $services = decode_json $service_content;
 
-my $dancer_config_template = "$FindBin::Bin/../etc/config.yml";
+my $dancer_config_template = "$FindBin::Bin/etc/config.yml";
 my $dancer_config < io $dancer_config_template;
 
 $dancer_config =~ s/\Q****____COUCH_URI____****\E/$services->{iriscouch_uri}/;
 $dancer_config =~ s/\Q****____DEV_KEY____****\E/$services->{session_key}/;
 
-$dancer_config > io "$FindBin::Bin/../config.yml";
+$dancer_config > io "$FindBin::Bin/config.yml";
