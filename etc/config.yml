@@ -26,7 +26,7 @@ engines:
 
 plugins:
   CouchDB:
-    uri: "http://webapp:F6gdSj8ktsdYm9vM@biopay.iriscouch.com/biopay"
+    uri: "****____COUCH_URI____****"
   Auth::RBAC:
     credentials:
       class: CouchDB
