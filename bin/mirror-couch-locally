@@ -1,0 +1,25 @@
+#!/home/bio/perl5/perlbrew/perls/perl-5.14.1/bin/perl
+use strict;
+use warnings;
+use Dancer qw/:syntax/;
+use FindBin;
+use Cwd qw/realpath/;
+use Try::Tiny;
+use lib "$FindBin::Bin/../lib";
+use Dancer::Plugin::CouchDB;
+use AnyEvent::CouchDB qw/couch/;
+
+Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::load();
+
+my $couch = couch() or die "Couldn't load couch!";
+my $source = couch_uri;
+my $dest   = 'bio-backup';
+try {
+    $couch->replicate($source => $dest)->recv;
+    debug "Backed up database from $source to $dest";
+}
+catch {
+    # TODO: Send email that the backup failed.
+    debug "Couch failed to replicate from $source to $dest: $_"
+}
