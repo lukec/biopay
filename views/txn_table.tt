@@ -6,6 +6,7 @@
       <th>Litres</th>
       <th>Price</th>
       <th>Time</th>
+      <th>Paid?</th>
   </tr>
   [% FOREACH txn IN txns %]
     <tr>
@@ -14,6 +15,7 @@
         <td>[% txn.litres %]</td>
         <td>$[% txn.price %]</td>
         <td>[% txn.pretty_date %]</td>
+        <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
     </tr>
   [% END %]
 </table>
