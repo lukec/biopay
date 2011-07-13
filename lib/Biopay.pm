@@ -17,7 +17,7 @@ before sub {
     return if session('bio');
 
     unless ($path eq '/' or $path =~ m{^/login}) {
-        debug "no bio session, redirecting to login";
+        debug "no bio session, redirecting to login (from $path)";
         forward '/login', {
             message => "Please log-in first.",
             path => request->path_info,
