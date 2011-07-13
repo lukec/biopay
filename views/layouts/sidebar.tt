@@ -1,9 +1,13 @@
 <div id="sidebar">
   <ul id="sidebar-items">
     [% IF is_admin %]
-    <h2>Admin Menu</h2>
+    <h3>Transactions</h3>
+    <li><a href="/unpaid">Not paid</a></li>
+    <li><a href="/txns">Recent</a></li>
+    <h3>Members</h3>
     <li><a href="/members">Members</a></li>
-    <li><a href="/txns">Transactions</a></li>
+    <h3>Admin Actions</h2>
+    <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">Network Design</a></li>
     <li><a href="/logout">Logout</a></li>
     [% ELSE %]
     <li>
