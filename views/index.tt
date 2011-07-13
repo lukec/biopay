@@ -1,5 +1,8 @@
 <h1>Vancouver Biodiesel Co-op Billing Tool</H1>
 [% IF message %]<div class="message">[% message %]</div>[% END %]
+[% IF is_admin %]
+<p>You are logged in.  Use the sidebar for access to different parts.</p>
+[% ELSE %]
 <p>Welcome to the VBC Billing Tool.  This service processes biodiesel
 purchases for Co-op members.  At present time, this service is available
 to Co-op Admin staff only.
@@ -13,3 +16,4 @@ to Co-op Admin staff only.
   <a href="/login">Co-op Admin Login</a>
   </li></ul>
 </p>
+[% END %]
