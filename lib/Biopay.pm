@@ -11,6 +11,7 @@ before sub {
     my $path = request->path_info;
     return if session('bio');
 
+    debug request;
     unless ($path eq '/' or $path =~ m{^/login}) {
         debug "no bio session, redirecting to login";
         forward '/login', {
