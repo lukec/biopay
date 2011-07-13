@@ -27,6 +27,11 @@ has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1)
 
 sub view_base { 'members' }
 
+method unpaid_transactions {
+    my $mid = $self->member_id;
+    return Biopay::Transaction->All_unpaid({key => "$mid"});
+}
+
 method as_hash {
     my $hash = { Type => 'member' };
     for my $key (qw/_id _rev member_id first_name last_name phone_num email start_epoch

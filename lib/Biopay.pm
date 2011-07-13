@@ -107,7 +107,7 @@ get '/unpaid/process' => sub {
     };
 };
 
-get '/unpaid/mark-as-paid' => sub {
+post '/unpaid/mark-as-paid' => sub {
     my @txn_ids = split ',', params->{txns} || '';
     my @txns;
     for my $txn_id (@txn_ids) {
@@ -150,6 +150,15 @@ get '/members/:member_id/txns' => sub {
     template 'member-txns', {
         member => $member,
         txns   => Biopay::Transaction->All_for_member($id),
+    };
+};
+
+get '/members/:member_id/unpaid' => sub {
+    my $id = params->{member_id};
+    my $member = Biopay::Member->By_id($id);
+    template 'member-unpaid', {
+        member => $member,
+        txns   => Biopay::Transaction->All_unpaid({key => "$id"}),
     };
 };
 

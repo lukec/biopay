@@ -11,9 +11,14 @@
 [% END %]
 </ul>
 <p>
-  <strong>Total price for member [% member_id %]: $[% total_price %]</strong>
-  - <a href="/unpaid/mark-as-paid?txns=[% current_txn_ids %];offset=[%
-    offset %]">Mark all as paid</a>
+  <p><strong>Total price for member [% member_id %]: $[% total_price %]</strong></p>
+  <p>
+    <form action="/unpaid/mark-as-paid" method="POST">
+      <input type="hidden" name="txns" value="[% current_txn_ids %]" />
+      <input type="hidden" name="offset" value="[% offset %]" />
+      <input type="submit" value="Mark these transactions as paid" />
+      Send an email invoice: <input type="checkbox" name="send_invoice" checked="checked" value="1" /><br />
+    </form>
 </p>
 <p><a href="/unpaid/process?offset=[% offset + 1 %]">Skip these transactions.</a>
 </p>
