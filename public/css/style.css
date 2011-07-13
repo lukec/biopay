@@ -172,13 +172,13 @@ footer {
     font-size: 10px;
 }
 
-.transactions td,th {
+td,th {
     padding-left: 5px;
 }
-.transactions td {
+td {
     text-align: right;
 }
-.transaction td {
+td {
     padding-left: 5px;
     text-align: right;
 }

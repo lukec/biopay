@@ -10,7 +10,7 @@ sub By_id {
             key => "$id",
         }
     )->recv;
-    return $class->new_from_couch($results);
+    return $class->new_from_couch($results->{rows}[0]{value});
 }
 
 sub All { shift->All_for_view('/by_id', @_) }
@@ -20,7 +20,11 @@ sub All_for_view {
     my $view = shift;
 
     my $results = couchdb->view($class->view_base . $view, @_)->recv;
-    return [ map { $class->new( $_->{value} ) } @{ $results->{rows} } ];
+    return [ map { $class->new_from_couch( $_->{value} ) } @{ $results->{rows} } ];
 }
 
-sub new_from_couch { $_[0]->new( $_[1]->{rows}[0]{value} ) }
+sub new_from_couch {
+    my $class = shift;
+    my $hash = shift;
+    return $class->new($hash);
+}

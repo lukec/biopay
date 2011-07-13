@@ -25,12 +25,14 @@ has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub view_base { 'members' }
 sub empty { 0 }
 
-around 'By_id' => sub {
-    my $orig = shift;
-    my $id   = $_[1];
-    try { return $orig->(@_) }
+override 'new_from_couch' => sub {
+    my $class = shift;
+    my $hash = shift;
+    try {
+        return $class->new($hash);
+    }
     catch {
-        Biopay::EmptyMember->new(member_id => $id);
+        Biopay::EmptyMember->new(member_id => $hash->{member_id});
     }
 };
 
