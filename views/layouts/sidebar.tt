@@ -6,7 +6,7 @@
     <li><a href="/txns">Recent</a></li>
     <h3>Members</h3>
     <li><a href="/members">Members</a></li>
-    <h3>Admin Actions</h2>
+    <h3>Admin Actions</h3>
     <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">Network Design</a></li>
     <li><a href="/logout">Logout</a></li>
     [% ELSE %]
