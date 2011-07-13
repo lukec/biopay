@@ -41,11 +41,11 @@
   </tr>
 </table>
 [% END %]
-<p><a href="/member/[% member.member_id %]/edit">Edit this member!</a></p>
+<p><a href="/members/[% member.member_id %]/edit">Edit this member!</a></p>
 
 <ul>
   <li>
-    <a href="/member/[% member.member_id %]/transactions">Recent Transactions</a>
+    <a href="/members/[% member.member_id %]/txns">Recent Transactions</a>
   </li>
     
   <li>

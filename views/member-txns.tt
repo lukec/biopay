@@ -1,0 +1,7 @@
+<h1>Transactions for Biodiesel Member [% member.member_id %]</h1>
+[% IF txns.size %]
+<p>Back to details for <a href="/members/[% member.member_id %]">Member [% member.member_id %]</a>:</p>
+[% INCLUDE txn_table.tt %]
+[% ELSE %]
+<p>This member has not made any transactions yet.</p>
+[% END %]

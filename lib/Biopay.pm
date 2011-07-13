@@ -144,6 +144,15 @@ get '/members/create' => sub {
     template 'member-create', { member_id => params->{member_id} };
 };
 
+get '/members/:member_id/txns' => sub {
+    my $id = params->{member_id};
+    my $member = Biopay::Member->By_id($id);
+    template 'member-txns', {
+        member => $member,
+        txns   => Biopay::Transaction->All_for_member($id),
+    };
+};
+
 get '/members/:member_id' => sub {
     my $member = Biopay::Member->By_id(params->{member_id});
     template 'member', {

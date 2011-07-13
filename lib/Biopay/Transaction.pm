@@ -28,6 +28,7 @@ sub view_base { 'txns' }
 
 sub All_unpaid { shift->All_for_view('/unpaid') }
 sub All_most_recent { shift->All_for_view('/recent') }
+sub All_for_member { shift->All_for_view('/by_member', {key => shift, @_}) }
 
 method save {
     couchdb->save_doc($self->as_hash)->recv;
