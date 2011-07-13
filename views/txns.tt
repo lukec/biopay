@@ -2,5 +2,5 @@
 [% IF txns.size %]
 [% INCLUDE txn_table.tt %]
 [% ELSE %]
-<p>There are recent transactions at this time.</p>
+<p>There are no recent transactions at this time.</p>
 [% END %]
