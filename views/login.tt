@@ -1,7 +1,7 @@
 <h1>Vancouver Biodiesel Co-op Billing Login</H1>
 [% IF message %]<div class="message">[% message %]</div>[% END %]
 <p>Login to the Billing system:</p>
-<form action="/login" method="POST">
+<form action="http[% IF ssl %]s[% END %]://[% host %]/login" method="POST">
 <table class="login">
   <tr>
     <td>Username:</td>

@@ -11,7 +11,6 @@ before sub {
     my $path = request->path_info;
     return if session('bio');
 
-    debug request;
     unless ($path eq '/' or $path =~ m{^/login}) {
         debug "no bio session, redirecting to login";
         forward '/login', {
@@ -35,6 +34,8 @@ get '/login' => sub {
     template 'login' => { 
         message => param('message') || '',
         path => param('path'),
+        host => request->host,
+        ssl  => request->host !~ m/localhost/,
     };
 };
 
