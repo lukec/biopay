@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Dancer qw/:syntax/;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::Transaction;
+use Dancer::Plugin::CouchDB;
+
+Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::load();
+
+for my $txn (@{ Biopay::Transaction->All }) {
+    print "Removing " . $txn->txn_id, "\n";
+    couchdb->remove_doc($txn)->recv;
+}
