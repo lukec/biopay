@@ -10,7 +10,6 @@ has '_rev' => (isa => 'Str', is => 'ro', required => 1);
 sub By_id {
     my $class = shift;
     my $id    = shift;
-    debug "Looking up " . $class->view_base . "/by_id with key=$id";
     my $results = couchdb->view($class->view_base . '/by_id', {
             key => "$id",
         }
