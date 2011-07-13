@@ -5,7 +5,7 @@ use FindBin;
 use JSON qw/decode_json/;
 use IO::All;
 
-my $services_file = "$FindBin::Bin/../../services.json";
+my $services_file = "$FindBin::Bin/../services.json";
 die "Couldn't find services file: $services_file!" unless -e $services_file;
 my $service_content < io $services_file;
 my $services = decode_json $service_content;
