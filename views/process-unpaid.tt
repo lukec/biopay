@@ -1,0 +1,22 @@
+<h1>Process Un-paid Biodiesel Transactions</h1>
+<p>
+  There are [% all.size %] un-paid transactions to process. <a href="/unpaid">Back</a> to all un-paid transactions.
+</p>
+<hr />
+[% IF member_id %]
+<strong>Transactions for Member [% member_id %]:</strong>
+<ul>
+[% FOREACH txn IN current %]
+  <li><a href="/txns/[% txn.txn_id %]">Transaction [% txn.txn_id %]</a> on [% txn.pretty_date %] - [% txn.litres %] litres @ $[% txn.price_per_litre %] = $[% txn.price %]</li>
+[% END %]
+</ul>
+<p>
+  <strong>Total price for member [% member_id %]: $[% total_price %]</strong>
+  - <a href="/unpaid/mark-as-paid?txns=[% current_txn_ids %];offset=[%
+    offset %]">Mark all as paid</a>
+</p>
+<p><a href="/unpaid/process?offset=[% offset + 1 %]">Skip these transactions.</a>
+</p>
+[% ELSE %]
+  <p>You've reached the end of the un-paid transactions. <a href="/unpaid">Back</a> to all un-paid transactions.</p>
+[% END %]

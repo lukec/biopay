@@ -52,6 +52,56 @@ get '/unpaid' => sub {
     template 'unpaid', { txns => $txns };
 };
 
+get '/unpaid/process' => sub {
+    my $txns = Biopay::Transaction->All_unpaid;
+    my @current;
+    my $current_id;
+    my $total_price = 0;
+    my $offset = params->{offset} || 0;
+    my $orig_offset = $offset;
+    my %skip_members;
+    for my $txn (@$txns) {
+        if ($offset) {
+            if (!$skip_members{$txn->member_id}) {
+                # Not yet seen this member.
+                $offset--;
+                $skip_members{$txn->member_id} = 1;
+            }
+        }
+        next if $skip_members{$txn->member_id};
+
+        $current_id ||= $txn->member_id;
+        last if $current_id != $txn->member_id;
+        push @current, $txn;
+        $total_price += $txn->price;
+    }
+    template 'process-unpaid', {
+        all => $txns,
+        current => \@current,
+        member_id => $current_id,
+        total_price => $total_price,
+        offset => $orig_offset,
+        current_txn_ids => join ',', map { $_->txn_id } @current,
+    };
+};
+
+get '/unpaid/mark-as-paid' => sub {
+    my @txn_ids = split ',', params->{txns} || '';
+    my @txns;
+    for my $txn_id (@txn_ids) {
+        my $txn = Biopay::Transaction->By_id($txn_id);
+        next unless $txn;
+        next if $txn->paid;
+        $txn->paid(1);
+        $txn->save;
+        push @txns, $txn;
+    }
+    template 'mark-as-paid', {
+        offset => params->{offset},
+        txns => [ map { $_->txn_id } @txns ],
+    };
+};
+
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
     template 'txn', { txn => $txn };

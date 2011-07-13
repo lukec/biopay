@@ -27,7 +27,7 @@ sub By_id {
     my $results
         = couchdb->view('members/by_id', { key => qq($member_id) })->recv;
     return Biopay::EmptyMember->new(member_id => $member_id)
-        unless $results->{total_rows} > 0;
+        unless @{ $results->{rows} };
     return $class->new( $results->{rows}[0]{value} );
 }
 
