@@ -1,0 +1,6 @@
+<h1>Recent Biodiesel Transactions</h1>
+[% IF txns.size %]
+[% INCLUDE txn_table.tt %]
+[% ELSE %]
+<p>There are recent transactions at this time.</p>
+[% END %]

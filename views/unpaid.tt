@@ -1,29 +1,12 @@
 <h1>Biodiesel Un-paid Transactions</h1>
 [% IF txns.size %]
-<p>Biodiesel transactions that are currently unpaid.</p>
+<p>Biodiesel transactions that are currently unpaid:</p>
 <p>
   <ul>
       <li><a href="/unpaid/process">Process Unpaid Transactions</a></li>
   </ul>
 </p>
-<table class="transactions">
-  <tr>
-      <th>Txn ID</th>
-      <th>Member</th>
-      <th>Litres</th>
-      <th>Price</th>
-      <th>Time</th>
-  </tr>
-  [% FOREACH txn IN txns %]
-    <tr>
-        <td align="right"><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a></td>
-        <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
-        <td>[% txn.litres %]</td>
-        <td>$[% txn.price %]</td>
-        <td>[% txn.pretty_date %]</td>
-    </tr>
-  [% END %]
-</table>
+[% INCLUDE txn_table %]
 [% ELSE %]
 <p>There are no-unpaid transactions at this time.</p>
 [% END %]

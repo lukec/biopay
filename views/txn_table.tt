@@ -1,0 +1,19 @@
+<p>(Click the headers to change the sorting)</p>
+<table class="transactions sortable">
+  <tr>
+      <th>Txn ID</th>
+      <th>Member</th>
+      <th>Litres</th>
+      <th>Price</th>
+      <th>Time</th>
+  </tr>
+  [% FOREACH txn IN txns %]
+    <tr>
+        <td align="right"><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a></td>
+        <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
+        <td>[% txn.litres %]</td>
+        <td>$[% txn.price %]</td>
+        <td>[% txn.pretty_date %]</td>
+    </tr>
+  [% END %]
+</table>

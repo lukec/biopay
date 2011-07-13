@@ -27,6 +27,7 @@ has 'pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 sub view_base { 'txns' }
 
 sub All_unpaid { shift->All_for_view('/unpaid') }
+sub All_most_recent { shift->All_for_view('/recent') }
 
 method save {
     couchdb->save_doc($self->as_hash)->recv;

@@ -118,6 +118,12 @@ get '/unpaid/mark-as-paid' => sub {
     };
 };
 
+get '/txns' => sub {
+    template 'txns', {
+        txns => Biopay::Transaction->All_most_recent,
+    };
+};
+
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
     template 'txn', { txn => $txn };

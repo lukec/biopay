@@ -36,6 +36,7 @@
 
 	<script src="/javascripts/plugins.js"></script>
 	<script src="/javascripts/script.js"></script>
+	<script src="/javascripts/sorttable.js"></script>
 	<!--[if lt IE 7 ]>
 	<script src="/javascripts/libs/dd_belatedpng.js"></script>
 	<script> DD_belatedPNG.fix('img, .png_bg');</script>

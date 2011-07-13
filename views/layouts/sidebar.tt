@@ -2,6 +2,8 @@
   <ul id="sidebar-items">
     [% IF is_admin %]
     <h2>Admin Menu</h2>
+    <li><a href="/members">Members</a></li>
+    <li><a href="/txns">Transactions</a></li>
     <li><a href="/logout">Logout</a></li>
     [% ELSE %]
     <li>
