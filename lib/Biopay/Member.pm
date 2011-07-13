@@ -57,3 +57,4 @@ has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
 
 sub empty { 1 }
 sub name { 'No name yet' }
+sub start_pretty_date { 'Unknown' }
