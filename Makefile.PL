@@ -17,6 +17,7 @@ WriteMakefile(
         'Dancer'     => 1.3051,
 	'Dancer::Session::Cookie' => 0,
         'Dancer::Plugin::Auth::RBAC'     => 0,
+        'Dancer::Plugin::Bcrypt'     => 0,
         'DateTime'   => 0,
         'Plack'      => 0,
         'Template'   => 0,
