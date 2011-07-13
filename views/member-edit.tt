@@ -1,0 +1,60 @@
+<h1>Biodiesel Member [% member.member_id %]</h1>
+<p>Editing details for member [% member.member_id %]:</p>
+
+<script type="text/javascript" src="/javascripts/jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+    $(function(){
+        // Datepicker
+        $('#datepicker1').datepicker({ inline: true });
+        $('#datepicker2').datepicker({ inline: true });
+    });
+</script>
+
+<form action="/members/[% member.member_id %]/edit" method="POST">
+<table id="member_details">
+  <tr>
+    <td><strong>ID</strong></td>
+    <td>[% member.member_id %]</td>
+  </tr>
+  <tr>
+    <td><strong>First name</strong></td>
+    <td><input type="text" name="first_name" width="15" value="[% member.first_name %]" /></td>
+  </tr>
+  <tr>
+    <td><strong>Last name</strong></td>
+    <td><input type="text" name="last_name" width="15" value="[% member.last_name %]" /></td>
+  </tr>
+  <tr>
+    <td><strong>Phone</strong></td>
+    <td><input type="text" name="phone_num" width="15" value="[% member.phone_num %]" /></td>
+  </tr>
+  <tr>
+    <td><strong>Email</strong></td>
+    <td><input type="text" name="email" width="15" value="[% member.email %]" /></td>
+  </tr>
+  <tr>
+    <td><strong>Joined</strong></td>
+    <td><input type="text" id="datepicker1" name="start_date" value="[% member.start_pretty_date %]"></td>
+  </tr>
+  <tr>
+    <td><strong>Dues Paid Until</strong></td>
+    <td><input type="text" id="datepicker2" name="paid_until_date" value="[% member.dues_paid_until_pretty_date %]"></td>
+  </tr>
+  <tr>
+    <td><strong>Payment Hash</strong></td>
+    <td><input type="text" name="payment_hash" width="20" value="[% member.payment_hash %]" /></td>
+  </tr>
+  <tr>
+    <td><strong>Frozen?</strong></td>
+    <td><input type="checkbox" name="frozen" value="1" [% IF member.frozen %]checked="checked"[% END %] /></td>
+  </tr>
+</table>
+  <input type="submit" value="Save" />
+</form>
+
+<hr />
+<p>
+<a href="/members/[% member.member_id %]">Go back to this member.</a><br />
+<a href="/admin">Go back to the admin section</a><br />
+</p>

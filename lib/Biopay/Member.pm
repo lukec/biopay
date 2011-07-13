@@ -7,54 +7,58 @@ use Try::Tiny;
 
 extends 'Biopay::Resource';
 
-has '_id' => (isa => 'Str', is => 'ro', required => 1);
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
-has 'first_name' => (isa => 'Str', is => 'ro', required => 1);
-has 'last_name'  => (isa => 'Str', is => 'ro', required => 1);
-has 'phone_num'  => (isa => 'Str', is => 'ro', required => 1);
-has 'email'  => (isa => 'Str', is => 'ro', required => 1);
-has 'start_epoch'  => (isa => 'Num', is => 'ro', required => 1);
-has 'dues_paid_until'  => (isa => 'Num', is => 'ro', required => 1);
-has 'payment_hash' => (isa => 'Str', is => 'ro');
+has 'first_name' => (isa => 'Maybe[Str]', is => 'rw');
+has 'last_name'  => (isa => 'Maybe[Str]', is => 'rw');
+has 'phone_num'  => (isa => 'Maybe[Str]', is => 'rw');
+has 'email'  => (isa => 'Maybe[Str]', is => 'rw');
+has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
+has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
+has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'frozen' => (isa => 'Bool', is => 'rw');
+has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 
 has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
-has 'start_datetime'    => (is => 'ro', isa => 'DateTime', lazy_build => 1);
+has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);
+has 'start_datetime'    => (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
+has 'dues_paid_until_datetime' => (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
+has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 
 sub view_base { 'members' }
-sub empty { 0 }
 
-override 'new_from_couch' => sub {
-    my $class = shift;
-    my $hash = shift;
-    try {
-        return $class->new($hash);
+method as_hash {
+    my $hash = { Type => 'member' };
+    for my $key (qw/_id _rev member_id first_name last_name phone_num email start_epoch
+                    dues_paid_until payment_hash frozen/) {
+        $hash->{$key} = $self->$key;
     }
-    catch {
-        Biopay::EmptyMember->new(member_id => $hash->{member_id});
-    }
-};
+    return $hash;
+}
 
 method _build_name { join ' ', $self->first_name, $self->last_name }
 
 method _build_start_pretty_date {
-    my $t = $self->datetime;
-    return $t->ymd;
+    return 'Unknown' unless $self->start_datetime;
+    $self->start_datetime->mdy('/');
+}
+
+method _build_dues_paid_until_pretty_date {
+    return 'Unknown' unless $self->dues_paid_until_datetime;
+    $self->dues_paid_until_datetime->mdy('/')
 }
 
 method _build_start_datetime {
+    return undef unless $self->start_epoch;
     my $dt = DateTime->from_epoch(epoch => $self->start_epoch);
     $dt->set_time_zone('America/Vancouver');
     return $dt;
 }
 
-package Biopay::EmptyMember;
-use Moose;
-use methods;
+method _build_dues_paid_until_datetime {
+    return undef unless $self->dues_paid_until;
+    my $dt = DateTime->from_epoch(epoch => $self->dues_paid_until);
+    $dt->set_time_zone('America/Vancouver');
+    return $dt;
+}
 
-has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
-
-sub empty { 1 }
-sub name { 'No name yet' }
-sub start_pretty_date { 'Unknown' }

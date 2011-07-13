@@ -2,10 +2,15 @@ package Biopay::Resource;
 use Moose;
 use methods;
 use Dancer::Plugin::CouchDB;
+use Dancer ':syntax';
+
+has '_id' => (isa => 'Str', is => 'ro', required => 1);
+has '_rev' => (isa => 'Str', is => 'ro', required => 1);
 
 sub By_id {
     my $class = shift;
     my $id    = shift;
+    debug "Looking up " . $class->view_base . "/by_id with key=$id";
     my $results = couchdb->view($class->view_base . '/by_id', {
             key => "$id",
         }
@@ -28,3 +33,8 @@ sub new_from_couch {
     my $hash = shift;
     return $class->new($hash);
 }
+
+method save {
+    couchdb->save_doc($self->as_hash)->recv;
+}
+

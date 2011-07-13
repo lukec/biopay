@@ -1,15 +1,16 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
+
+[% IF message %]
+<div class="ui-widget">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <strong>[% message %]</strong></p>
+    </div>
+</div>
+[% END %]
+
 <p>Details for member [% member.member_id %]:</p>
 
-[% IF member.empty %]
-<table id="member_details">
-  <tr>
-    <td><strong>ID</strong></td>
-    <td>[% member.member_id %]</td>
-  </tr>
-</table>
-<p>There is no other member data stored yet.</p>
-[% ELSE %]
 <table id="member_details">
   <tr>
     <td><strong>ID</strong></td>
@@ -29,18 +30,17 @@
   </tr>
   <tr>
     <td><strong>Joined</strong></td>
-    <td>$[% member.start_pretty_date %]</td>
+    <td>[% member.start_pretty_date %]</td>
   </tr>
   <tr>
     <td><strong>Dues Until</strong></td>
-    <td>$[% member.dues_until_pretty %]</td>
+    <td>[% member.dues_until_pretty %]</td>
   </tr>
   <tr>
     <td><strong>Frozen?</strong></td>
     <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
   </tr>
 </table>
-[% END %]
 <p><a href="/members/[% member.member_id %]/edit">Edit this member!</a></p>
 
 <ul>

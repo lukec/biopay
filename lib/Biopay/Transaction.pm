@@ -7,8 +7,6 @@ use Biopay::Member;
 
 extends 'Biopay::Resource';
 
-has '_id' => (isa => 'Str', is => 'ro', required => 1);
-has '_rev' => (isa => 'Str', is => 'ro', required => 1);
 has 'epoch_time' => (isa => 'Num', is => 'ro', required => 1);
 has 'date' => (isa => 'Str', is => 'ro', required => 1);
 has 'price_per_litre' => (isa => 'Num', is => 'ro', required => 1);
@@ -29,10 +27,6 @@ sub view_base { 'txns' }
 sub All_unpaid { shift->All_for_view('/unpaid') }
 sub All_most_recent { shift->All_for_view('/recent') }
 sub All_for_member { shift->All_for_view('/by_member', {key => shift, @_}) }
-
-method save {
-    couchdb->save_doc($self->as_hash)->recv;
-}
 
 method as_hash {
     my $hash = {};

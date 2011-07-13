@@ -153,10 +153,29 @@ get '/members/:member_id/txns' => sub {
     };
 };
 
+get '/members/:member_id/edit' => sub {
+    my $id = params->{member_id};
+    my $member = Biopay::Member->By_id($id);
+    template 'member-edit', {
+        member => $member,
+    };
+};
+
+post '/members/:member_id/edit' => sub {
+    my $id = params->{member_id};
+    my $member = Biopay::Member->By_id($id);
+    for my $key (qw/first_name last_name phone_num email payment_hash frozen/) {
+        $member->$key(params->{$key});
+    }
+    $member->save;
+    redirect "/members/$id?message=Saved";
+};
+
 get '/members/:member_id' => sub {
     my $member = Biopay::Member->By_id(params->{member_id});
     template 'member', {
         member => $member,
+        message => params->{message},
     };
 };
 
