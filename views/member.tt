@@ -2,9 +2,15 @@
 <p>Details for member [% member.member_id %]:</p>
 
 [% IF member.empty %]
-<p>There is no member data stored yet. <a href="/members/create?member_id=[% member.member_id %]">Create this member!</a></p>
+<table id="member_details">
+  <tr>
+    <td><strong>ID</strong></td>
+    <td>[% member.member_id %]</td>
+  </tr>
+</table>
+<p>There is no other member data stored yet.</p>
 [% ELSE %]
-<table class="transaction">
+<table id="member_details">
   <tr>
     <td><strong>ID</strong></td>
     <td>[% member.member_id %]</td>
@@ -35,7 +41,24 @@
   </tr>
 </table>
 [% END %]
+<p><a href="/member/[% member.member_id %]/edit">Edit this member!</a></p>
 
+<ul>
+  <li>
+    <a href="/member/[% member.member_id %]/transactions">Recent Transactions</a>
+  </li>
+    
+  <li>
+    [% IF member.unpaid_transactions > 0 %]
+      <a href="/member/[% member.member_id %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions %])</a>
+    [% ELSE %]
+      This member has no unpaid transactions.
+    [% END %]
+  </li>
+</ul>
+
+
+<hr />
 <p>
 <a href="/members">Back to members list</a><br />
 <a href="/admin">Back to admin section</a><br />

@@ -2,8 +2,26 @@
 [% IF message %]<div class="message">[% message %]</div>[% END %]
 <p>Login to the Billing system:</p>
 <form action="/login" method="POST">
-Username: <input type="text" name="username" width=20 /><br />
-Password: <input type="password" name="password" width=20 /><br />
-<input type="hidden" name="path" value="[% requested_path %]" />
-<input type="submit" value="Login!" />
+<table class="login">
+  <tr>
+    <td>Username:</td>
+    <td><input id="username" type="text" name="username" width=20 /></td>
+  </tr>
+  <tr>
+    <td>Password:</td>
+    <td><input type="password" name="password" width=20 /></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>
+      <input type="hidden" name="path" value="[% path %]" />
+      <input type="submit" value="Login!" />
+    </td>
+</table>
 </form>
+<script>
+   jQuery( function () {
+          $("#username").focus();
+     }
+   );
+</script>

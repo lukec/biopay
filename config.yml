@@ -39,4 +39,5 @@ plugins:
               manage accounts:
                 operations: ["view"]
 
-session: "YAML"
+session: "cookie"
+session_cookie_key: "****____DEV_KEY____****"

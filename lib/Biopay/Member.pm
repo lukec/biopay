@@ -3,6 +3,9 @@ use Moose;
 use methods;
 use Dancer::Plugin::CouchDB;
 use DateTime;
+use Try::Tiny;
+
+extends 'Biopay::Resource';
 
 has '_id' => (isa => 'Str', is => 'ro', required => 1);
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
@@ -19,28 +22,17 @@ has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_datetime'    => (is => 'ro', isa => 'DateTime', lazy_build => 1);
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 
+sub view_base { 'members' }
 sub empty { 0 }
 
-sub By_id {
-    my $class = shift;
-    my $member_id = shift;
-    my $results
-        = couchdb->view('members/by_id', { key => qq($member_id) })->recv;
-    return Biopay::EmptyMember->new(member_id => $member_id)
-        unless @{ $results->{rows} };
-    return $class->new( $results->{rows}[0]{value} );
-}
-
-sub All {
-    my $class = shift;
-    my $results = couchdb->view('members/by_id')->recv;
-
-    my @members;
-    for my $member_hash (@{ $results->{rows} }) {
-        push @members, $class->new( $member_hash->{value} );
+around 'By_id' => sub {
+    my $orig = shift;
+    my $id   = $_[1];
+    try { return $orig->(@_) }
+    catch {
+        Biopay::EmptyMember->new(member_id => $id);
     }
-    return \@members;
-}
+};
 
 method _build_name { join ' ', $self->first_name, $self->last_name }
 

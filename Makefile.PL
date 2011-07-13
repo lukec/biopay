@@ -19,6 +19,7 @@ WriteMakefile(
         'Plack'      => 0,
         'Template'   => 0,
         'AnyEvent::CouchDB' => 0,
+        'Try::Tiny' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'biopay-*' },
