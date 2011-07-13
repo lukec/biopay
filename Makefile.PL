@@ -3,10 +3,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME                => 'biopay',
-    AUTHOR              => q{YOUR NAME <youremail@example.com>},
-    VERSION_FROM        => 'lib/biopay.pm',
-    ABSTRACT            => 'YOUR APPLICATION ABSTRACT',
+    NAME                => 'Biopay',
+    AUTHOR              => q{Luke Closs <cpan@5thplane.com>},
+    VERSION_FROM        => 'lib/Biopay.pm',
+    ABSTRACT            => 'Biodiesel Co-op Payment System',
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
@@ -23,5 +23,5 @@ WriteMakefile(
         'Try::Tiny' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'biopay-*' },
+    clean               => { FILES => '[bB]iopay-*' },
 );
