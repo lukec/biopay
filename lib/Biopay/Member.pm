@@ -4,6 +4,7 @@ use methods;
 use Dancer::Plugin::CouchDB;
 use DateTime;
 use Try::Tiny;
+use Biopay::Command;
 
 extends 'Biopay::Resource';
 
@@ -39,6 +40,18 @@ method as_hash {
         $hash->{$key} = $self->$key;
     }
     return $hash;
+}
+
+method freeze   { $self->set_freeze(1) }
+method unfreeze { $self->set_freeze(0) }
+method set_freeze {
+    my $val = shift;
+    Biopay::Command->Create(
+        command => $val ? 'freeze' : 'unfreeze',
+        member_id => $self->member_id,
+    );
+    $self->frozen($val);
+    $self->save;
 }
 
 method _build_name {

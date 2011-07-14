@@ -168,13 +168,11 @@ get '/members/:member_id/freeze' => sub {
     my $member = Biopay::Member->By_id($id);
 
     if (params->{please_freeze} and not $member->frozen) {
-        $member->frozen(1);
-        $member->save;
+        $member->freeze;
         redirect '/members/' . $member->id;
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
-        $member->frozen(0);
-        $member->save;
+        $member->unfreeze;
         redirect '/members/' . $member->id;
     }
     template 'freeze', {
