@@ -6,6 +6,7 @@ use Dancer ':syntax';
 
 has '_id' => (isa => 'Str', is => 'ro', required => 1);
 has '_rev' => (isa => 'Str', is => 'ro', required => 1);
+has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 
 sub By_id {
     my $class = shift;
