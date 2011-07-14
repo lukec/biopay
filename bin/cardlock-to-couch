@@ -51,7 +51,7 @@ for my $txn (@$records) {
     eval { $couch->save_doc($txn)->recv };
     if ($@) {
 	if ($@ =~ m/^409/) {
-	    warn "Conflict detected for $id - skipping.\n";
+            #warn "Conflict detected for $id - skipping.\n";
 	    next;
 	}
 	die "Failed to save $id to the couch: $@";
