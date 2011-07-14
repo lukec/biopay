@@ -39,26 +39,29 @@ print "Checking for jobs to run ...\n";
 while (my $job = Biopay::Command->NextJob) {
     print "* Found job of type $job->{command} ...\n";
     my $member = $job->member;
+    my $mid = $member->id;
     given ($job->{command}) {
         when ('freeze') {
-            my $pin = $cardlock->fetch_PIN($member->id);
-            $cardlock->set_PIN($member->id, 0);
+            my $pin = $cardlock->fetch_PIN($mid);
+            $cardlock->set_PIN($mid, 0);
             $member->PIN($pin);
             $member->save;
+            debug "Froze account of member $mid";
         }
         when ('unfreeze') {
             if ($member->PIN) {
-                $cardlock->set_PIN($member->id, $member->PIN);
+                $cardlock->set_PIN($mid, $member->PIN);
                 $member->PIN(undef);
                 $member->save;
+                debug "Restored frozen account of member $mid";
             }
             else {
-                warn "Cannot un-freeze account, no PIN stored for " . $member->id;
-                # maybe send an email to the user?
+                debug "Cannot un-freeze account, no PIN stored for $mid";
             }
         }
         when ('change_PIN') {
-            $cardlock->set_PIN($member->id, $job->args->{new_PIN});
+            $cardlock->set_PIN($mid, $job->args->{new_PIN});
+            debug "Changed PIN for $mid";
         }
         default {
             die "Unknown command: '$job->{command}'";
