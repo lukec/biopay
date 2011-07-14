@@ -8,6 +8,7 @@ extends 'Biopay::Resource';
 
 has 'command' => (is => 'ro', isa => 'Str',       required => 1);
 has 'args'    => (is => 'ro', isa => 'HashRef[]', required => 1);
+has 'timestamp' => (is => 'ro', isa => 'Int',     required => 1);
 
 sub Create {
     my $class = shift;
@@ -15,6 +16,7 @@ sub Create {
 
     couchdb->save_doc( {
             Type => 'command',
+            timestamp => time(),
             %args,
         },
     )->recv;
