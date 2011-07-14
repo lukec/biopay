@@ -17,6 +17,7 @@ has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'frozen' => (isa => 'Bool', is => 'rw');
+has 'PIN' => (isa => 'Maybe[Str]', is => 'ro');
 
 has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);
@@ -36,7 +37,7 @@ method unpaid_transactions {
 method as_hash {
     my $hash = { Type => 'member' };
     for my $key (qw/_id _rev member_id first_name last_name phone_num email start_epoch
-                    dues_paid_until payment_hash frozen/) {
+                    dues_paid_until payment_hash frozen PIN/) {
         $hash->{$key} = $self->$key;
     }
     return $hash;
