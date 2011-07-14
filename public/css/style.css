@@ -162,6 +162,11 @@ p {
     margin-bottom: 5px;
 }
 
+#stats {
+    float: right;
+    width: 200px;
+    padding-top: 30px;
+}
 
 footer {
     clear: both;

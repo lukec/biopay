@@ -4,6 +4,7 @@ use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Auth::RBAC;
 use Biopay::Transaction;
 use Biopay::Member;
+use Biopay::Stats;
 
 our $VERSION = '0.1';
 
@@ -25,7 +26,11 @@ before sub {
     }
 };
 
-get '/' => sub { template 'index' };
+get '/' => sub {
+    template 'index', {
+        stats => Biopay::Stats->new,
+    };
+};
 for my $page (qw(privacy refunds terms)) {
     get "/$page" => sub { template $page };
 }
@@ -54,7 +59,7 @@ post '/login' => sub {
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
         session bio => { username => $user };
-        return redirect host() . param('path') || "/admin";
+        return redirect host() . param('path') || "/";
     }
     debug "Found the $user user, but they are not an admin.";
     return forward "/login", {}, { method => 'GET' };
@@ -63,10 +68,6 @@ post '/login' => sub {
 get '/logout' => sub {
     session bio => undef;
     return redirect '/';
-};
-
-get '/admin' => sub {
-    template 'admin';
 };
 
 get '/unpaid' => sub {
@@ -185,6 +186,7 @@ get '/members/:member_id' => sub {
     template 'member', {
         member => $member,
         message => params->{message},
+        stats => Biopay::Stats->new,
     };
 };
 

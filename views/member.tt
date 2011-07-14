@@ -9,8 +9,15 @@
 </div>
 [% END %]
 
-<p>Details for member [% member.member_id %]:</p>
 
+<div id="stats">
+<ul>
+  <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
+  <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
+</ul>
+</div>
+<div id="details">
+<p>
 <table id="member_details">
   <tr>
     <td><strong>ID</strong></td>
@@ -41,7 +48,9 @@
     <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
   </tr>
 </table>
+</p>
 <p><a href="/members/[% member.member_id %]/edit">Edit this member!</a></p>
+</div>
 
 <ul>
   <li>

@@ -2,6 +2,17 @@
 [% IF message %]<div class="message">[% message %]</div>[% END %]
 [% IF is_admin %]
 <p>You are logged in.  Use the sidebar to access different parts.</p>
+
+<p><strong>Co-op Statistics</strong>
+  (since July 8th, 2011)<br />
+  <div id="homepage-data">
+  <ul>
+    <li>Members in this system: [% stats.active_members() %]</li>
+    <li>Fuel sales:  [% stats.fuel_sales() %]</li>
+    <li>Fuel sold: [% stats.fuel_sold_alltime() %] Litres</li>
+  </ul>
+  </div>
+</p>
 [% ELSE %]
 <p>Welcome to the VBC Billing Tool.  This service processes biodiesel
 purchases for Co-op members.  At present time, this service is available
