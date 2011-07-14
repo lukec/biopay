@@ -8,6 +8,7 @@
     <li><a href="/members">Members</a></li>
     <h3>Admin Actions</h3>
     <li><a href="/">Admin Home</a></li>
+    <li><a href="/fuel-price">Change Fuel Price</a></li>
     <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
     <li><a href="/logout">Logout</a></li>
     [% ELSE %]

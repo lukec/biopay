@@ -5,6 +5,7 @@ use Dancer::Plugin::Auth::RBAC;
 use Biopay::Transaction;
 use Biopay::Member;
 use Biopay::Stats;
+use Biopay::Prices;
 
 our $VERSION = '0.1';
 
@@ -218,6 +219,28 @@ get '/members/:member_id' => sub {
         member => member(),
         message => $msg,
         stats => Biopay::Stats->new,
+    };
+};
+
+get '/fuel-price' => sub {
+    template 'fuel-price', {
+        current_price => Biopay::Prices->new->fuel_price,
+    };
+};
+post '/fuel-price' => sub {
+    my $new_price = params->{new_price};
+    my $prices = Biopay::Prices->new;
+    my $msg = '';
+    if ($new_price and $new_price =~ m/^[123]\.\d{2}$/) {
+        $msg = "Updated the price to \$$new_price per Litre.";
+        $prices->set_fuel_price($new_price);
+    }
+    else {
+        $msg = "That price doesn't look valid - try again.";
+    }
+    template 'fuel-price', {
+        current_price => $prices->fuel_price,
+        message => $msg,
     };
 };
 
