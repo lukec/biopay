@@ -17,7 +17,7 @@ has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'frozen' => (isa => 'Bool', is => 'rw');
-has 'PIN' => (isa => 'Maybe[Str]', is => 'ro');
+has 'PIN' => (isa => 'Maybe[Str]', is => 'rw');
 
 has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);

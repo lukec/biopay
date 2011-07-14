@@ -35,6 +35,27 @@ method BUILD {
     }
 }
 
+method fetch_PIN {
+    my $card = shift;
+    $self->clean_read("E");
+    my $output = $self->clean_read("$card\n\r");
+    $self->clean_read("\n\r");
+    if ($output =~ m/PIN # \(\s*(\d+)\)/) {
+        warn "Found PIN=($1)";
+        return $1;
+    }
+    return 0;
+}
+
+method set_PIN {
+    my $card = shift;
+    my $new_pin = shift;
+    $self->clean_read("E");
+    $self->clean_read("$card\n\r");
+    $self->clean_read("$new_pin\n\r");
+    $self->clean_read("\n\r");
+}
+
 method clean_read {
     my $text = shift;
     $self->cli->put($text);
@@ -42,10 +63,10 @@ method clean_read {
 	Blocking => 1,
 	Read_attempts => 10,
     );
-    # warn "Received: '$output'\n";
+    $output =~ s/\r/\n/g;
+    # warn "CLI: put '$text', GOT: '$output'\n";
     return $output;
 }
-
 
 method recent_transactions {
     my $lines = $self->clean_read('B');
@@ -84,6 +105,7 @@ method recent_transactions {
 	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
 	push @records, $txn;
     }
+    $self->_cardlock_exit;
     return \@records;
 }
 

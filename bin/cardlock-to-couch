@@ -1,13 +1,12 @@
 #!/usr/bin/env perl
-use strict;
-use warnings;
+use 5.14.1;
 use Dancer qw/:syntax/;
 use FindBin;
 use Cwd qw/realpath/;
-use Data::Dumper;
 use lib "$FindBin::Bin/../lib";
 use Dancer::Plugin::CouchDB;
 use Biopay::Cardlock;
+use Biopay::Member;
 
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
@@ -18,21 +17,43 @@ my $cardlock = Biopay::Cardlock->new(
 );;
 
 print "Fetching recent transactions ...\n";
-my $records = $cardlock->recent_transactions;
+my $records = [] || $cardlock->recent_transactions;
 for my $txn (@$records) {
     my $id = $txn->{_id};
-
     autovivify_member($txn->{member_id});
-
     print "Saving $txn->{as_string} to the couch\n";
     eval { $couch->save_doc($txn)->recv };
     if ($@) {
-	if ($@ =~ m/^409/) {
-            #warn "Conflict detected for $id - skipping.\n";
-	    next;
-	}
+	next if $@ =~ m/^409/;
 	die "Failed to save $id to the couch: $@";
     }
+}
+
+print "Checking for jobs to run ...\n";
+my $jobs = fetch_couch_jobs();
+for my $job (@$jobs) {
+    print "* Found job of type $job->{command} ...\n";
+    my $member = $job->{member_id}
+        ? Biopay::Member->By_id($job->{member_id}) : undef;
+    given ($job->{command}) {
+        when ('freeze') {
+            my $pin = $cardlock->fetch_PIN($member->id);
+            $cardlock->set_PIN($member->id, 0);
+            $member->PIN($pin);
+            $member->save;
+        }
+        when ('unfreeze') {
+            if ($member->PIN) {
+                $cardlock->set_PIN($member->id, $member->PIN);
+                $member->PIN(undef);
+                $member->save;
+            }
+        }
+        default {
+            die "Unknown command: '$job->{command}'";
+        }
+    }
+    $couch->remove_doc($job);
 }
 
 exit;
@@ -60,4 +81,9 @@ sub autovivify_member {
 	    }
 	);
     }
+}
+
+sub fetch_couch_jobs {
+    my $result = $couch->view('jobs/all')->recv;
+    return [ map { $_->{value} } @{ $result->{rows} } ];
 }
