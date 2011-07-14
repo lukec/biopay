@@ -7,9 +7,11 @@
   (since July 8th, 2011)<br />
   <div id="homepage-data">
   <ul>
+  [% SET litres = stats.fuel_sold_alltime() %]
     <li>Members in this system: [% stats.active_members() %]</li>
     <li>Fuel sales:  [% stats.fuel_sales() %]</li>
-    <li>Fuel sold: [% stats.fuel_sold_alltime() %] Litres</li>
+    <li>Fuel sold: [% litres %] Litres</li>
+    <li>Taxes paid (29¢/L): $[% litres * 0.29 %]</li>
   </ul>
   </div>
 </p>
