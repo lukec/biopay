@@ -1,0 +1,28 @@
+[% IF member.frozen %]
+<h1>Un-freeze Member [% member.name %]</h1>
+  <div class="ui-widget">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <strong>Note:</strong> Un-freezing a member will <strong>restore</strong> their cardlock access.
+        </p>
+    </div>
+  </div>
+<p>
+  <a href="/members/[% member.member_id %]/freeze?please_unfreeze=1">Yes, un-freeze [% member.name %]</a>
+</p>
+[% ELSE %]
+<h1>Freeze Member: [% member.name %]</h1>
+  <div class="ui-widget">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <strong>Note:</strong> Freezing a member will <strong>revoke</strong> their cardlock access.
+        </p>
+    </div>
+  </div>
+<p>
+  <a href="/members/[% member.member_id %]/freeze?please_freeze=1">Yes, freeze [% member.name %]</a>
+</p>
+[% END %]
+<p>
+  <a href="/members/[% member.member_id %]">No, go back.</a>
+</p>
