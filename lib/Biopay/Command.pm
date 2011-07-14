@@ -9,7 +9,6 @@ extends 'Biopay::Resource';
 
 has 'command' => (is => 'ro', isa => 'Str',       required => 1);
 has 'args'    => (is => 'ro', isa => 'HashRef[]', required => 1);
-has 'timestamp' => (is => 'ro', isa => 'Int',     required => 1);
 
 has 'member'  => (is => 'ro', isa => 'Maybe[Object]', lazy_build => 1);
 
@@ -18,9 +17,10 @@ sub Create {
     my %args  = @_;
 
     couchdb->save_doc( {
+            _id => "command:" . time(),
             Type => 'command',
-            timestamp => time(),
-            %args,
+            command => delete $args{command},
+            args => \%args,
         },
     )->recv;
 }
