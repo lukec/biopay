@@ -7,8 +7,8 @@ use Biopay::Member;
 
 extends 'Biopay::Resource';
 
-has 'command' => (is => 'ro', isa => 'Str',       required => 1);
-has 'args'    => (is => 'ro', isa => 'HashRef[]', required => 1);
+has 'command' => (is => 'ro', isa => 'Str',     required => 1);
+has 'args'    => (is => 'ro', isa => 'HashRef', required => 1);
 
 has 'member'  => (is => 'ro', isa => 'Maybe[Object]', lazy_build => 1);
 
