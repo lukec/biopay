@@ -1,0 +1,23 @@
+<h1>Change PIN for Member [% member.name %]</h1>
+  <div class="ui-widget">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <strong>Note:</strong> [% message %]
+        </p>
+    </div>
+  </div>
+<p>
+  <form action="/members/[% member.id %]/change-pin" method="POST">
+    Choose a new PIN: 
+    <input type="text" size="4" maxlength="4" name="new_PIN" id="new_PIN" />
+    <input type="submit" value="Change PIN" />
+</p>
+<p>
+  <a href="/members/[% member.member_id %]">Oops, go back.</a>
+</p>
+<script>
+   jQuery( function () {
+          $("#new_PIN").focus();
+     }
+   );
+</script>

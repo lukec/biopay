@@ -55,6 +55,15 @@ method set_freeze {
     $self->save;
 }
 
+method change_PIN {
+    my $new_PIN = shift;
+    Biopay::Command->Create(
+        command => 'change_PIN',
+        new_PIN => $new_PIN,
+        member_id => $self->id,
+    );
+}
+
 method _build_name {
     my $name = join ' ', $self->first_name, $self->last_name;
     $name = "Member " . $self->member_id if $name =~ m/^\s*$/;

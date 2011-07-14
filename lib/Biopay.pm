@@ -148,14 +148,14 @@ get '/members/create' => sub {
 get '/members/:member_id/txns' => sub {
     template 'member-txns', {
         member => member(),
-        txns   => Biopay::Transaction->All_for_member($id),
+        txns   => Biopay::Transaction->All_for_member(params->{member_id}),
     };
 };
 
 get '/members/:member_id/unpaid' => sub {
     template 'member-unpaid', {
         member => member(),
-        txns   => Biopay::Transaction->All_unpaid({key => "$id"}),
+        txns   => Biopay::Transaction->All_unpaid({key => params->{member_id}}),
     };
 };
 
@@ -174,7 +174,23 @@ get '/members/:member_id/freeze' => sub {
     };
 };
 
-get 'members/:member_id/change-pin' => sub {
+get '/members/:member_id/change-pin' => sub {
+    my $msg = 'Please choose a 4-digit PIN.';
+    $msg = "That PIN is invalid. $msg" if params->{bad_pin};
+    template 'change-pin', {
+        member => member(),
+        message => $msg,
+    };
+};
+post '/members/:member_id/change-pin' => sub {
+    my $member = member();
+    my $new_PIN = params->{new_PIN} || '';
+    $new_PIN = 0 unless $new_PIN =~ m/^\d{4}$/;
+    if ($new_PIN) {
+        $member->change_PIN($new_PIN);
+        return redirect '/members/' . $member->id . '?PIN_changed=1';
+    }
+    return redirect '/members/' . $member->id . '/change-pin?bad_pin=1';
 };
 
 get '/members/:member_id/edit' => sub {
@@ -190,13 +206,14 @@ post '/members/:member_id/edit' => sub {
         $member->$key(params->{$key});
     }
     $member->save;
-    redirect "/members/$id?message=Saved";
+    redirect "/members/" . $member->id . "?message=Saved";
 };
 
 get '/members/:member_id' => sub {
     my $msg = params->{message};
     $msg = "A freeze request was sent to the cardlock." if params->{frozen};
     $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
+    $msg = "A PIN change request was sent to the cardlock." if params->{PIN_changed};
     template 'member', {
         member => member(),
         message => $msg,
