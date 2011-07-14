@@ -41,7 +41,6 @@ method fetch_PIN {
     my $output = $self->clean_read("$card\n\r");
     $self->clean_read("\n\r");
     if ($output =~ m/PIN # \(\s*(\d+)\)/) {
-        warn "Found PIN=($1)";
         return $1;
     }
     return 0;
