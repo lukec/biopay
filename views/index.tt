@@ -12,6 +12,7 @@
     <li>Fuel sales:  [% stats.fuel_sales() %]</li>
     <li>Fuel sold: [% litres %] Litres</li>
     <li>Taxes paid (29¢/L): $[% litres * 0.29 %]</li>
+    <li>Approx CO2 reduction: [% (litres * 1.94) div 1 %]kg</li>
   </ul>
   </div>
 </p>
