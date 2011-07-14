@@ -8,13 +8,14 @@ use Dancer::Plugin::CouchDB;
 use Biopay::Cardlock;
 use Biopay::Member;
 use Biopay::Command;
+use Biopay::Prices;
 
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
 
 my $couch = couchdb() or die "Couldn't load couch!";
 my $cardlock = Biopay::Cardlock->new(
-    fetch_price_cb => \&fetch_fuel_price,
+    fetch_price_cb => sub { Biopay::Prices->new->fuel_price },
 );;
 
 if (0) {
@@ -71,17 +72,6 @@ while (my $job = Biopay::Command->NextJob) {
 }
 
 exit;
-
-sub fetch_fuel_price {
-    my $doc = eval { $couch->open_doc("fuel_price")->recv };
-    if ($@) {
-	if ($@ =~ m/^404/) {
-	    die "Could not load the fuel_price! Make sure it exists.";
-	}
-	else { die "Failed to load fuel_price: $@" };
-    }
-    return $doc->{price_per_litre} || die "No price per litre found!";
-}
 
 sub autovivify_member {
     my $member_id = shift;
