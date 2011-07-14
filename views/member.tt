@@ -49,17 +49,26 @@
   </tr>
 </table>
 </p>
-<p><a href="/members/[% member.member_id %]/edit">Edit this member!</a></p>
+  [% SET muri = "/members/" + member.member_id %]
+  <p>
+    <a href="[% muri %]/edit">Edit this member!</a> |
+    [% If member.frozen %]
+      <a href="[% muri %]/freeze">Un-Freeze</a> |
+    [% ELSE %]
+      <a href="[% muri %]/freeze">Freeze</a> |
+    [% END %]
+    <a href="[% muri %]/change-pin">Change PIN</a>
+  </p>
 </div>
 
 <ul>
   <li>
-    <a href="/members/[% member.member_id %]/txns">Recent Transactions</a>
+    <a href="[% muri %]/txns">Recent Transactions</a>
   </li>
     
   <li>
     [% IF member.unpaid_transactions.size > 0 %]
-      <a href="/members/[% member.member_id %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
+      <a href="[% muri %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
     [% ELSE %]
       This member has no unpaid transactions.
     [% END %]

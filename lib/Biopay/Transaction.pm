@@ -12,7 +12,6 @@ has 'date' => (isa => 'Str', is => 'ro', required => 1);
 has 'price_per_litre' => (isa => 'Num', is => 'ro', required => 1);
 has 'txn_id' => (isa => 'Num', is => 'ro', required => 1);
 has 'paid' => (isa => 'Bool', is => 'rw', required => 1);
-has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 has 'litres' => (isa => 'Num', is => 'ro', required => 1);
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
 has 'price' => (isa => 'Num', is => 'ro', required => 1);
@@ -23,6 +22,7 @@ has 'datetime'    => (is => 'ro', isa => 'DateTime', lazy_build => 1);
 has 'pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 
 sub view_base { 'txns' }
+method id { $self->txn_id }
 
 sub All_unpaid { shift->All_for_view('/unpaid', @_) }
 sub All_most_recent { shift->All_for_view('/recent') }

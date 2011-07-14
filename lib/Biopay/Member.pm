@@ -16,7 +16,6 @@ has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'frozen' => (isa => 'Bool', is => 'rw');
-has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 
 has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);
@@ -26,6 +25,7 @@ has 'dues_paid_until_datetime' => (is => 'ro', isa => 'Maybe[DateTime]', lazy_bu
 has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 
 sub view_base { 'members' }
+method id { $self->member_id }
 
 method unpaid_transactions {
     my $mid = $self->member_id;
@@ -41,7 +41,11 @@ method as_hash {
     return $hash;
 }
 
-method _build_name { join ' ', $self->first_name, $self->last_name }
+method _build_name {
+    my $name = join ' ', $self->first_name, $self->last_name;
+    $name = "Member " . $self->member_id if $name =~ m/^\s*$/;
+    return $name;
+}
 
 method _build_start_pretty_date {
     return 'Unknown' unless $self->start_datetime;

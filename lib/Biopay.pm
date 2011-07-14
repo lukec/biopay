@@ -163,6 +163,25 @@ get '/members/:member_id/unpaid' => sub {
     };
 };
 
+get '/members/:member_id/freeze' => sub {
+    my $id = params->{member_id};
+    my $member = Biopay::Member->By_id($id);
+
+    if (params->{please_freeze} and not $member->frozen) {
+        $member->frozen(1);
+        $member->save;
+        redirect '/members/' . $member->id;
+    }
+    elsif (params->{please_unfreeze} and $member->frozen) {
+        $member->frozen(0);
+        $member->save;
+        redirect '/members/' . $member->id;
+    }
+    template 'freeze', {
+        member => $member,
+    };
+};
+
 get '/members/:member_id/edit' => sub {
     my $id = params->{member_id};
     my $member = Biopay::Member->By_id($id);
@@ -174,7 +193,8 @@ get '/members/:member_id/edit' => sub {
 post '/members/:member_id/edit' => sub {
     my $id = params->{member_id};
     my $member = Biopay::Member->By_id($id);
-    for my $key (qw/first_name last_name phone_num email payment_hash frozen/) {
+    for my $key (qw/first_name last_name phone_num email payment_hash/) {
+        # TODO save dates.
         $member->$key(params->{$key});
     }
     $member->save;

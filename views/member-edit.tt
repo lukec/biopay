@@ -45,10 +45,6 @@
     <td><strong>Payment Hash</strong></td>
     <td><input type="text" name="payment_hash" width="20" value="[% member.payment_hash %]" /></td>
   </tr>
-  <tr>
-    <td><strong>Frozen?</strong></td>
-    <td><input type="checkbox" name="frozen" value="1" [% IF member.frozen %]checked="checked"[% END %] /></td>
-  </tr>
 </table>
   <input type="submit" value="Save" />
 </form>
