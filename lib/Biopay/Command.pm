@@ -27,7 +27,7 @@ sub Create {
 
 sub NextJob {
     my $class = shift;
-    my $result = $couch->view('jobs/all')->recv;
+    my $result = couchdb->view('jobs/all')->recv;
     return undef unless @{ $result->{rows} };
     return $class->new( $result->{rows}[0]{value} );
 }
