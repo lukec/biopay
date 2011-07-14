@@ -146,27 +146,21 @@ get '/members/create' => sub {
 };
 
 get '/members/:member_id/txns' => sub {
-    my $id = params->{member_id};
-    my $member = Biopay::Member->By_id($id);
     template 'member-txns', {
-        member => $member,
+        member => member(),
         txns   => Biopay::Transaction->All_for_member($id),
     };
 };
 
 get '/members/:member_id/unpaid' => sub {
-    my $id = params->{member_id};
-    my $member = Biopay::Member->By_id($id);
     template 'member-unpaid', {
-        member => $member,
+        member => member(),
         txns   => Biopay::Transaction->All_unpaid({key => "$id"}),
     };
 };
 
 get '/members/:member_id/freeze' => sub {
-    my $id = params->{member_id};
-    my $member = Biopay::Member->By_id($id);
-
+    my $member = member();
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
         redirect '/members/' . $member->id . '?frozen=1';
@@ -180,17 +174,17 @@ get '/members/:member_id/freeze' => sub {
     };
 };
 
+get 'members/:member_id/change-pin' => sub {
+};
+
 get '/members/:member_id/edit' => sub {
-    my $id = params->{member_id};
-    my $member = Biopay::Member->By_id($id);
     template 'member-edit', {
-        member => $member,
+        member => member(),
     };
 };
 
 post '/members/:member_id/edit' => sub {
-    my $id = params->{member_id};
-    my $member = Biopay::Member->By_id($id);
+    my $member = member();
     for my $key (qw/first_name last_name phone_num email payment_hash/) {
         # TODO save dates.
         $member->$key(params->{$key});
@@ -200,15 +194,19 @@ post '/members/:member_id/edit' => sub {
 };
 
 get '/members/:member_id' => sub {
-    my $member = Biopay::Member->By_id(params->{member_id});
     my $msg = params->{message};
     $msg = "A freeze request was sent to the cardlock." if params->{frozen};
     $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
     template 'member', {
-        member => $member,
+        member => member(),
         message => $msg,
         stats => Biopay::Stats->new,
     };
 };
+
+sub member {
+    my $id = params->{member_id} or return undef;
+    return Biopay::Member->By_id($id);
+}
 
 true;
