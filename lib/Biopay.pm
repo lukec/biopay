@@ -169,11 +169,11 @@ get '/members/:member_id/freeze' => sub {
 
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
-        redirect '/members/' . $member->id;
+        redirect '/members/' . $member->id . '?frozen=1';
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
         $member->unfreeze;
-        redirect '/members/' . $member->id;
+        redirect '/members/' . $member->id . '?thawed=1';
     }
     template 'freeze', {
         member => $member,
@@ -201,9 +201,12 @@ post '/members/:member_id/edit' => sub {
 
 get '/members/:member_id' => sub {
     my $member = Biopay::Member->By_id(params->{member_id});
+    my $msg = params->{message};
+    $msg = "A freeze request was sent to the cardlock." if params->{frozen};
+    $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
     template 'member', {
         member => $member,
-        message => params->{message},
+        message => $msg,
         stats => Biopay::Stats->new,
     };
 };
