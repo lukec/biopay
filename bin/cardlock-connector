@@ -7,6 +7,7 @@ use lib "$FindBin::Bin/../lib";
 use Dancer::Plugin::CouchDB;
 use Biopay::Cardlock;
 use Biopay::Member;
+use Biopay::Command;
 
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
@@ -16,8 +17,9 @@ my $cardlock = Biopay::Cardlock->new(
     fetch_price_cb => \&fetch_fuel_price,
 );;
 
+if (0) {
 print "Fetching recent transactions ...\n";
-my $records = [] || $cardlock->recent_transactions;
+my $records = $cardlock->recent_transactions;
 for my $txn (@$records) {
     my $id = $txn->{_id};
     autovivify_member($txn->{member_id});
@@ -28,13 +30,15 @@ for my $txn (@$records) {
 	die "Failed to save $id to the couch: $@";
     }
 }
+}
+else {
+    warn "Skipping cardlock txns";
+}
 
 print "Checking for jobs to run ...\n";
-my $jobs = fetch_couch_jobs();
-for my $job (@$jobs) {
+while (my $job = Biopay::Command->NextJob) {
     print "* Found job of type $job->{command} ...\n";
-    my $member = $job->{member_id}
-        ? Biopay::Member->By_id($job->{member_id}) : undef;
+    my $member = $job->member;
     given ($job->{command}) {
         when ('freeze') {
             my $pin = $cardlock->fetch_PIN($member->id);
@@ -48,6 +52,13 @@ for my $job (@$jobs) {
                 $member->PIN(undef);
                 $member->save;
             }
+            else {
+                warn "Cannot un-freeze account, no PIN stored for " . $member->id;
+                # maybe send an email to the user?
+            }
+        }
+        when ('change_PIN') {
+            $cardlock->set_PIN($member->id, $job->args->{new_PIN});
         }
         default {
             die "Unknown command: '$job->{command}'";
@@ -81,9 +92,4 @@ sub autovivify_member {
 	    }
 	);
     }
-}
-
-sub fetch_couch_jobs {
-    my $result = $couch->view('jobs/all')->recv;
-    return [ map { $_->{value} } @{ $result->{rows} } ];
 }
