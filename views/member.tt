@@ -11,6 +11,7 @@
 
 
 <div id="stats">
+<h3>Statistics:</h3>
 <ul>
   <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
   <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
