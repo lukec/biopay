@@ -25,11 +25,11 @@ my $cardlock = Biopay::Cardlock->new(
 
 my $w = AnyEvent->condvar;
 my $cardlock_timer = AnyEvent->timer(
-    after => 0.1, interval => 5,
+    after => 0.1, interval => 10,
     cb    => \&check_cardlock,
 );
 my $job_timer = AnyEvent->timer(
-    after => 0.5, interval => 5,
+    after => 0.5, interval => 60,
     cb    => \&check_for_jobs,
 );
 
