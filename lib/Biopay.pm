@@ -6,6 +6,7 @@ use Biopay::Transaction;
 use Biopay::Member;
 use Biopay::Stats;
 use Biopay::Prices;
+use AnyEvent;
 
 our $VERSION = '0.1';
 
@@ -16,7 +17,13 @@ sub host {
 
 before sub {
     my $path = request->path_info;
-    return if session('bio');
+    if (session('bio')) {
+        # Let AE run, it can cleanup any lingering AE::HTTP state
+        my $w = AnyEvent->condvar;
+        my $idle = AnyEvent->idle (cb => sub { $w->send });
+        $w->recv; # enters "main loop" till $condvar gets −>send
+        return;
+    }
 
     unless ($path eq '/' or $path =~ m{^/login}) {
         debug "no bio session, redirecting to login (from $path)";
