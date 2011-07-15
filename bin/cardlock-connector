@@ -9,6 +9,7 @@ use Biopay::Cardlock;
 use Biopay::Member;
 use Biopay::Command;
 use Biopay::Prices;
+use AnyEvent;
 
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
@@ -16,73 +17,122 @@ Dancer::Config::load();
 my $couch = couchdb() or die "Couldn't load couch!";
 my $cardlock = Biopay::Cardlock->new(
     fetch_price_cb => sub { Biopay::Prices->new->fuel_price },
-);;
+);
 
-if (0) {
-print "Fetching recent transactions ...\n";
-my $records = $cardlock->recent_transactions;
-for my $txn (@$records) {
-    my $id = $txn->{_id};
-    autovivify_member($txn->{member_id});
-    print "Saving $txn->{as_string} to the couch\n";
-    eval { $couch->save_doc($txn)->recv };
-    if ($@) {
-	next if $@ =~ m/^409/;
-	die "Failed to save $id to the couch: $@";
-    }
-}
-}
-else {
-    warn "Skipping cardlock txns";
-}
+# Desired behaviour for the cardlock connector
+# * Check the pump every 10s
+# * Check the couch for jobs every 1 minute
 
-print "Checking for jobs to run ...\n";
-while (my $job = Biopay::Command->NextJob) {
-    print "* Found job of type $job->{command} ...\n";
-    my $member = $job->member;
-    my $mid = $member->id;
-    given ($job->{command}) {
-        when ('freeze') {
-            my $pin = $cardlock->fetch_PIN($mid);
-            $cardlock->set_PIN($mid, 0);
-            $member->PIN($pin);
-            $member->save;
-            debug "Froze account of member $mid";
-        }
-        when ('unfreeze') {
-            if ($member->PIN) {
-                $cardlock->set_PIN($mid, $member->PIN);
-                $member->PIN(undef);
-                $member->save;
-                debug "Restored frozen account of member $mid";
-            }
-            else {
-                debug "Cannot un-freeze account, no PIN stored for $mid";
-            }
-        }
-        when ('change_PIN') {
-            $cardlock->set_PIN($mid, $job->args->{new_PIN});
-            debug "Changed PIN for $mid";
-        }
-        default {
-            die "Unknown command: '$job->{command}'";
-        }
-    }
-    $couch->remove_doc($job);
-}
+my $w = AnyEvent->condvar;
+my $cardlock_timer = AnyEvent->timer(
+    after => 0.1, interval => 5,
+    cb    => \&check_cardlock,
+);
+my $job_timer = AnyEvent->timer(
+    after => 0.5, interval => 5,
+    cb    => \&check_for_jobs,
+);
+
+$w->recv;
 
 exit;
+
+sub check_cardlock {
+    print "Fetching recent transactions ...\n";
+    my $records = $cardlock->recent_transactions;
+    for my $txn (@$records) {
+        my $id = $txn->{_id};
+        autovivify_member($txn->{member_id});
+        print "Saving $txn->{as_string} to the couch\n";
+        $couch->save_doc($txn)->cb(
+            sub {
+                my $cv = shift;
+                eval { $cv->recv };
+                if ($@) {
+                    next if $@ =~ m/^409/;
+                    die "Failed to save $id to the couch: $@";
+                }
+                warn "Saved transaction $txn->{as_string} ($cv)\n";
+            }
+        );
+    }
+}
+
+sub check_for_jobs {
+    print "Checking for jobs to run ...\n";
+    Biopay::Command->Run_jobs( \&handle_job );
+}
+
+sub handle_job {
+    my $job = shift;
+    print "* Found job of type $job->{command} ...\n";
+    my $member_id = $job->args->{member_id};
+    return undef unless $member_id;
+    Biopay::Member->By_id($member_id, sub {
+        my $member = shift;
+        my $mid = $member->id;
+        given ($job->{command}) {
+            when ('freeze') {
+                my $pin = $cardlock->fetch_PIN($mid);
+                $cardlock->set_PIN($mid, 0);
+                $member->PIN($pin);
+                $member->save(sub {
+                    warn "Saved " . $member->id . " to the couch";
+                });
+                debug "Froze account of member $mid";
+            }
+            when ('unfreeze') {
+                if ($member->PIN) {
+                    $cardlock->set_PIN($mid, $member->PIN);
+                    $member->PIN(undef);
+                    $member->save(sub {
+                        warn "Saved " . $member->id . " to the couch";
+                    });
+                    debug "Restored frozen account of member $mid";
+                }
+                else {
+                    debug "Cannot un-freeze account, no PIN stored for $mid";
+                }
+            }
+            when ('change_PIN') {
+                $cardlock->set_PIN($mid, $job->args->{new_PIN});
+                debug "Changed PIN for $mid";
+            }
+            default {
+                die "Unknown command: '$job->{command}'";
+            }
+        }
+        $couch->remove_doc($job)->cb(
+            sub {
+                my $cv = shift;
+                $cv->recv;
+                warn "Removed job " . $job->_id . " from the couch";
+            }
+        );
+        }
+    );
+}
 
 sub autovivify_member {
     my $member_id = shift;
     my $key = "member:$member_id";
-    my $doc = eval { $couch->open_doc($key)->recv };
-    if ($@) {
-	$couch->save_doc({
-		_id => $key,
-		Type => 'member',
-		member_id => $member_id,
-	    }
-	);
-    }
+    $couch->open_doc($key)->cb(
+        sub {
+            my $cv = shift;
+            eval { $cv->recv };
+            if ($@) {
+                $couch->save_doc({
+                        _id => $key,
+                        Type => 'member',
+                        member_id => $member_id,
+                    }
+                )->cb( sub {
+                        warn "Saved member $member_id in the couch\n";
+                    });
+            }
+            else {
+                warn ".. Found member $member_id in the couch\n";
+            }
+        }
+    );
 }

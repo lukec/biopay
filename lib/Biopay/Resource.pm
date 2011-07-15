@@ -11,11 +11,25 @@ has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 sub By_id {
     my $class = shift;
     my $id    = shift;
-    my $results = couchdb->view($class->view_base . '/by_id', {
+    my $cb    = shift;
+    my $cv = couchdb->view($class->view_base . '/by_id', {
             key => "$id",
         }
-    )->recv;
-    return $class->new_from_couch($results->{rows}[0]{value});
+    );
+    if ($cb) {
+        $cv->cb(
+            sub {
+                my $cv2 = shift;
+                my $results = $cv2->recv;
+                my $obj = $class->new_from_couch($results->{rows}[0]{value});
+                return $cb->($obj);
+            }
+        );
+    }
+    else {
+        my $results = $cv->recv;
+        return $class->new_from_couch($results->{rows}[0]{value});
+    }
 }
 
 sub All { shift->All_for_view('/by_id', @_) }
@@ -35,6 +49,19 @@ sub new_from_couch {
 }
 
 method save {
-    couchdb->save_doc($self->as_hash)->recv;
+    my $cb = shift;
+    my $cv = couchdb->save_doc($self->as_hash);
+    if ($cb) {
+        $cv->cb(
+            sub {
+                my $cv2 = shift;
+                my $res = $cv2->recv;
+                $cb->($res);
+            }
+        );
+    }
+    else {
+        return $cb->recv;
+    }
 }
 

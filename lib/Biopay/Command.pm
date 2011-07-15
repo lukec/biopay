@@ -3,14 +3,11 @@ use Moose;
 use methods;
 use Dancer::Plugin::CouchDB;
 use Dancer ':syntax';
-use Biopay::Member;
 
 extends 'Biopay::Resource';
 
 has 'command' => (is => 'ro', isa => 'Str',     required => 1);
 has 'args'    => (is => 'ro', isa => 'HashRef', required => 1);
-
-has 'member'  => (is => 'ro', isa => 'Maybe[Object]', lazy_build => 1);
 
 sub Create {
     my $class = shift;
@@ -25,15 +22,20 @@ sub Create {
     )->recv;
 }
 
-sub NextJob {
+sub Run_jobs {
     my $class = shift;
-    my $result = couchdb->view('jobs/all')->recv;
-    return undef unless @{ $result->{rows} };
-    return $class->new( $result->{rows}[0]{value} );
+    my $job_cb = shift;
+    couchdb->view('jobs/all')->cb(
+        sub {
+            my $cv = shift;
+            my $result = $cv->recv;
+            return unless @{ $result->{rows} };
+            for my $row (@{ $result->{rows} }) {
+                my $job = $class->new($row->{value});
+                $job_cb->($job);
+            }
+            print "Done checking jobs...\n";
+        }
+    );
 }
 
-method _build_member {
-    my $id = $self->args->{member_id};
-    return undef unless $id;
-    return Biopay::Member->By_id($id);
-}

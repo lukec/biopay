@@ -20,7 +20,7 @@ method _build_cli {
     return $cli;
 }
 
-method BUILD {
+method login {
     $self->cli->put("\cC");
     if ($self->clean_read('?') =~ m/last mag card read/) {
         print "Already logged in ...\n";
@@ -37,6 +37,7 @@ method BUILD {
 
 method fetch_PIN {
     my $card = shift;
+    $self->login;
     $self->clean_read("E");
     my $output = $self->clean_read("$card\n\r");
     $self->clean_read("\n\r");
@@ -49,6 +50,7 @@ method fetch_PIN {
 method set_PIN {
     my $card = shift;
     my $new_pin = shift;
+    $self->login;
     $self->clean_read("E");
     $self->clean_read("$card\n\r");
     $self->clean_read("$new_pin\n\r");
@@ -68,6 +70,7 @@ method clean_read {
 }
 
 method recent_transactions {
+    $self->login;
     my $lines = $self->clean_read('B');
     my @records;
     my $price;
@@ -104,7 +107,6 @@ method recent_transactions {
 	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
 	push @records, $txn;
     }
-    $self->_cardlock_exit;
     return \@records;
 }
 
