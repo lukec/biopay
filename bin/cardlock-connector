@@ -67,7 +67,7 @@ sub check_cardlock {
                     warn "Failed to save $id to the couch: $@";
                 }
                 else {
-                    warn "Saved transaction $txn->{as_string} ($cv)\n";
+                    warn "Saved transaction $txn->{as_string}\n";
                 }
             }
         );

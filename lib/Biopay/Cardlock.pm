@@ -1,4 +1,5 @@
 package Biopay::Cardlock;
+use Dancer qw/:syntax/;
 use Moose;
 use methods;
 use Control::CLI;
@@ -99,7 +100,7 @@ method recent_transactions {
 	    price_per_litre => $price,
 	};
 	unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
-	    warn "No member_id on txn_id:$txn->{txn_id} - skipping.";
+	    debug "No member_id on txn_id:$txn->{txn_id} - skipping.";
 	    next;
 	}
 	$txn->{price} = sprintf "%01.2f", 
@@ -113,7 +114,7 @@ method recent_transactions {
 
     if ($last_txn_seen) {
         my $next_txn = $last_txn_seen + 1;
-        warn "Marking $next_txn as the next transaction on the cardlock\n";
+        debug "Marking $next_txn as the next transaction on the cardlock\n";
         warn $self->clean_read("X$next_txn\n\r");
     }
     return \@records;
