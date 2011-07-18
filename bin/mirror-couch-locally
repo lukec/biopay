@@ -15,14 +15,10 @@ Dancer::Config::load();
 my $couch = couch() or die "Couldn't load couch!";
 my $source = couch_uri;
 my $dest   = 'bio-backup';
-try {
-    my $result = $couch->replicate($source => $dest)->recv;
-    
-    use Data::Dumper;
-    warn Dumper $result;
-    debug "Backed up database from $source to $dest";
-}
-catch {
-    # TODO: Send email that the backup failed.
-    debug "Couch failed to replicate from $source to $dest: $_"
-}
+
+system(qq[curl --silent --show-error -X POST ]
+     . qq[-d '{"source":"$source","target":"$dest","continuous":true}'  ]
+     . qq[-H"Content-Type: application/json" ]
+     . qq[http://localhost:5984/_replicate]
+     . "> /dev/null"
+    ) and die "Failed to run couch replicate starter!"; 
