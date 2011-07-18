@@ -16,7 +16,10 @@ my $couch = couch() or die "Couldn't load couch!";
 my $source = couch_uri;
 my $dest   = 'bio-backup';
 try {
-    $couch->replicate($source => $dest)->recv;
+    my $result = $couch->replicate($source => $dest)->recv;
+    
+    use Data::Dumper;
+    warn Dumper $result;
     debug "Backed up database from $source to $dest";
 }
 catch {
