@@ -15,22 +15,36 @@ Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
 
 my $couch = couchdb() or die "Couldn't load couch!";
+warn "Loading latest fuel price ...\n";
+my $price = 0; # will load it right away below
 my $cardlock = Biopay::Cardlock->new(
-    fetch_price_cb => sub { Biopay::Prices->new->fuel_price },
+    fetch_price_cb => sub { $price },
 );
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
 # * Check the couch for jobs every 1 minute
+# * Check for updated prices every 10 minutes
 
 my $w = AnyEvent->condvar;
 my $cardlock_timer = AnyEvent->timer(
-    after => 0.1, interval => 10,
+    after => 0.5, interval => 10,
     cb    => \&check_cardlock,
 );
 my $job_timer = AnyEvent->timer(
-    after => 0.5, interval => 60,
+    after => 1.0, interval => 60,
     cb    => \&check_for_jobs,
+);
+my $price_timer = AnyEvent->timer(
+    after => 0.001, interval => 600,
+    cb    => sub {
+        Biopay::Prices->new->fuel_price(
+            sub {
+                $price = shift;
+                warn "Latest fuel price: $price\n";
+            },
+        );
+    },
 );
 
 $w->recv;
@@ -49,10 +63,12 @@ sub check_cardlock {
                 my $cv = shift;
                 eval { $cv->recv };
                 if ($@) {
-                    next if $@ =~ m/^409/;
-                    die "Failed to save $id to the couch: $@";
+                    return if $@ =~ m/^409/;
+                    warn "Failed to save $id to the couch: $@";
                 }
-                warn "Saved transaction $txn->{as_string} ($cv)\n";
+                else {
+                    warn "Saved transaction $txn->{as_string} ($cv)\n";
+                }
             }
         );
     }

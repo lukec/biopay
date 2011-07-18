@@ -23,7 +23,7 @@ method _build_cli {
 method login {
     $self->cli->put("\cC");
     if ($self->clean_read('?') =~ m/last mag card read/) {
-        print "Already logged in ...\n";
+        return;
     }
     else {
         $self->clean_read('P');
@@ -65,6 +65,7 @@ method clean_read {
 	Read_attempts => 10,
     );
     $output =~ s/\r/\n/g;
+    $output =~ s/\n\n/\n/g;
     # warn "CLI: put '$text', GOT: '$output'\n";
     return $output;
 }
@@ -74,7 +75,8 @@ method recent_transactions {
     my $lines = $self->clean_read('B');
     my @records;
     my $price;
-    for my $line (split "\r\n", $lines) {
+    my $last_txn_seen = 0;
+    for my $line (split "\n", $lines) {
 	chomp $line;
 	next unless $line =~ m/^\d+,/;
 	my @fields = split ",", $line;
@@ -105,7 +107,14 @@ method recent_transactions {
 	$txn->{paid} = 1 if $txn->{price} eq "0.00";
 	$txn->{as_string} = "txn:$txn->{txn_id} "
 	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
+        $last_txn_seen = $txn->{txn_id};
 	push @records, $txn;
+    }
+
+    if ($last_txn_seen) {
+        my $next_txn = $last_txn_seen + 1;
+        warn "Marking $next_txn as the next transaction on the cardlock\n";
+        warn $self->clean_read("X$next_txn\n\r");
     }
     return \@records;
 }
