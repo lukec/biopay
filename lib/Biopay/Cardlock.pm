@@ -98,7 +98,7 @@ method recent_transactions {
 	    paid => 0,
 	    price_per_litre => $price,
 	};
-	unless ($txn->{member_id}) {
+	unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
 	    warn "No member_id on txn_id:$txn->{txn_id} - skipping.";
 	    next;
 	}
