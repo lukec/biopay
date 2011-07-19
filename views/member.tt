@@ -1,14 +1,6 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
 
-[% IF message %]
-<div class="ui-widget">
-    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>[% message %]</strong></p>
-    </div>
-</div>
-[% END %]
-
+[% INCLUDE message.tt %]
 
 <div id="stats">
 <h3>Statistics:</h3>
@@ -42,7 +34,7 @@
   </tr>
   <tr>
     <td><strong>Dues Until</strong></td>
-    <td>[% member.dues_until_pretty %]</td>
+    <td>[% member.dues_paid_until_pretty_date %]</td>
   </tr>
   <tr>
     <td><strong>Frozen?</strong></td>

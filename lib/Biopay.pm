@@ -7,6 +7,8 @@ use Biopay::Member;
 use Biopay::Stats;
 use Biopay::Prices;
 use AnyEvent;
+use DateTime;
+use DateTime::Duration;
 
 our $VERSION = '0.1';
 
@@ -149,9 +151,50 @@ get '/members' => sub {
     template 'members', { members => $members };
 };
 
+sub new_member_dates {
+    my $now = DateTime->now;
+    $now->set_time_zone('America/Vancouver');
+    my $one_year = $now + DateTime::Duration->new(years => 1);
+    return (
+        start_date => $now->ymd('/'),
+        dues_paid_until_date => $one_year->ymd('/'),
+    );
+}
+
 get '/members/create' => sub {
-    template 'member-create', { member_id => params->{member_id} };
+    template 'member-create', {
+        member_id => params->{member_id},
+        new_member_dates(),
+    };
 };
+
+post '/members/create' => sub {
+    my @member_attrs = qw/member_id first_name last_name phone_num email 
+                   start_date dues_paid_until_date payment_hash/;
+    my %hash = map { $_ => params->{$_} } @member_attrs;
+
+    my $member = member();
+    if ($member) {
+        return template 'member-create', {
+            message => "That member_id is already in use!",
+            %hash,
+            new_member_dates(),
+        };
+    }
+
+    $hash{start_epoch} = ymd_to_epoch(delete $hash{start_date});
+    $hash{dues_paid_until} = ymd_to_epoch(delete $hash{dues_paid_until_date});
+    $member = Biopay::Member->Create(%hash);
+    redirect "/members/" . $member->id . "?message=Created";
+};
+
+sub ymd_to_epoch {
+    my $ymd = shift;
+    my ($y, $m, $d) = split m#[/-]#, $ymd;
+    my $dt = DateTime->new(year => $y, month => $m, day => $d);
+    $dt->set_time_zone('America/Vancouver');
+    return $dt->epoch;
+}
 
 get '/members/:member_id/txns' => sub {
     template 'member-txns', {
@@ -210,9 +253,10 @@ get '/members/:member_id/edit' => sub {
 post '/members/:member_id/edit' => sub {
     my $member = member();
     for my $key (qw/first_name last_name phone_num email payment_hash/) {
-        # TODO save dates.
         $member->$key(params->{$key});
     }
+    $member->start_epoch(ymd_to_epoch(params->{start_date}));
+    $member->dues_paid_until(ymd_to_epoch(params->{dues_paid_until_date}));
     $member->save;
     redirect "/members/" . $member->id . "?message=Saved";
 };

@@ -1,3 +1,7 @@
 <h1>Create a new member!</h1>
 
-<p>Sorry, this is not implemented yet.</p>
+[% INCLUDE message.tt %]
+
+<p>
+[% INCLUDE 'member-detail-form.tt' %]
+</p>
