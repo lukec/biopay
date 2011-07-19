@@ -75,39 +75,10 @@ method recent_transactions {
     $self->login;
     my $lines = $self->clean_read('B');
     my @records;
-    my $price;
     my $last_txn_seen = 0;
     for my $line (split "\n", $lines) {
-	chomp $line;
-	next unless $line =~ m/^\d+,/;
-	my @fields = split ",", $line;
-
-#  0    1    2        3     4 5 6 7      8       9
-# 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
-	my $dt = to_datetime($fields[3], $fields[4]);
-        # Lazy load the latest fuel price
-        $price ||= $self->fetch_price_cb->();
-	my $txn = {
-	    Type => 'txn',
-	    txn_id => to_num($fields[1]),
-	    member_id => to_num($fields[2]),
-	    epoch_time => $dt->epoch,
-	    _id => "txn:$fields[1]-" . $dt->ymd . '-' . $fields[4],
-	    litres => to_num($fields[9]),
-	    pump => "RA",
-	    date => "$dt",
-	    paid => 0,
-	    price_per_litre => $price,
-	};
-	unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
-	    debug "No member_id on txn_id:$txn->{txn_id} - skipping.";
-	    next;
-	}
-	$txn->{price} = sprintf "%01.2f", 
-                        round($txn->{litres} * $price * 100) / 100;
-	$txn->{paid} = 1 if $txn->{price} eq "0.00";
-	$txn->{as_string} = "txn:$txn->{txn_id} "
-	    . "member:$txn->{member_id} litres:$txn->{litres} $dt";
+        my $txn = $self->parse_line($line);
+        next unless $txn;
         $last_txn_seen = $txn->{txn_id};
 	push @records, $txn;
     }
@@ -118,6 +89,41 @@ method recent_transactions {
         warn $self->clean_read("X$next_txn\n\r");
     }
     return \@records;
+}
+
+method parse_line {
+    my $line = shift;
+    chomp $line;
+    return unless $line =~ m/^\d+,/;
+    my @fields = split ",", $line;
+
+#  0    1    2        3     4 5 6 7      8       9
+# 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
+    my $dt = to_datetime($fields[3], $fields[4]);
+    # Lazy load the latest fuel price
+    my $price = $self->fetch_price_cb->();
+    my $txn = {
+        Type => 'txn',
+        txn_id => to_num($fields[1]),
+        member_id => to_num($fields[2]),
+        epoch_time => $dt->epoch,
+        _id => "txn:$fields[1]-" . $dt->ymd . '-' . $fields[4],
+        litres => to_num($fields[9]),
+        pump => "RA",
+        date => "$dt",
+        paid => 0,
+        price_per_litre => $price,
+    };
+    unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
+        debug "No member_id on txn_id:$txn->{txn_id} - skipping.";
+        return;
+    }
+    $txn->{price} = sprintf "%01.2f", 
+                    round($txn->{litres} * $price * 100) / 100;
+    $txn->{paid} = 1 if $txn->{price} eq "0.00";
+    $txn->{as_string} = "txn:$txn->{txn_id} "
+        . "member:$txn->{member_id} litres:$txn->{litres} $dt";
+    return $txn;
 }
 
 sub to_num {

@@ -16,10 +16,17 @@ Dancer::Config::load();
 
 my $couch = couchdb() or die "Couldn't load couch!";
 warn "Loading latest fuel price ...\n";
-my $price = 0; # will load it right away below
+my $price = Biopay::Prices->new->fuel_price;
 my $cardlock = Biopay::Cardlock->new(
     fetch_price_cb => sub { $price },
 );
+
+if (my $test_string = shift) {
+    my $txn = $cardlock->parse_line($test_string);
+    use Data::Dumper;
+    warn Dumper $txn;
+    exit;
+}
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
