@@ -131,24 +131,13 @@ sub handle_job {
 
 sub autovivify_member {
     my $member_id = shift;
-    my $key = "member:$member_id";
-    $couch->open_doc($key)->cb(
-        sub {
-            my $cv = shift;
-            eval { $cv->recv };
-            if ($@) {
-                $couch->save_doc({
-                        _id => $key,
-                        Type => 'member',
-                        member_id => $member_id,
-                    }
-                )->cb( sub {
-                        warn "Saved member $member_id in the couch\n";
-                    });
-            }
-            else {
-                warn ".. Found member $member_id in the couch\n";
-            }
-        }
+    my $member = Biopay::Member->Create(
+        member_id => $member_id,
+        success_cb => sub {
+            warn "Saved member $member_id in the couch\n";
+        },
+        error_cb => sub {
+            warn ".. Found member $member_id in the couch already\n";
+        },
     );
 }

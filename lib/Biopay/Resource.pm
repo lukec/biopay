@@ -28,7 +28,9 @@ sub By_id {
     }
     else {
         my $results = $cv->recv;
-        return $class->new_from_couch($results->{rows}[0]{value});
+        my $hash = $results->{rows}[0]{value};
+        return undef unless $hash;
+        return $class->new_from_couch($hash);
     }
 }
 
@@ -61,7 +63,7 @@ method save {
         );
     }
     else {
-        return $cb->recv;
+        return $cv->recv;
     }
 }
 

@@ -29,6 +29,43 @@ has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1)
 sub view_base { 'members' }
 method id { $self->member_id }
 
+sub Create {
+    my $class = shift;
+    my %p = @_;
+    my $success_cb = delete $p{success_cb};
+    my $error_cb = delete $p{error_cb};
+
+    my $key = "member:$p{member_id}";
+    my $new_doc = { _id => $key, Type => 'member', %p };
+
+    my $cv = couchdb->open_doc($key);
+    if ($success_cb) { # keep it async
+        $cv->cb( sub {
+                my $cv2 = shift;
+                eval { $cv2->recv };
+                if ($@) {
+                    # Member didn't exist, so create them now
+                    my $cv3 = couchdb->save_doc($new_doc);
+                    $cv3->cb($success_cb);
+                }
+                eval {
+                    $error_cb->();
+                }
+            },
+        );
+    }
+    else { # do it blocking
+        eval { $cv->recv };
+        if ($@) {
+            couchdb->save_doc($new_doc)->recv;
+            return $class->new_from_couch($new_doc);
+        }
+        else {
+            die "Member $p{member_id} already exists!";
+        }
+    }
+}
+
 method unpaid_transactions {
     my $mid = $self->member_id;
     return Biopay::Transaction->All_unpaid({key => "$mid"});
@@ -72,12 +109,12 @@ method _build_name {
 
 method _build_start_pretty_date {
     return 'Unknown' unless $self->start_datetime;
-    $self->start_datetime->mdy('/');
+    $self->start_datetime->ymd('-');
 }
 
 method _build_dues_paid_until_pretty_date {
     return 'Unknown' unless $self->dues_paid_until_datetime;
-    $self->dues_paid_until_datetime->mdy('/')
+    $self->dues_paid_until_datetime->ymd('-')
 }
 
 method _build_start_datetime {
