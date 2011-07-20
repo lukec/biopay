@@ -17,6 +17,11 @@ sub host {
     . '://' . request->host
 }
 
+my %public_paths = (
+    map { $_ => 1 }
+    qw( / /login /terms /refunds /privacy )
+);
+
 before sub {
     my $path = request->path_info;
     if (session('bio')) {
@@ -27,7 +32,7 @@ before sub {
         return;
     }
 
-    unless ($path eq '/' or $path =~ m{^/login}) {
+    unless ($public_paths{$path} or $path =~ m{^/login}) {
         debug "no bio session, redirecting to login (from $path)";
         forward '/login', {
             message => "Please log-in first.",
