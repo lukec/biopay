@@ -103,7 +103,7 @@ method change_PIN {
 
 method _build_name {
     my $name = join ' ', $self->first_name, $self->last_name;
-    $name = "Member " . $self->member_id if $name =~ m/^\s*$/;
+    $name = "Member #" . $self->member_id if $name =~ m/^\s*$/;
     return $name;
 }
 
