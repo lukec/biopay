@@ -2,8 +2,8 @@
   <ul id="sidebar-items">
     [% IF is_admin %]
     <h3>Transactions</h3>
-    <li><a href="/unpaid">Not paid</a></li>
-    <li><a href="/txns">Recent</a></li>
+    <li><a href="/unpaid">Payment Owing</a></li>
+    <li><a href="/txns">All Recent</a></li>
     <h3>Members</h3>
     <li><a href="/members">Members</a></li>
     <li><a href="/members/create">Add new</a></li>
