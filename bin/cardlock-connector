@@ -11,11 +11,13 @@ use Biopay::Command;
 use Biopay::Prices;
 use AnyEvent;
 
+$| = 1; # auto-flush STDOUT
+
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::load();
 
 my $couch = couchdb() or die "Couldn't load couch!";
-warn "Loading latest fuel price ...\n";
+debug "Loading latest fuel price ...\n";
 my $price = Biopay::Prices->new->fuel_price;
 my $cardlock = Biopay::Cardlock->new(
     fetch_price_cb => sub { $price },
@@ -24,7 +26,7 @@ my $cardlock = Biopay::Cardlock->new(
 if (my $test_string = shift) {
     my $txn = $cardlock->parse_line($test_string);
     use Data::Dumper;
-    warn Dumper $txn;
+    debug Dumper $txn;
     exit;
 }
 
@@ -59,12 +61,12 @@ $w->recv;
 exit;
 
 sub check_cardlock {
-    print "Fetching recent transactions ...\n";
+    print 'T';
     my $records = $cardlock->recent_transactions;
     for my $txn (@$records) {
         my $id = $txn->{_id};
         autovivify_member($txn->{member_id});
-        print "Saving $txn->{as_string} to the couch\n";
+        debug "Saving $txn->{as_string} to the couch\n";
         $couch->save_doc($txn)->cb(
             sub {
                 my $cv = shift;
@@ -82,13 +84,13 @@ sub check_cardlock {
 }
 
 sub check_for_jobs {
-    print "Checking for jobs to run ...\n";
+    print 'J';
     Biopay::Command->Run_jobs( \&handle_job );
 }
 
 sub handle_job {
     my $job = shift;
-    print "* Found job of type $job->{command} ...\n";
+    debug "* Found job of type $job->{command} ...\n";
     my $member_id = $job->args->{member_id};
     return undef unless $member_id;
     Biopay::Member->By_id($member_id, sub {
@@ -100,7 +102,7 @@ sub handle_job {
                 $cardlock->set_PIN($mid, 0);
                 $member->PIN($pin);
                 $member->save(sub {
-                    warn "Saved " . $member->id . " to the couch";
+                    debug "Saved " . $member->id . " to the couch";
                 });
                 debug "Froze account of member $mid";
             }
@@ -109,7 +111,7 @@ sub handle_job {
                     $cardlock->set_PIN($mid, $member->PIN);
                     $member->PIN(undef);
                     $member->save(sub {
-                        warn "Saved " . $member->id . " to the couch";
+                        debug "Saved " . $member->id . " to the couch";
                     });
                     debug "Restored frozen account of member $mid";
                 }
@@ -121,15 +123,19 @@ sub handle_job {
                 $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 debug "Changed PIN for $mid";
             }
+            when ('send-invoice') {
+                debug "Sending receipt to $mid (" . $member->name . ")";
+                Biopay::Receipt->new($job->args)->send;
+            }
             default {
-                die "Unknown command: '$job->{command}'";
+                warn "Unknown command: '$job->{command}'";
             }
         }
         $couch->remove_doc($job)->cb(
             sub {
                 my $cv = shift;
                 $cv->recv;
-                warn "Removed job " . $job->_id . " from the couch";
+                debug "Removed job " . $job->_id . " from the couch";
             }
         );
         }
@@ -141,10 +147,10 @@ sub autovivify_member {
     my $member = Biopay::Member->Create(
         member_id => $member_id,
         success_cb => sub {
-            warn "Saved member $member_id in the couch\n";
+            debug "Saved member $member_id in the couch\n";
         },
         error_cb => sub {
-            warn ".. Found member $member_id in the couch already\n";
+            debug ".. Found member $member_id in the couch already\n";
         },
     );
 }
