@@ -1,6 +1,8 @@
 <h1>Biodiesel Transaction [% txn.txn_id %]</h1>
 <p>Details for transaction [% txn.txn_id %] on [% txn.pretty_date %]:</p>
 
+[% INCLUDE message.tt %]
+
 <table class="transaction">
   <tr>
     <td><strong>ID</strong></td>
@@ -35,6 +37,12 @@
     <td>[% txn.pump %]</td>
   </tr>
 </table>
+
+[% IF txn.paid %]
+<p><a href="/txns/[% txn.txn_id %]?mark_as_unpaid=1">Mark this as un-paid.</a></p>
+[% ELSE %]
+<p><a href="/txns/[% txn.txn_id %]?mark_as_paid=1">Mark this as paid.</a></p>
+[% END %]
 
 <p>
 <a href="/unpaid">Back to unpaid transactions</a><br />

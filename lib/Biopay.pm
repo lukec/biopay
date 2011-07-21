@@ -162,7 +162,18 @@ get '/txns' => sub {
 
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
-    template 'txn', { txn => $txn };
+    my %vars = ( txn => $txn );
+    if (params->{mark_as_unpaid} and $txn->paid) {
+        $txn->paid(0);
+        $txn->save;
+        $vars{message} = "This transaction is now marked as <strong>not paid</strong>."
+    }
+    if (params->{mark_as_paid} and !$txn->paid) {
+        $txn->paid(1);
+        $txn->save;
+        $vars{message} = "This transaction is now marked as <strong>paid</strong>."
+    }
+    template 'txn', \%vars;
 };
 
 get '/members' => sub {
