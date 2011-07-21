@@ -13,8 +13,9 @@ use DateTime::Duration;
 our $VERSION = '0.1';
 
 sub host {
-    'http' . (request->host =~ m/localhost/ ? '' : 's')
-    . '://' . request->host
+    return 'http://localhost' if request->host =~ m/localhost/
+    # Otherwise use the bona fide dotcloud SSL cert
+    return 'https://biopay.ssl.dotcloud.com';
 }
 
 my %public_paths = (
