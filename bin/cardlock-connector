@@ -9,6 +9,7 @@ use Biopay::Cardlock;
 use Biopay::Member;
 use Biopay::Command;
 use Biopay::Prices;
+use Biopay::Receipt;
 use AnyEvent;
 
 $| = 1; # auto-flush STDOUT
