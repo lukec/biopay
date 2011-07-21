@@ -1,6 +1,6 @@
 <h1>Receipt for B100 Biodiesel</h1>
 <p>
-The following transactions were charged to your account.
+Hello [% member.name %]! The following transactions were charged to your account.
 </p>
 <table width="100%">
     <tr>
