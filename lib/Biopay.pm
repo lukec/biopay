@@ -180,6 +180,9 @@ get '/txns/:txn_id' => sub {
 };
 
 get '/members' => sub {
+    if (my $mid = params->{jump_to}) {
+        redirect "/members/$mid" if $mid =~ m/^\d+$/;
+    }
     my $members = Biopay::Member->All;
     template 'members', { members => $members };
 };

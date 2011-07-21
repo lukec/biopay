@@ -1,4 +1,11 @@
 <h1>Biodiesel Membership</h1>
+<form action="/members" method="GET">
+<p>
+  Quick jump to member #:
+  <input type="text" name="jump_to" width="4" />
+  <input type="submit" value="Go!" />
+  </p>
+</form>
 [% IF members.size %]
 <p>Biodiesel Co-op Membership:</p>
 <table class="members">

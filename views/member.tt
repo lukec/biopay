@@ -1,7 +1,11 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
 
+[% IF !member %]
+  [% SET message = "Sorry, that member cannot be found." %]
+[% END %]
 [% INCLUDE message.tt %]
 
+[% IF member %]
 <div id="stats">
 <h3>Statistics:</h3>
 <ul>
@@ -67,6 +71,7 @@
     [% END %]
   </li>
 </ul>
+[% END %]
 
 
 <hr />
