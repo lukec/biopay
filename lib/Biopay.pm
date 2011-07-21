@@ -142,11 +142,14 @@ post '/unpaid/mark-as-paid' => sub {
         push @txns, $txn;
     }
 
-    Biopay::Command->Create(
-        command => 'send-receipt',
-        member_id => $member_id,
-        txn_ids => [ map { $_->id } @txns ]
-    ) if @txns;
+    if ($member_id and @txns) {
+        my $member = Biopay::Member->By_id($member_id);
+        Biopay::Command->Create(
+            command => 'send-receipt',
+            member_id => $member_id,
+            txn_ids => [ map { $_->id } @txns ]
+        ) if $member->email;
+    }
 
     template 'mark-as-paid', {
         offset => params->{offset},
