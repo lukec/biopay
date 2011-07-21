@@ -124,12 +124,13 @@ sub handle_job {
                 $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 debug "Changed PIN for $mid";
             }
-            when ('send-invoice') {
+            when ('send-receipt') {
                 debug "Sending receipt to $mid (" . $member->name . ")";
                 Biopay::Receipt->new($job->args)->send;
             }
             default {
-                warn "Unknown command: '$job->{command}'";
+                debug "Skipping unknown command: '$job->{command}'\n";
+                return;
             }
         }
         $couch->remove_doc($job)->cb(
