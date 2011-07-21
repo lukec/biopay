@@ -14,23 +14,27 @@ with 'Biopay::Roles::HasMember';
 method send {
     my $total_price = 0;
     my $total_litres = 0;
+    my $total_tax = 0;
     for (@{ $self->txns }) {
         $total_price += $_->price;
         $total_litres += $_->litres;
+        $total_tax += $_->taxes;
     }
     $total_price = sprintf '%0.02f', $total_price;
+    $total_tax   = sprintf '%0.02f', $total_tax;
 
     my $html = template 'email/receipt', {
         member => $self->member,
         txns   => $self->txns,
         total_price  => $total_price,
         total_litres => $total_litres,
+        total_tax    => $total_tax,
     }, { layout => 'email' };
     email {
         to => $self->member->email,
         bcc => 'lukecloss@gmail.com',
         from => config->{email_from},
-        subject => "Biodiesel Receipt - \$$total_price",
+        subject => "Biodiesel Co-op Receipt - \$$total_price",
         type => 'html',
         message => $html,
     };

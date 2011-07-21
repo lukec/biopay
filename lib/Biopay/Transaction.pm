@@ -19,6 +19,7 @@ has 'pump' => (isa => 'Str', is => 'ro', required => 1);
 
 with 'Biopay::Roles::HasMember';
 
+has 'taxes'       => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'pretty_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
 
@@ -49,4 +50,6 @@ method _build_datetime {
     $dt->set_time_zone('America/Vancouver');
     return $dt;
 }
+
+method _build_taxes { sprintf '%0.02f', $self->price * 0.12 }
 
