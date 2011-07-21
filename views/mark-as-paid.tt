@@ -1,13 +1,17 @@
 <h1>Marked as Paid</h1>
 <p>
-  [% IF txns.size == 1 %]
-    Transaction <a href="/txns/[% txns.0 %]">[% txns.0 %]</a>
+  [% IF txns.size == 0 %]
+    No transactions were marked as paid.
   [% ELSE %]
-    Transactions 
-    [% FOREACH txn IN txns %]
-      <a href="/txns/[% txn %]">[% txn %]</a>
+    [% IF txns.size == 1 %]
+      Transaction <a href="/txns/[% txns.0 %]">[% txns.0 %]</a>
+    [% ELSE %]
+      Transactions 
+      [% FOREACH txn IN txns %]
+        <a href="/txns/[% txn %]">[% txn %]</a>
+      [% END %]
     [% END %]
+    have been marked as paid.
   [% END %]
-  have been marked as paid.
 </p>
 <p><a href="/unpaid/process?offset=[% offset %]">Click here</a> to continue processing transactions.</p>
