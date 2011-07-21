@@ -2,7 +2,7 @@
 <form action="/members" method="GET">
 <p>
   Quick jump to member #:
-  <input type="text" name="jump_to" width="4" />
+  <input type="text" id="member_jump" name="jump_to" size="4" />
   <input type="submit" value="Go!" />
   </p>
 </form>
@@ -27,3 +27,11 @@
 <p>There are no members at this time.</p>
 <p><a href="/members/create">Create a member</a></p>
 [% END %]
+
+
+<script>
+   jQuery( function () {
+          $("#member_jump").focus();
+     }
+   );
+</script>
