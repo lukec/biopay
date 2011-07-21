@@ -296,7 +296,7 @@
                                             <td class="headerContent">
                                             
                                                 <!-- // Begin Module: Standard Header Image \\ -->
-                                                <img alt="Vancouver Biodiesel Co-op logo" src="http://billing.vancouverbiodiesel.org/images/header.png" style="max-width:600px;" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext />
+                                                <!--                                                <img alt="Vancouver Biodiesel Co-op logo" src="http://billing.vancouverbiodiesel.org/images/header.png" style="max-width:600px;" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext /> -->
                                                 <!-- // End Module: Standard Header Image \\ -->
                                             </td>
                                         </tr>
@@ -341,17 +341,16 @@
                                                     <tr>
                                                         <td colspan="2" valign="middle" id="social">
                                                             <div mc:edit="std_social">
-                                                                &nbsp;<a href="http://twitter.com/vanbiodiesel">Follow us on Twitter</a> | <a href="http://vancouverbiodiesel.org">Visit our Site</a>&nbsp;
+                                                                &nbsp;<a href="http://twitter.com/vanbiodiesel">Follow the co-op on Twitter</a> | <a href="http://vancouverbiodiesel.org">Visit our website</a>&nbsp;
 
                                                             </div>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td valign="top" width="350">
+                                                        <td valign="top" width="550">
                                                             <br />
                                                             <div mc:edit="std_footer">
-                                                                <em>Image copyright &copy; 2011 <a href="http://vancouverbiodiesel.org">Vancouver Biodiesel Co-op</a>, All rights reserved.</em>&nbsp;
-                                                                <em>Service Copyright &copy; 2011 <a href="http://recyclingalternative.com">Recycling Alternative</a>, All rights reserved.</em>
+                                                                <em>Copyright &copy; 2011 <a href="http://vancouverbiodiesel.org">Vancouver Biodiesel Co-op</a>, All rights reserved.</em>&nbsp;
                                                             </div>
                                                             <br />
                                                         </td>
