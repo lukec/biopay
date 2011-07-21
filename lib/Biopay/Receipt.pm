@@ -4,8 +4,6 @@ use methods;
 use Dancer::Plugin::Email;
 use Dancer ':syntax';
 use Biopay::Transaction;
-use Dancer::Request;
-use Dancer::SharedData;
 
 has 'member_id' => (is => 'ro', isa => 'Str',      required => 1);
 has 'txn_ids'   => (is => 'ro', isa => 'ArrayRef', required => 1);
@@ -21,10 +19,6 @@ method send {
         $total_litres += $_->litres;
     }
     $total_price = sprintf '%0.02f', $total_price;
-
-    # Hack: Dancer needs a request object, so lets fake one.
-    Dancer::SharedData->request(Dancer::Request->new_for_request('GET', '/'))
-        unless Dancer::SharedData->request;
 
     my $html = template 'email/receipt', {
         member => $self->member,
