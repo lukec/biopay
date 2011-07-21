@@ -17,9 +17,7 @@ has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
 has 'price' => (isa => 'Num', is => 'ro', required => 1);
 has 'pump' => (isa => 'Str', is => 'ro', required => 1);
 
-has 'member'      => (is => 'ro', isa => 'Object',   lazy_build => 1);
-has 'datetime'    => (is => 'ro', isa => 'DateTime', lazy_build => 1);
-has 'pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
+with 'Biopay::Roles::HasMember';
 
 sub view_base { 'txns' }
 method id { $self->txn_id }
@@ -48,4 +46,3 @@ method _build_datetime {
     return $dt;
 }
 
-method _build_member { Biopay::Member->By_id($self->member_id) }

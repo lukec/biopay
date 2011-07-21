@@ -10,7 +10,10 @@ has 'cli' => (is => 'ro', isa => 'Control::CLI', lazy_build => 1);
 has 'fetch_price_cb' => (is => 'ro', isa => 'CodeRef', required => 1);
 
 method _build_cli {
-    my $cli = new Control::CLI('/dev/ttyS0');
+    my $cli = Control::CLI->new(
+        Use => '/dev/ttyS0',
+        Dump_log => 'cardlock.log',
+    );
     $cli->connect(
         BaudRate  => 9600,
         Parity    => 'none',
@@ -22,17 +25,13 @@ method _build_cli {
 }
 
 method login {
-    $self->cli->put("\cC");
-    if ($self->clean_read('?') =~ m/last mag card read/) {
-        return;
-    }
-    else {
-        $self->clean_read('P');
-        $self->clean_read("MASTER\r");
-        my $output = $self->clean_read('?');
-        unless ($output =~ m/last mag card/) {
-            die "Could not log in - received '$output'";
-        }
+    $self->cli->put("\cC"); # Break any current input
+    $self->clean_read("^");   # Logout, or no-op
+    $self->clean_read('P');
+    $self->clean_read("MASTER\r");
+    my $output = $self->clean_read('?');
+    unless ($output =~ m/last mag card/) {
+        die "Could not log in - received '$output'";
     }
 }
 
@@ -63,7 +62,7 @@ method clean_read {
     $self->cli->put($text);
     my $output = $self->cli->readwait(
 	Blocking => 1,
-	Read_attempts => 10,
+	Read_attempts => 15,
     );
     $output =~ s/\r/\n/g;
     $output =~ s/\n\n/\n/g;
@@ -74,9 +73,11 @@ method clean_read {
 method recent_transactions {
     $self->login;
     my $lines = $self->clean_read('B');
+    return [] if $lines =~ m/ - empty/;
     my @records;
     my $last_txn_seen = 0;
     for my $line (split "\n", $lines) {
+        debug "Received from cardlock: '$line'";
         my $txn = $self->parse_line($line);
         next unless $txn;
         $last_txn_seen = $txn->{txn_id};
