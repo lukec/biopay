@@ -13,7 +13,7 @@ use DateTime::Duration;
 our $VERSION = '0.1';
 
 sub host {
-    return 'http://localhost' if request->host =~ m/localhost/
+    return 'http://localhost' if request->host =~ m/localhost/;
     # Otherwise use the bona fide dotcloud SSL cert
     return 'https://biopay.ssl.dotcloud.com';
 }
