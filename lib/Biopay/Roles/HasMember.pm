@@ -1,5 +1,5 @@
 package Biopay::Roles::HasMember;
-use Moose;
+use Moose::Role;
 use methods;
 use Dancer::Plugin::CouchDB;
 use Biopay::Member;
