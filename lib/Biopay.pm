@@ -127,14 +127,27 @@ get '/unpaid/process' => sub {
 post '/unpaid/mark-as-paid' => sub {
     my @txn_ids = split ',', params->{txns} || '';
     my @txns;
+    my $member_id;
     for my $txn_id (@txn_ids) {
         my $txn = Biopay::Transaction->By_id($txn_id);
         next unless $txn;
         next if $txn->paid;
+
+        # These transactions should all be from the same member.
+        $member_id ||= $txn->member_id;
+        next if $member_id != $txn->member_id;
+
         $txn->paid(1);
         $txn->save;
         push @txns, $txn;
     }
+
+    Biopay::Command->Create(
+        command => 'send-receipt',
+        member_id => $member_id,
+        txn_ids => [ map { $_->id } @txns ]
+    ) if @txns;
+
     template 'mark-as-paid', {
         offset => params->{offset},
         txns => [ map { $_->txn_id } @txns ],
