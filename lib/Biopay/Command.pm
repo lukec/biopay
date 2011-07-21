@@ -9,6 +9,8 @@ extends 'Biopay::Resource';
 has 'command' => (is => 'ro', isa => 'Str',     required => 1);
 has 'args'    => (is => 'ro', isa => 'HashRef', required => 1);
 
+method view_base { 'jobs' }
+
 sub Create {
     my $class = shift;
     my %args  = @_;
