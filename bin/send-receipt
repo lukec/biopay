@@ -1,0 +1,22 @@
+#!/home/bio/perl5/perlbrew/perls/perl-5.14.1/bin/perl
+use 5.14.1;
+use Dancer qw/:syntax/;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::Command;
+use Biopay::Receipt;
+
+BEGIN {
+    Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+    Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+    Dancer::Config::load();
+}
+
+my $job_id = shift || die "USAGE: $0 <job_id>\n";
+my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id";
+
+die "Command is of the wrong type: " . $job->{command}
+    unless $job->{command} eq 'send-receipt';
+
+Biopay::Receipt->new($job->args)->send;
