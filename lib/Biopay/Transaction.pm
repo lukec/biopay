@@ -19,6 +19,9 @@ has 'pump' => (isa => 'Str', is => 'ro', required => 1);
 
 with 'Biopay::Roles::HasMember';
 
+has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
+has 'pretty_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
+
 sub view_base { 'txns' }
 method id { $self->txn_id }
 
@@ -37,7 +40,8 @@ method as_hash {
 
 method _build_pretty_date {
     my $t = $self->datetime;
-    return $t->ymd . ' ' . sprintf("%02d:%02d", $t->hour, $t->minute);
+    return $t->month_name . ' ' . $t->day . ', ' . $t->year
+        . ' at ' . sprintf("%02d:%02d", $t->hour_12, $t->minute) . ' ' . $t->am_or_pm;
 }
 
 method _build_datetime {
