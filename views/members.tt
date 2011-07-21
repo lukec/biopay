@@ -1,4 +1,4 @@
-<h1>Biodiesel Membership</h1>
+<h1>Biodiesel Co-op Membership</h1>
 <form action="/members" method="GET">
 <p>
   Quick jump to member #:
@@ -7,7 +7,6 @@
   </p>
 </form>
 [% IF members.size %]
-<p>Biodiesel Co-op Membership:</p>
 <table class="members">
   <tr>
       <th>Member ID</th>
