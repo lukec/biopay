@@ -34,6 +34,7 @@ method send {
     }, { layout => 'email' };
     email {
         to => $self->member->email,
+        bcc => 'lukecloss@gmail.com',
         from => config->{email_from},
         subject => "Biodiesel Receipt - \$$total_price",
         type => 'html',
