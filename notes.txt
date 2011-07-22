@@ -1,22 +1,3 @@
 Biopay Notes
 
-Member Data Model
-* Member #
-* First Name
-* Last Name
-* Phone Number
-* Email
-* Start date
-* Dues paid until
-* PIN - not stored
-* payment profile hash
-* Frozen?
-
-Transactions
-* Key: txn:YYYY-MM-DD-hh-mm
-* Transaction #
-* Member #
-* Litres
-* Pump #
-* Date
-* Paid?
+* https://beanstream-manuals.pbworks.com/w/page/36997290/PDF_UserGuidesEN
