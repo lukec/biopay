@@ -93,7 +93,8 @@ get '/unpaid' => sub {
         push @{ $by_member{ $t->member_id } }, $t;
     }
     template 'unpaid', {
-        txns => [ map { $by_member{$_} } sort { $a <=> $b } keys %by_member ]
+        txns => [ map { $by_member{$_} } sort { $a <=> $b } keys %by_member ],
+        now => scalar(localtime),
     };
 };
 

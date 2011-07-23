@@ -1,6 +1,7 @@
 <h1>Biodiesel Un-paid Transactions</h1>
 [% IF txns.size %]
-<p>Biodiesel transactions that are currently unpaid:</p>
+[% IF !params.printable %]<p><a href="/unpaid?printable=1">Printable version of this page.</a></p>[% END %]
+<p>Biodiesel transactions that are currently unpaid as of [% now %]:</p>
 
 <form action="/unpaid/mark-as-paid" method="POST">
 <table class="transactions">
