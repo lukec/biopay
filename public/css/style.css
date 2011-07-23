@@ -120,6 +120,13 @@ p {
     margin: 1.6em 0;
 }
 
+.unpaid_txn {
+    background-color: #EEEEEE;
+}
+
+.unpaid_total td {
+    background-color: #CCCCCC;
+}
 
 
 #container {

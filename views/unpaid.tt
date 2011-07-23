@@ -1,12 +1,43 @@
 <h1>Biodiesel Un-paid Transactions</h1>
 [% IF txns.size %]
 <p>Biodiesel transactions that are currently unpaid:</p>
-<p>
-  <ul>
-      <li><a href="/unpaid/process">Process Unpaid Transactions</a></li>
-  </ul>
-</p>
-[% INCLUDE txn_table.tt %]
+
+<form action="/unpaid/mark-as-paid" method="POST">
+<table class="transactions">
+  <tr>
+      <th>Member ID</th>
+      <th>Time</th>
+      <th>Price</th>
+      <th>Paid?</th>
+  </tr>
+  [% FOREACH member_txns IN txns %]
+    [% SET total = 0 %]
+    [% FOREACH txn IN member_txns %]
+    <tr class="unpaid_txn">
+        <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
+        <td>[% txn.pretty_date %]</td>
+        <td>$[% txn.price %]</td>
+        <td><input type="checkbox" name="txns" value="[% txn.txn_id %]" /></td>
+        [% SET total = total + txn.price %]
+    </tr>
+    [% END %]
+    <tr class="unpaid_total">
+      <td></td>
+      <td><strong>Total<strong></td>
+      <td><strong>$[% total %]</strong></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  [% END %]
+</table>
+<input type="submit" value="Mark these transactions as paid" />
+</form>
+
 [% ELSE %]
 <p>There are no-unpaid transactions at this time.</p>
 [% END %]

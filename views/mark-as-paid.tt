@@ -3,15 +3,12 @@
   [% IF txns.size == 0 %]
     No transactions were marked as paid.
   [% ELSE %]
-    [% IF txns.size == 1 %]
-      Transaction <a href="/txns/[% txns.0 %]">[% txns.0 %]</a>
-    [% ELSE %]
-      Transactions 
+      <p>The following transactions have been marked as paid:</p>
+      <ul>
       [% FOREACH txn IN txns %]
-        <a href="/txns/[% txn %]">[% txn %]</a>
+        <li><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a> - <a href="/members/[% txn.member_id %]">[% txn.member.name %]</a> for $[% txn.price %]</li>
       [% END %]
-    [% END %]
-    have been marked as paid.
+      </ul>
   [% END %]
 </p>
-<p><a href="/unpaid/process?offset=[% offset %]">Click here</a> to continue processing transactions.</p>
+<p><a href="/unpaid">Click here</a> to go back to unpaid transactions.</p>
