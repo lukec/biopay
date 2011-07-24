@@ -44,6 +44,17 @@
     <td><strong>Frozen?</strong></td>
     <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
   </tr>
+  <tr>
+    <td><strong>Payment</strong></td>
+    <td>
+      [% SET profile_url = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?serviceVersion=1.0&merchantId=" _ settings.merchant_id _ "&trnReturnURL=" _ payment_return_url _ "&customerCode=vbc" _ member.id %]
+      [% IF member.payment_hash %]
+        <a href="[% profile_url %]&operationType=M">Modify</a>
+      [% ELSE %]
+        <a href="[% profile_url %]&operationType=N">Set up</a>
+      [% END %]
+    </td>
+  </tr>
 </table>
 </p>
   [% SET muri = "/members/" + member.member_id %]

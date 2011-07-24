@@ -1,4 +1,5 @@
 package Biopay;
+use 5.14.0;
 use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Auth::RBAC;
@@ -276,7 +277,29 @@ get '/members/:member_id' => sub {
         member => member(),
         message => $msg,
         stats => Biopay::Stats->new,
+        payment_return_url => host() . '/members/' . member()->id . '/payment',
     };
+};
+
+get '/members/:member_id/payment' => sub {
+    my $member = member();
+    my $msg = "Successfully updated payment profile.";
+    given (params->{responseCode}) {
+        when (1) { # Successful!
+            $member->payment_hash(params->{customerCode});
+            $member->save;
+        }
+        when (21) { # Cancelled, do nothing
+            $msg = "Payment profile update cancelled.";
+        }
+        default {
+            # TODO: Email Luke with this error
+            error "Error saving payment profile - code:" . params->{responseCode}
+                . " " . params->{responseMessage};
+            $msg = "Error updating payment profile: " . params->{responseMessage};
+        }
+    }
+    forward '/members/' . $member->id, { message => $msg };
 };
 
 get '/fuel-price' => sub {
