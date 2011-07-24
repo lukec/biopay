@@ -109,7 +109,7 @@ method parse_line {
     my $dt = to_datetime($fields[3], $fields[4]);
     # Lazy load the latest fuel price
     my $price = $self->fetch_price_cb->();
-    my $id = $dt->ymd('-') . '-' . to_num($fields[1]) . $fields[4];
+    my $id = $dt->ymd('-') . '-' . to_num($fields[1]);
     my $txn = {
         Type => 'txn',
         _id => "txn:$id",
