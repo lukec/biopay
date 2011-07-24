@@ -70,6 +70,7 @@ method clean_read {
     return $output;
 }
 
+my $last_mark;
 method recent_transactions {
     $self->login;
     my $lines = $self->clean_read('B');
@@ -77,17 +78,22 @@ method recent_transactions {
     my @records;
     my $last_txn_seen = 0;
     for my $line (split "\n", $lines) {
-        debug "Received from cardlock: '$line'";
+        # debug "Received from cardlock: '$line'";
         my $txn = $self->parse_line($line);
         next unless $txn;
-        $last_txn_seen = $txn->{txn_id};
+        $last_txn_seen = $txn->{cardlock_txn_id};
 	push @records, $txn;
     }
 
-    if ($last_txn_seen) {
-        my $next_txn = $last_txn_seen + 1;
-        debug "Marking $next_txn as the next transaction on the cardlock\n";
-        warn $self->clean_read("X$next_txn\n\r");
+    if ($last_txn_seen and $last_txn_seen != ($last_mark||0)) {
+        # Note about weird cardlock behaviour:
+        # Sometimes the cardlock incorrectly reports 0 Litres, possibly right
+        # after the transaction finishes. Normally we would use the X command 
+        # to mark the /next/ transaction. But we'll mork /this/ transaction so
+        # that we query it again.
+        # debug "Marking $last_txn_seen as the next transaction on the cardlock\n";
+        $self->clean_read("X$last_txn_seen\n\r");
+        $last_mark = $last_txn_seen;
     }
     return \@records;
 }
@@ -103,12 +109,14 @@ method parse_line {
     my $dt = to_datetime($fields[3], $fields[4]);
     # Lazy load the latest fuel price
     my $price = $self->fetch_price_cb->();
+    my $id = $dt->ymd('-') . '-' . to_num($fields[1]) . $fields[4];
     my $txn = {
         Type => 'txn',
-        txn_id => to_num($fields[1]),
+        _id => "txn:$id",
+        txn_id => $id,
+        cardlock_txn_id => $fields[1],
         member_id => to_num($fields[2]),
         epoch_time => $dt->epoch,
-        _id => "txn:$fields[1]-" . $dt->ymd . '-' . $fields[4],
         litres => to_num($fields[9]),
         pump => "RA",
         date => "$dt",

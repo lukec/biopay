@@ -61,19 +61,25 @@ $w->recv;
 
 exit;
 
+my %seen_txns; # These may have 0 Litres
+my %ok_txns;
 sub check_cardlock {
     print 'T';
     my $records = $cardlock->recent_transactions;
     for my $txn (@$records) {
         my $id = $txn->{_id};
         autovivify_member($txn->{member_id});
-        debug "Saving $txn->{as_string} to the couch\n";
+        debug "Saving $txn->{as_string} to the couch\n" unless $seen_txns{$id}++;
+        next if $ok_txns{$id};
         $couch->save_doc($txn)->cb(
             sub {
                 my $cv = shift;
                 eval { $cv->recv };
                 if ($@) {
-                    return if $@ =~ m/^409/;
+                    if ($@ =~ m/^409/) {
+                        double_check_transaction($txn);
+                        return;
+                    }
                     warn "Failed to save $id to the couch: $@";
                 }
                 else {
@@ -81,7 +87,27 @@ sub check_cardlock {
                 }
             }
         );
+        $ok_txns{$id}++ if $txn->{litres} > 0;
     }
+}
+
+sub double_check_transaction {
+    my $txn = shift;
+    $couch->open_doc($txn->{_id})->cb( sub {
+            my $cv = shift;
+            my $doc = $cv->recv;
+            if ($doc->{litres} != $txn->{litres}) {
+                debug "  Fixing $txn->{_id} - litres: $doc->{litres} vs $txn->{litres}.";
+                $txn->{_rev} = $doc->{_rev};
+                $couch->save_doc($txn)->cb( sub {
+                        my $cv = shift;
+                        eval { $cv->recv };
+                        warn $@ if $@;
+                    }
+                );
+            }
+        }
+    );
 }
 
 sub check_for_jobs {
@@ -147,15 +173,15 @@ sub handle_job {
     );
 }
 
+my %seen_members;
 sub autovivify_member {
     my $member_id = shift;
+    return if $seen_members{$member_id}++;
     my $member = Biopay::Member->Create(
         member_id => $member_id,
         success_cb => sub {
             debug "Saved member $member_id in the couch\n";
         },
-        error_cb => sub {
-            debug ".. Found member $member_id in the couch already\n";
-        },
+        error_cb => sub { },
     );
 }
