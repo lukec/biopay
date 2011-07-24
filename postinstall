@@ -13,6 +13,7 @@ my $services = decode_json $service_content;
 my $dancer_config_template = "$FindBin::Bin/etc/config.yml";
 my $dancer_config < io $dancer_config_template;
 
+$dancer_config =~ s/\Q****____MERCHANT_ID____****\E/$services->{merchant_id}/;
 $dancer_config =~ s/\Q****____COUCH_URI____****\E/$services->{iriscouch_uri}/;
 $dancer_config =~ s/\Q****____DEV_KEY____****\E/$services->{session_key}/;
 
