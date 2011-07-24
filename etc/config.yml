@@ -4,6 +4,7 @@
 
 # Your application's name
 appname: "biopay"
+merchant_id: "****____MERCHANT_ID____****"
 
 # The default layout to use for your application (located in
 # views/layouts/main.tt)
