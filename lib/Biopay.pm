@@ -10,6 +10,7 @@ use Biopay::Prices;
 use AnyEvent;
 use DateTime;
 use DateTime::Duration;
+use Biopay::Util qw/email_admin/;
 
 our $VERSION = '0.1';
 
@@ -293,9 +294,12 @@ get '/members/:member_id/payment' => sub {
             $msg = "Payment profile update cancelled.";
         }
         default {
-            # TODO: Email Luke with this error
-            error "Error saving payment profile - code:" . params->{responseCode}
-                . " " . params->{responseMessage};
+            email_admin("Error saving payment profile",
+                "I tried to update a payment profile for member " . $member->name
+                . " (" . $member->id . ") but it failed with code: "
+                . params->{responseCode} . "\n\n"
+                . "Message: " . params->{responseMessage}
+            );
             $msg = "Error updating payment profile: " . params->{responseMessage};
         }
     }
