@@ -32,6 +32,12 @@
     <td><strong>Paid?</strong></td>
     <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
   </tr>
+  [% IF txn.paid %]
+  <tr>
+    <td><strong>Paid On</strong></td>
+    <td>[% txn.pretty_paid_date %]</td>
+  </tr>
+  [% END %]
   <tr>
     <td><strong>Pump</strong></td>
     <td>[% txn.pump %]</td>
