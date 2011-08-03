@@ -39,7 +39,7 @@ sub Create {
     my $new_doc = { _id => $key, Type => 'member', %p };
 
     my $cv = couchdb->open_doc($key);
-    if ($success_cb) { # keep it async
+    if ($success_cb or $error_cb) { # keep it async
         $cv->cb( sub {
                 my $cv2 = shift;
                 eval { $cv2->recv };
