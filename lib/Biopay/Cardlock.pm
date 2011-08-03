@@ -1,10 +1,12 @@
 package Biopay::Cardlock;
 use Dancer qw/:syntax/;
+use Biopay::Util qw/email_admin/;
 use Moose;
 use methods;
 use Control::CLI;
 use Math::Round qw/round/;
 use DateTime;
+use Try::Tiny;
 
 has 'cli' => (is => 'ro', isa => 'Control::CLI', lazy_build => 1);
 has 'fetch_price_cb' => (is => 'ro', isa => 'CodeRef', required => 1);
@@ -26,38 +28,42 @@ method _build_cli {
 
 method login {
     my $try_again = shift // 1;
-    $self->cli->put("\cc"); # Break any current input
-    my $output = $self->clean_read("?\r");
-    if ($output =~ m/Password: /) {
-        $self->clean_read("MASTER\r");
-    }
-    elsif ($output =~ m/last mag card/) {
-        return;
-    }
-    else {
-        $self->cli->put("P");
-        $output = $self->clean_read("MASTER\r");
-        if ($output =~ m/\*+\?/) {
-            debug "Looks like the cardlock is locked up. Resetting.";
-            $self->cli->put("\cc"); # Break out of password mode
-            if ($self->clean_read("R") =~ m/Reset CardMaster/) {
-                $output = $self->clean_read("Y");
-                die "Couldn't reset cardlock!" unless $output =~ m/Power up/;
-                # TODO Email admin
-            }
-            else {
-                # TODO Email Admin
-                die "Couldn't issue cardlock reset command!";
+    try {
+        $self->cli->put("\cc");    # Break any current input
+        my $output = $self->clean_read("?\r");
+        if ($output =~ m/Password: /) {
+            $self->clean_read("MASTER\r");
+        }
+        elsif ($output =~ m/last mag card/) {
+            return;
+        }
+        else {
+            $self->cli->put("P");
+            $output = $self->clean_read("MASTER\r");
+            if ($output =~ m/\*+\?/) {
+                debug "Looks like the cardlock is locked up. Resetting.";
+                $self->cli->put("\cc");    # Break out of password mode
+                if ($self->clean_read("R") =~ m/Reset CardMaster/) {
+                    $output = $self->clean_read("Y");
+                    die "Couldn't reset cardlock!"
+                        unless $output =~ m/Power up/;
+                }
+                else {
+                    die "Couldn't issue reset command!";
+                }
             }
         }
-    }
 
-    # Verify we are logged in:
-    $output = $self->clean_read("?\r");
-    unless ($output =~ m/last mag card/) {
-        # TODO Email admin
-        die "Not at the menu after we logged in!";
+        # Verify we are logged in:
+        $output = $self->clean_read("?\r");
+        unless ($output =~ m/last mag card/) {
+            die "Not at the menu after we logged in!";
+        }
     }
+    catch {
+        email_admin("Cardlock error: $_",
+            "I had a problem during login, sorry.");
+    };
 }
 
 method fetch_PIN {
@@ -114,13 +120,19 @@ method recent_transactions {
         # Note about weird cardlock behaviour:
         # Sometimes the cardlock incorrectly reports 0 Litres, possibly right
         # after the transaction finishes. Normally we would use the X command 
-        # to mark the /next/ transaction. But we'll mork /this/ transaction so
+        # to mark the /next/ transaction. But we'll mark /this/ transaction so
         # that we query it again.
-        # debug "Marking $last_txn_seen as the next transaction on the cardlock\n";
-        $self->clean_read("X$last_txn_seen\n\r");
+        $self->set_mark($last_txn_seen);
         $last_mark = $last_txn_seen;
     }
     return \@records;
+}
+
+method set_mark {
+    my $mark = shift;
+    # debug "Marking $last_txn_seen as the next transaction on the cardlock\n";
+    print "X${mark}";
+    $self->clean_read("X$mark\n\r");
 }
 
 method parse_line {
@@ -142,6 +154,7 @@ method parse_line {
         cardlock_txn_id => $fields[1],
         member_id => to_num($fields[2]),
         epoch_time => $dt->epoch,
+        age_in_sec => time() - $dt->epoch,
         litres => to_num($fields[9]),
         pump => "RA",
         date => "$dt",
