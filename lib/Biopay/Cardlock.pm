@@ -136,7 +136,7 @@ method parse_line {
     my @fields = split ",", $line;
 
 #  0    1    2        3     4 5 6 7      8       9
-# 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
+# 01,0118,0204,07/08/11,10:50,1,1,1,xxxxxx,0029.98,xxxxxx,xxxxxx,xxxxxx
     
     # Do not process transactions which are In Progress
     # Field 5 Values:
