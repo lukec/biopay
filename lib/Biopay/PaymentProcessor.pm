@@ -9,17 +9,6 @@ use URI::Query;
 has 'ua' => (is => 'ro', isa => 'LWP::UserAgent', lazy_build => 1);
 has 'payment_args' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 
-method _build_ua { LWP::UserAgent->new }
-
-method _build_payment_args {
-    return {
-        merchant_id => config->{merchant_id},
-        username => config->{merchant_username},
-        password => config->{merchant_password},
-        requestType => 'BACKEND',
-    }
-}
-
 method process {
     my %p = @_;
 
@@ -38,19 +27,28 @@ method process {
         my $qs = URI::Query->new($resp->content);
         my %result = $qs->hash;
         (my $msg = $result{messageText}||'') =~ s/\+/ /g;
-        if ($result{trnApproved}) {
-            debug "Transaction $p{order_num} is approved.";
-        }
-        elsif ($msg =~ m/Duplicate Transaction/) {
+        return "Transaction $p{order_num} is approved." if $result{trnApproved};
+
+        if ($msg =~ m/Duplicate Transaction/) {
             # This dup is an error, but we'll return success. This only 
             # should happen in testing.
-            debug "Transaction $p{order_num} was a dup.";
+            return "Transaction $p{order_num} was a dup.";
         }
-        else {
-            die "Transaction $p{order_num} failed: $msg\n";
-        }
+        die "Transaction $p{order_num} failed: $msg\n";
     }
     else {
         die "Transaction $p{order_num} failed: " . $resp->status_line;
     }
 }
+
+method _build_ua { LWP::UserAgent->new }
+
+method _build_payment_args {
+    return {
+        merchant_id => config->{merchant_id},
+        username => config->{merchant_username},
+        password => config->{merchant_password},
+        requestType => 'BACKEND',
+    }
+}
+
