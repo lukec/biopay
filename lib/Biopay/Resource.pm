@@ -39,9 +39,25 @@ sub All { shift->All_for_view('/by_id', @_) }
 sub All_for_view {
     my $class = shift;
     my $view = shift;
+    my $cb = shift;
 
-    my $results = couchdb->view($class->view_base . $view, @_)->recv;
-    return [ map { $class->new_from_couch( $_->{value} ) } @{ $results->{rows} } ];
+    my $result_mapper = sub {
+        my $result = shift;
+        return [ map { $class->new_from_couch($_->{value}) }
+                @{ $result->{rows} } ];
+    };
+    my $cv = couchdb->view($class->view_base . $view, @_);
+    if ($cb) {
+        $cv->cb(
+            sub {
+                my $cv2 = shift;
+                $cb->( $result_mapper->( $cv2->recv ) );
+            }
+        );
+    }
+    else {
+        return $result_mapper->($cv->recv);
+    }
 }
 
 sub new_from_couch {
