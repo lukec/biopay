@@ -32,17 +32,16 @@ Dancer::Config::load();
 my $couch = couchdb() or die "Couldn't load couch!";
 debug "Loading latest fuel price ...\n";
 my $price = Biopay::Prices->new->fuel_price;
-my $cardlock = Biopay::Cardlock->new(
-    fetch_price_cb => sub { $price },
-);
+my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $price } );
 my $processor = Biopay::PaymentProcessor->new;
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
 # * Check the couch for jobs every 1 minute
 # * Check for updated prices every 10 minutes
+# * Send the admin stats once per day
 
-my $w = AnyEvent->condvar;
+my $main_loop = AnyEvent->condvar;
 my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,
     cb    => \&check_cardlock,
@@ -66,9 +65,15 @@ my $txn_timer = AnyEvent->timer(
     after => 2.0, interval => 300,
     cb => \&check_for_unpaid_txns,
 );
+my $sigint = AnyEvent->signal(
+    signal => "INT",
+    cb => sub {
+        $main_loop->send;
+    },
+);
 
-$w->recv;
-
+$main_loop->recv; # Main event loop
+print "Exiting Connector.\n";
 exit;
 
 my %seen_txns; # These may have 0 Litres
