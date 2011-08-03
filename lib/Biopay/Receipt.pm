@@ -6,7 +6,8 @@ use Dancer ':syntax';
 use Biopay::Transaction;
 
 has 'member_id' => (is => 'ro', isa => 'Str',      required => 1);
-has 'txn_ids'   => (is => 'ro', isa => 'ArrayRef', required => 1);
+# Pass in one of these two:
+has 'txn_ids'   => (is => 'ro', isa => 'ArrayRef');
 has 'txns'      => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 
 with 'Biopay::Roles::HasMember';
@@ -43,5 +44,7 @@ method send {
 
 
 method _build_txns {
+    die "txn_ids are required if no transactions are given!"
+        unless $self->txn_ids;
     return [ map { Biopay::Transaction->By_id($_) } @{ $self->txn_ids } ];
 }
