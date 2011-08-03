@@ -37,13 +37,6 @@ my $cardlock = Biopay::Cardlock->new(
 );
 my $processor = Biopay::PaymentProcessor->new;
 
-if (my $test_string = shift) {
-    my $txn = $cardlock->parse_line($test_string);
-    use Data::Dumper;
-    debug Dumper $txn;
-    exit;
-}
-
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
 # * Check the couch for jobs every 1 minute
