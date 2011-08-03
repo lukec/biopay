@@ -1,7 +1,7 @@
 package Biopay::Util;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
-use Exporter;
+use base 'Exporter';
 
 our @EXPORT_OK = qw/email_admin/;
 

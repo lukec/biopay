@@ -33,7 +33,7 @@ sub Create {
     my $class = shift;
     my %p = @_;
     my $success_cb = delete $p{success_cb};
-    my $error_cb = delete $p{error_cb};
+    my $error_cb = delete $p{error_cb} || sub {};
 
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
@@ -42,15 +42,13 @@ sub Create {
     if ($success_cb or $error_cb) { # keep it async
         $cv->cb( sub {
                 my $cv2 = shift;
-                eval { $cv2->recv };
-                if ($@) {
+                try { $cv2->recv }
+                catch {
                     # Member didn't exist, so create them now
                     my $cv3 = couchdb->save_doc($new_doc);
-                    $cv3->cb($success_cb);
+                    return $cv3->cb( $success_cb );
                 }
-                eval {
-                    $error_cb->();
-                }
+                return $error_cb->();
             },
         );
     }
