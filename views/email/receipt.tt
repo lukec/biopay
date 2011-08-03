@@ -1,6 +1,6 @@
 <h1>Receipt for Member #[% member.id %]</h1>
 <p>Hello [% member.name %]!</p>
-<p>The following transactions were charged to your account.</p>
+<p>The following transactions were charged to your account:</p>
 <table width="100%">
     <tr>
         <th align="left"}>Description</th>
@@ -14,7 +14,7 @@
         <td>B100 on [% txn.pretty_date %]</td>
         <td align="right">$[% txn.price_per_litre %]/L</td>
         <td align="right">[% txn.litres %]</td>
-        <td align="right">[% txn.taxes %]</td>
+        <td align="right">$[% txn.taxes %]</td>
         <td align="right">$[% txn.price %]</td>
     </tr>
     [% END %]

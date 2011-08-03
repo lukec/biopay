@@ -36,6 +36,9 @@
     </tr>
   [% END %]
 </table>
+<p>
+  Send an email receipt? <input type="checkbox" name="send_receipt" value="1" />
+</p>
 <input type="submit" value="Mark these transactions as paid" />
 </form>
 

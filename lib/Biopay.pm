@@ -11,6 +11,7 @@ use AnyEvent;
 use DateTime;
 use DateTime::Duration;
 use Biopay::Util qw/email_admin/;
+use Try::Tiny;
 
 our $VERSION = '0.1';
 
@@ -104,6 +105,7 @@ post '/unpaid/mark-as-paid' => sub {
     my $txn_param = params->{txns};
     my @txn_ids = ref $txn_param ? @$txn_param : ($txn_param);
     my @txns;
+    my %paid;
     for my $txn_id (@txn_ids) {
         my $txn = Biopay::Transaction->By_id($txn_id);
         next unless $txn;
@@ -112,17 +114,20 @@ post '/unpaid/mark-as-paid' => sub {
         $txn->paid(1);
         $txn->save;
         push @txns, $txn;
+        push @{ $paid{ $txn->{member_id} } }, $txn->id;
     }
 
-# TODO email receipts later
-#     if ($member_id and @txns) {
-#         my $member = Biopay::Member->By_id($member_id);
-#         Biopay::Command->Create(
-#             command => 'send-receipt',
-#             member_id => $member_id,
-#             txn_ids => [ map { $_->id } @txns ]
-#         ) if $member->email;
-#     }
+    if (params->{send_receipt}) {
+        for my $mid (keys %paid) {
+            my $member = Biopay::Member->By_id($mid);
+            debug "Creating receipt job for member $mid";
+            Biopay::Command->Create(
+                command => 'send-receipt',
+                member_id => $mid,
+                txn_ids => $paid{$mid},
+            );
+        }
+    }
 
     template 'mark-as-paid', {
         txns => \@txns,
@@ -198,10 +203,13 @@ post '/members/create' => sub {
 
 sub ymd_to_epoch {
     my $ymd = shift;
-    my ($y, $m, $d) = split m#[/-]#, $ymd;
-    my $dt = DateTime->new(year => $y, month => $m, day => $d);
-    $dt->set_time_zone('America/Vancouver');
-    return $dt->epoch;
+    try {
+        my ($y, $m, $d) = split m#[/-]#, $ymd;
+        my $dt = DateTime->new(year => $y, month => $m, day => $d);
+        $dt->set_time_zone('America/Vancouver');
+        return $dt->epoch;
+    };
+    return undef;
 }
 
 get '/members/:member_id/txns' => sub {

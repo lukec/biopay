@@ -38,7 +38,6 @@ after 'paid' => sub {
     my $self = shift;
     return unless $self->{paid} and not $self->paid_date;
     my $now = time;
-    print "Setting paid date to $now\n";
     $self->paid_date($now);
 };
 

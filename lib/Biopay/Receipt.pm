@@ -13,6 +13,11 @@ has 'txns'      => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
 with 'Biopay::Roles::HasMember';
 
 method send {
+    unless ($self->member->email) {
+        debug "Member " . $self->id . " does not have an email address.";
+        return;
+    }
+
     my $total_price = 0;
     my $total_litres = 0;
     my $total_tax = 0;

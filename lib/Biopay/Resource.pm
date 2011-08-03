@@ -40,7 +40,8 @@ sub All { shift->All_for_view('/by_id', @_) }
 sub All_for_view {
     my $class = shift;
     my $view = shift;
-    my $cb = shift;
+    my $cb;
+    $cb = shift if ref($_[0]) eq 'CODE';
 
     my $result_mapper = sub {
         my $result = shift;
