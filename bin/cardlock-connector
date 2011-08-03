@@ -207,12 +207,14 @@ sub process_transactions {
     my $order_num = @$txns > 1 
         ? sprintf("%d-txns-%d", length(@$txns), time)
         : "txn-" . $txns->[0]->txn_id;
+    my $error = "Order '$order_num' not yet processed.";
     try {
         $processor->process(
             order_num => $order_num,
             amount => $total,
             hash => $member->payment_hash,
         );
+        $error = "Order '$order_num' processed but txns not marked as paid.";
         for my $txn (@$txns) {
             $txn->paid(1);
             $txn->save(
@@ -225,6 +227,9 @@ sub process_transactions {
                 }
             );
         }
+        $error = "Order '$order_num' processed, txns marked as paid, but "
+                . "receipt is not sent.";
+            
         Biopay::Receipt->new(
             member_id => $member->id,
             member => $member,
@@ -235,7 +240,11 @@ sub process_transactions {
         my $err = $_;
         error $err;
 
-        email_admin("Error processing payment $order_num", $err);
+        email_admin("Error processing payment $order_num",
+            "Had a problem during payment processing: $error\n\n$err\n\n"
+            . "This payment was for member ID " . $member->id
+            . " for transactions: " . join(', ', map { $_->id } @$txns
+        );
     }
 
 }
