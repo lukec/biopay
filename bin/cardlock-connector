@@ -33,7 +33,7 @@ unless ($couch) {
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
-# * Check the couch for jobs every 1 minute
+# * Check the couch for cardlock jobs every 1 minute
 # * Check for updated prices every 10 minutes
 # * Check for unpaid transactions to be run once per hour
 # * Send the admin stats once per day
@@ -254,6 +254,7 @@ sub handle_job {
     debug "* Found job of type $job->{command} ...\n";
     my $member_id = $job->args->{member_id};
     return undef unless $member_id;
+
     Biopay::Member->By_id($member_id, sub {
         my $member = shift;
         my $mid = $member->id;
