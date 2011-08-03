@@ -87,7 +87,7 @@ sub check_cardlock {
     for my $txn (@$records) {
         my $id = $txn->{_id};
         autovivify_member($txn->{member_id});
-        debug "Saving $txn->{as_string} to the couch\n" unless $seen_txns{$id}++;
+        debug "Attempting to save $txn->{as_string} to the couch\n" unless $seen_txns{$id}++;
         next if $ok_txns{$id};
         $couch->save_doc($txn)->cb(
             sub {
@@ -123,6 +123,9 @@ sub double_check_transaction {
                         warn $@ if $@;
                     }
                 );
+            }
+            else {
+                debug "  $txn->{_id} is already correctly in the couch.";
             }
         }
     );
