@@ -181,10 +181,6 @@ sub check_for_unpaid_txns {
             my $txns = shift;
             my %member;
             for my $txn (@$txns) {
-                # Wait 20 minutes before processing the transaction, to make
-                # sure the price is correct.  Ideally the pump would tell us
-                # when a transaction FINISHES, gah.
-                next if $txn->age_in_seconds < 20*60;
                 push @{ $member{$txn->member_id} }, $txn;
             }
 

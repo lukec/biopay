@@ -107,30 +107,24 @@ method recent_transactions {
     my $lines = $self->clean_read('B');
     return [] if $lines =~ m/ - empty/;
     my @records;
-    my $last_txn_seen = 0;
+    my $next_mark = 0;
     for my $line (split "\n", $lines) {
         # debug "Received from cardlock: '$line'";
         my $txn = $self->parse_line($line);
         next unless $txn;
-        $last_txn_seen = $txn->{cardlock_txn_id};
+        $next_mark = $txn->{cardlock_txn_id}+1;
 	push @records, $txn;
     }
 
-    if ($last_txn_seen and $last_txn_seen != ($last_mark||0)) {
-        # Note about weird cardlock behaviour:
-        # Sometimes the cardlock incorrectly reports 0 Litres, possibly right
-        # after the transaction finishes. Normally we would use the X command 
-        # to mark the /next/ transaction. But we'll mark /this/ transaction so
-        # that we query it again.
-        $self->set_mark($last_txn_seen);
-        $last_mark = $last_txn_seen;
+    if ($next_mark and $next_mark != ($last_mark||0)) {
+        $self->set_mark($next_mark);
+        $last_mark = $next_mark;
     }
     return \@records;
 }
 
 method set_mark {
     my $mark = shift;
-    # debug "Marking $last_txn_seen as the next transaction on the cardlock\n";
     print "X${mark}";
     $self->clean_read("X$mark\n\r");
 }
@@ -143,6 +137,26 @@ method parse_line {
 
 #  0    1    2        3     4 5 6 7      8       9
 # 01,0118,0204,07/08/11,10:50,1,1,1,XXXXXX,0029.98,XXXXXX,XXXXXX,XXXXXX
+    
+    # Do not process transactions which are In Progress
+    # Field 5 Values:
+    # 0  In Progress – sale not complete 
+    # 1 Normal Transaction – sale completed normally 
+    # 2 time out - user 
+    # 3 time out – no pulses received 
+    # 4 time out – no pump handle  
+    # 5 sale terminated – by quantity limit 
+    # 6 invalid memory – product code, etc 
+    # 7 Invalid card, card expired, bad card read, invalid PIN 
+    # 8 Invalid hose or product (wrong selection, or invalid read of product) 
+    # 9 Tally full (no room for more transactions, exceed memory 
+    # limit, or “x” command is marked incorrectly) 
+    # A Power Fail, lost AC connection 
+    # B Power Fail while dispensing is in progress 
+    # C Entering manual mode 
+    # D Leaving manual Mode
+    return unless $fields[5] > 0;
+
     my $dt = to_datetime($fields[3], $fields[4]);
     # Lazy load the latest fuel price
     my $price = $self->fetch_price_cb->();
@@ -160,6 +174,7 @@ method parse_line {
         date => "$dt",
         paid => 0,
         price_per_litre => $price,
+        ($fields[5] > 1 ? (error_code => $fields[5]) : ()),
     };
     unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
         debug "No member_id on txn_id:$txn->{txn_id} - skipping.";
