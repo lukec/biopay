@@ -1,0 +1,56 @@
+package Biopay::PaymentProcessor;
+use Moose;
+use methods;
+use Dancer::Plugin::Email;
+use Dancer ':syntax';
+use LWP::UserAgent;
+use URI::Query;
+
+has 'ua' => (is => 'ro', isa => 'LWP::UserAgent', lazy_build => 1);
+has 'payment_args' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
+
+method _build_ua { LWP::UserAgent->new }
+
+method _build_payment_args {
+    return {
+        merchant_id => config->{merchant_id},
+        username => config->{merchant_username},
+        password => config->{merchant_password},
+        requestType => 'BACKEND',
+    }
+}
+
+method process {
+    my %p = @_;
+
+    debug "Sending payment request $p{order_num} for \$$p{amount} for "
+        . "hash $p{hash}";
+    my $resp = $self->ua->post(
+        'https://www.beanstream.com/scripts/process_transaction.asp',
+        [
+            %{ $self->payment_args },
+            trnOrderNumber => $p{order_num},
+            trnAmount => $p{amount},
+            customerCode => $p{hash},
+        ],
+    );
+    if ($resp->code == 200) {
+        my $qs = URI::Query->new($resp->content);
+        my %result = $qs->hash;
+        (my $msg = $result{messageText}||'') =~ s/\+/ /g;
+        if ($result{trnApproved}) {
+            debug "Transaction $p{order_num} is approved.";
+        }
+        elsif ($msg =~ m/Duplicate Transaction/) {
+            # This dup is an error, but we'll return success. This only 
+            # should happen in testing.
+            debug "Transaction $p{order_num} was a dup.";
+        }
+        else {
+            die "Transaction $p{order_num} failed: $msg\n";
+        }
+    }
+    else {
+        die "Transaction $p{order_num} failed: " . $resp->status_line;
+    }
+}

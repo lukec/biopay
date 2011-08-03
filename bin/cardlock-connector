@@ -1,20 +1,32 @@
-#!/home/bio/perl5/perlbrew/perls/perl-5.14.1/bin/perl
+#!/usr/bin/env perl
 use 5.14.1;
 use Dancer qw/:syntax/;
 use FindBin;
 use Cwd qw/realpath/;
 use lib "$FindBin::Bin/../lib";
 use Dancer::Plugin::CouchDB;
+use Dancer::Plugin::Email;
 use Biopay::Cardlock;
 use Biopay::Member;
+use Biopay::Transaction;
+use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::Receipt;
 use AnyEvent;
+use Getopt::Long;
+use List::Util qw/sum/;
+use Try::Tiny;
+
+my %opts;
+GetOptions( \%opts,
+    'no-cardlock',
+) or usage();
 
 $| = 1; # auto-flush STDOUT
 
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
 Dancer::Config::load();
 
 my $couch = couchdb() or die "Couldn't load couch!";
@@ -23,6 +35,7 @@ my $price = Biopay::Prices->new->fuel_price;
 my $cardlock = Biopay::Cardlock->new(
     fetch_price_cb => sub { $price },
 );
+my $processor = Biopay::PaymentProcessor->new;
 
 if (my $test_string = shift) {
     my $txn = $cardlock->parse_line($test_string);
@@ -56,6 +69,10 @@ my $price_timer = AnyEvent->timer(
         );
     },
 );
+my $txn_timer = AnyEvent->timer(
+    after => 2.0, interval => 300,
+    cb => \&check_for_unpaid_txns,
+);
 
 $w->recv;
 
@@ -64,6 +81,7 @@ exit;
 my %seen_txns; # These may have 0 Litres
 my %ok_txns;
 sub check_cardlock {
+    return if $opts{'no-cardlock'};
     print 'T';
     my $records = $cardlock->recent_transactions;
     for my $txn (@$records) {
@@ -108,6 +126,78 @@ sub double_check_transaction {
             }
         }
     );
+}
+
+sub check_for_unpaid_txns {
+    print 'T';
+    Biopay::Transaction->All_unpaid(
+        sub {
+            my $txns = shift;
+            my %member;
+            for my $txn (@$txns) {
+                push @{ $member{$txn->member_id} }, $txn;
+            }
+
+            for my $mid (keys %member) {
+                my $txns = $member{$mid};
+                print "Unpaid txns for $mid: "
+                    . join(', ', map { $_->txn_id } @$txns ), "\n";
+                Biopay::Member->By_id($mid, sub {
+                        my $member = shift;
+                        if (my $hash = $member->payment_hash) {
+                            process_transactions($member, $txns);
+                        }
+                        else {
+                            print "Member $mid has no payment details.\n";
+                        }
+                    },
+                );
+            }
+        }
+    );
+}
+
+sub process_transactions {
+    my $member = shift;
+    my $txns   = shift;
+    return unless @$txns;
+    print "Processing transactions for " . $member->name . " ...\n";
+    my $total = sum map { $_->price } @$txns;
+
+    my $order_num = @$txns > 1 
+        ? sprintf("%d-txns-%d", length(@$txns), time)
+        : "txn-" . $txns->[0]->txn_id;
+    try {
+        $processor->process(
+            order_num => $order_num,
+            amount => $total,
+            hash => $member->payment_hash,
+        );
+        for my $txn (@$txns) {
+            $txn->paid(1);
+            $txn->save( sub {
+                    debug "Saved " . $txn->id . " to the couch";
+                }
+            );
+        }
+        Biopay::Receipt->new(
+            member_id => $member->id,
+            member => $member,
+            txns => $txns,
+        )->send;
+    }
+    catch {
+        my $err = $_;
+        error $err;
+
+        email {
+            to => config->{sysadmin_email},
+            from => config->{email_from},
+            subject => "Error processing payment $order_num",
+            message => $err,
+        };
+    }
+
 }
 
 sub check_for_jobs {
@@ -184,4 +274,12 @@ sub autovivify_member {
         },
         error_cb => sub { },
     );
+}
+
+sub usage {
+    die <<EOT;
+USAGE: $0 [--no-cardlock]
+
+ --no-cardlock  - do not read from the cardlock.
+EOT
 }
