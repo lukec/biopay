@@ -322,9 +322,7 @@ sub autovivify_member {
     return if $seen_members{$member_id}++;
     my $member = Biopay::Member->Create(
         member_id => $member_id,
-        error_cb => sub {
-            email_admin("Failed to auto-vivify member $member_id", "Sorry! @_")
-        },
+        success_cb => sub {}, # Ignore result
     );
 }
 
