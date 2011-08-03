@@ -334,5 +334,3 @@ USAGE: $0 [--no-cardlock]
 EOT
 }
 
-# TODO
-# * watch for couch changes
