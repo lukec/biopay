@@ -101,9 +101,7 @@ sub check_cardlock {
         $couch->save_doc($txn_hash)->cb(
             sub {
                 my $cv = shift;
-                try {
-                    $cv->recv
-                }
+                try { $cv->recv }
                 catch {
                     return double_check_transaction($txn_hash) if $_ =~ m/^409/;
                     email_admin( "Failed to save txn $id", $_ );
@@ -140,9 +138,7 @@ EOT
                     $txn->{_rev} = $doc->{_rev};
                     $couch->save_doc($txn)->cb( sub {
                             my $cv = shift;
-                            try {
-                                $cv->recv;
-                            }
+                            try { $cv->recv }
                             catch {
                                 delete $double_checked_out{$id};
                                 email_admin(
