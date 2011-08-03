@@ -13,33 +13,34 @@ use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::Receipt;
+use Biopay::Util qw/email_admin/;
 use AnyEvent;
-use Getopt::Long;
 use List::Util qw/sum/;
 use Try::Tiny;
 
-my %opts;
-GetOptions( \%opts,
-    'no-cardlock',
-) or usage();
-
 $| = 1; # auto-flush STDOUT
 
+# Load appdir and templates
 Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
 Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
 Dancer::Config::load();
 
-my $couch = couchdb() or die "Couldn't load couch!";
-debug "Loading latest fuel price ...\n";
-my $price = Biopay::Prices->new->fuel_price;
-my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $price } );
-my $processor = Biopay::PaymentProcessor->new;
+my $couch = couchdb();
+unless ($couch) {
+    email_admin("Couldn't connect to the couch!");
+    exit -1;
+}
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
 # * Check the couch for jobs every 1 minute
 # * Check for updated prices every 10 minutes
+# * Check for unpaid transactions to be run
 # * Send the admin stats once per day
+
+my $price = Biopay::Prices->new->fuel_price;
+my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $price } );
+my $processor = Biopay::PaymentProcessor->new;
 
 my $main_loop = AnyEvent->condvar;
 my $cardlock_timer = AnyEvent->timer(
@@ -56,7 +57,7 @@ my $price_timer = AnyEvent->timer(
         Biopay::Prices->new->fuel_price(
             sub {
                 $price = shift;
-                debug "Latest fuel price: $price";
+                print " (F${price}) ";
             },
         );
     },
@@ -71,85 +72,133 @@ my $sigint = AnyEvent->signal(
         $main_loop->send;
     },
 );
+my $stdin = AnyEvent->io(
+    fh => *STDIN,
+    poll => 'r',
+    cb => sub {
+        my $key = <STDIN>;
+        chomp $key;
+        given ($key) {
+            when (m/^X(\d+)/) {
+                $cardlock->set_mark($1) if $1;
+            }
+        }
+    },
+);
+
 
 $main_loop->recv; # Main event loop
 print "Exiting Connector.\n";
 exit;
 
-my %seen_txns; # These may have 0 Litres
-my %ok_txns;
+my %txn_start;
 sub check_cardlock {
-    return if $opts{'no-cardlock'};
-    print 'T';
+    print 'C';
     my $records = $cardlock->recent_transactions;
-    for my $txn (@$records) {
-        my $id = $txn->{_id};
-        autovivify_member($txn->{member_id});
-        debug "Attempting to save $txn->{as_string} to the couch\n" unless $seen_txns{$id}++;
-        next if $ok_txns{$id};
-        $couch->save_doc($txn)->cb(
+    for my $txn_hash (@$records) {
+        my $id = $txn_hash->{_id};
+        autovivify_member($txn_hash->{member_id});
+
+        # It may exist already, so we should expect this to fail
+        $couch->save_doc($txn_hash)->cb(
             sub {
                 my $cv = shift;
-                eval { $cv->recv };
-                if ($@) {
-                    if ($@ =~ m/^409/) {
-                        double_check_transaction($txn);
-                        return;
-                    }
-                    debug "Failed to save $id to the couch: $@";
+                try {
+                    $cv->recv
                 }
-                else {
-                    debug "Saved transaction $txn->{as_string}";
+                catch {
+                    return double_check_transaction($txn_hash) if $_ =~ m/^409/;
+                    email_admin( "Failed to save txn $id", $_ );
                 }
             }
         );
-        $ok_txns{$id}++ if $txn->{litres} > 0;
     }
 }
 
+my %double_checked_out;
 sub double_check_transaction {
     my $txn = shift;
-    $couch->open_doc($txn->{_id})->cb( sub {
+    my $id  = $txn->{_id};
+    return if $double_checked_out{$id};
+    print " (DoubleCheck $id) ";
+
+    $couch->open_doc($id)->cb( sub {
             my $cv = shift;
-            my $doc = $cv->recv;
-            if ($doc->{litres} != $txn->{litres}) {
-                debug "  Fixing $txn->{_id} - litres: $doc->{litres} vs $txn->{litres}.";
-                $txn->{_rev} = $doc->{_rev};
-                $couch->save_doc($txn)->cb( sub {
-                        my $cv = shift;
-                        eval { $cv->recv };
-                        debug $@ if $@;
+            try {
+                my $doc = $cv->recv;
+                if ($doc->{litres} != $txn->{litres}) {
+                    if ($doc->{paid}) {
+                        return email_admin(
+                            "Paid transaction had incorrect litres",
+                            <<EOT);
+It looks like transaction $doc->{_id} has been paid already, but the reading
+has changed on the pump.
+
+The pump says: $txn->{litres}L but this transaction was for $doc->{litres}L
+EOT
                     }
-                );
+                    print " (!!Fixing $id: $doc->{litres} => "
+                        . "$txn->{litres}!!) ";
+                    $txn->{_rev} = $doc->{_rev};
+                    $couch->save_doc($txn)->cb( sub {
+                            my $cv = shift;
+                            try {
+                                $cv->recv;
+                            }
+                            catch {
+                                delete $double_checked_out{$id};
+                                email_admin(
+                                    "Failed to update txn $id", <<EOT);
+I noticed transaction $id had the wrong litres, but I failed to
+update it!
+
+I'm trying to update from $doc->{litres} litres to $txn->{litres} litres.
+
+$_
+EOT
+
+                            };
+                        }
+                    );
+                }
+                my $txn_age = time() - $txn->{epoch_time};
+                if ($txn_age > 60*20) {
+                    # This transaction is 20 minutes old,
+                    # so we can ass_u_me that it's price
+                    # won't change further.
+                    $double_checked_out{$id}++;
+                }
             }
-            else {
-                debug "  $txn->{_id} is already correctly in the couch.";
-            }
+            catch {
+                email_admin("Failed to double check $id", $_);
+            };
         }
     );
 }
 
 sub check_for_unpaid_txns {
-    print 'T';
+    print 'U';
     Biopay::Transaction->All_unpaid(
         sub {
             my $txns = shift;
             my %member;
             for my $txn (@$txns) {
+                # Wait 20 minutes before processing the transaction, to make
+                # sure the price is correct.  Ideally the pump would tell us
+                # when a transaction FINISHES, gah.
+                next if $txn->age_in_seconds < 20*60;
                 push @{ $member{$txn->member_id} }, $txn;
             }
 
             for my $mid (keys %member) {
                 my $txns = $member{$mid};
-                print "Unpaid txns for $mid: "
-                    . join(', ', map { $_->txn_id } @$txns ), "\n";
                 Biopay::Member->By_id($mid, sub {
                         my $member = shift;
                         if (my $hash = $member->payment_hash) {
                             process_transactions($member, $txns);
                         }
                         else {
-                            print "Member $mid has no payment details.\n";
+                            print 'u';
                         }
                     },
                 );
@@ -162,8 +211,8 @@ sub process_transactions {
     my $member = shift;
     my $txns   = shift;
     return unless @$txns;
-    print "Processing transactions for " . $member->name . " ...\n";
     my $total = sum map { $_->price } @$txns;
+    print ' (Bio-' . $member->id . ":\$$total) ";
 
     my $order_num = @$txns > 1 
         ? sprintf("%d-txns-%d", length(@$txns), time)
@@ -176,8 +225,13 @@ sub process_transactions {
         );
         for my $txn (@$txns) {
             $txn->paid(1);
-            $txn->save( sub {
-                    debug "Saved " . $txn->id . " to the couch";
+            $txn->save(
+                error_cb => sub {
+                    my $err = shift;
+                    email_admin("Failed to mark txn:" . $txn->id . " as paid!",
+                        "I was trying to mark it as paid after successfully "
+                        . " processing order $order_num for \$$total\n\n$err"
+                    );
                 }
             );
         }
@@ -191,12 +245,7 @@ sub process_transactions {
         my $err = $_;
         error $err;
 
-        email {
-            to => config->{sysadmin_email},
-            from => config->{email_from},
-            subject => "Error processing payment $order_num",
-            message => $err,
-        };
+        email_admin("Error processing payment $order_num", $err);
     }
 
 }
@@ -214,32 +263,37 @@ sub handle_job {
     Biopay::Member->By_id($member_id, sub {
         my $member = shift;
         my $mid = $member->id;
+        print " ($job->{command}$mid) ";
         given ($job->{command}) {
             when ('freeze') {
                 my $pin = $cardlock->fetch_PIN($mid);
                 $cardlock->set_PIN($mid, 0);
                 $member->PIN($pin);
-                $member->save(sub {
-                    debug "Saved " . $member->id . " to the couch";
-                });
-                debug "Froze account of member $mid";
+                $member->save( error_cb => sub {
+                        email_admin("Failed to save member PIN after freeze",
+                            "I froze member $mid but could not save their PIN "
+                            . "($pin) back to the couch.\n\n" . shift) } );
             }
             when ('unfreeze') {
                 if ($member->PIN) {
                     $cardlock->set_PIN($mid, $member->PIN);
                     $member->PIN(undef);
-                    $member->save(sub {
-                        debug "Saved " . $member->id . " to the couch";
-                    });
-                    debug "Restored frozen account of member $mid";
+                    $member->save( error_cb => sub {
+                        email_admin("Failed to clear member PIN after unfreeze",
+                            "I un-froze member $mid but could not clear their "
+                            . "PIN.\n\n" . shift) } );
                 }
                 else {
                     debug "Cannot un-freeze account, no PIN stored for $mid";
+                    email_admin(
+                        "Cannot un-freeze member $mid, no PIN is stored!",
+                        "You should probably contact " . $member->name
+                        . " at " . $member->email . " and get them to reset "
+                        . "their PIN.");
                 }
             }
             when ('change_PIN') {
                 $cardlock->set_PIN($mid, $job->args->{new_PIN});
-                debug "Changed PIN for $mid";
             }
             when ('send-receipt') {
                 debug "Sending receipt to $mid (" . $member->name . ")";
@@ -256,8 +310,12 @@ sub handle_job {
         $couch->remove_doc($job)->cb(
             sub {
                 my $cv = shift;
-                $cv->recv;
-                debug "Removed job " . $job->_id . " from the couch";
+                try { $cv->recv }
+                catch {
+                    email_admin("Error removing a $job->{command} job",
+                        "Failed to remove $job->{_id}\n\n$_"
+                    );
+                };
             }
         );
         }
@@ -270,10 +328,9 @@ sub autovivify_member {
     return if $seen_members{$member_id}++;
     my $member = Biopay::Member->Create(
         member_id => $member_id,
-        success_cb => sub {
-            debug "Saved member $member_id in the couch\n";
+        error_cb => sub {
+            email_admin("Failed to auto-vivify member $member_id", "Sorry! @_")
         },
-        error_cb => sub { },
     );
 }
 
@@ -284,3 +341,6 @@ USAGE: $0 [--no-cardlock]
  --no-cardlock  - do not read from the cardlock.
 EOT
 }
+
+# TODO
+# * watch for couch changes
