@@ -25,13 +25,38 @@ method _build_cli {
 }
 
 method login {
-    $self->cli->put("\cC"); # Break any current input
-    $self->clean_read("^");   # Logout, or no-op
-    $self->clean_read('P');
-    $self->clean_read("MASTER\r");
-    my $output = $self->clean_read('?');
+    my $try_again = shift // 1;
+    $self->cli->put("\cc"); # Break any current input
+    my $output = $self->clean_read("?\r");
+    if ($output =~ m/Password: /) {
+        $self->clean_read("MASTER\r");
+    }
+    elsif ($output =~ m/last mag card/) {
+        return;
+    }
+    else {
+        $self->cli->put("P");
+        $output = $self->clean_read("MASTER\r");
+        if ($output =~ m/\*+\?/) {
+            debug "Looks like the cardlock is locked up. Resetting.";
+            $self->cli->put("\cc"); # Break out of password mode
+            if ($self->clean_read("R") =~ m/Reset CardMaster/) {
+                $output = $self->clean_read("Y");
+                die "Couldn't reset cardlock!" unless $output =~ m/Power up/;
+                # TODO Email admin
+            }
+            else {
+                # TODO Email Admin
+                die "Couldn't issue cardlock reset command!";
+            }
+        }
+    }
+
+    # Verify we are logged in:
+    $output = $self->clean_read("?\r");
     unless ($output =~ m/last mag card/) {
-        die "Could not log in - received '$output'";
+        # TODO Email admin
+        die "Not at the menu after we logged in!";
     }
 }
 
