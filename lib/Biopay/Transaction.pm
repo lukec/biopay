@@ -32,6 +32,7 @@ method id { $self->txn_id }
 sub All_unpaid { shift->All_for_view('/unpaid', @_) }
 sub All_most_recent { shift->All_for_view('/recent') }
 sub All_for_member { shift->All_for_view('/by_member', {key => shift, @_}) }
+method age_in_seconds { time() - $self->epoch_time }
 
 after 'paid' => sub {
     my $self = shift;
