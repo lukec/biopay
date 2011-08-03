@@ -3,6 +3,7 @@ use Moose;
 use methods;
 use Dancer::Plugin::CouchDB;
 use Dancer ':syntax';
+use Try::Tiny;
 
 has '_id' => (isa => 'Str', is => 'ro', required => 1);
 has '_rev' => (isa => 'Str', is => 'ro', required => 1);
@@ -67,14 +68,19 @@ sub new_from_couch {
 }
 
 method save {
-    my $cb = shift;
+    my %p = @_;
     my $cv = couchdb->save_doc($self->as_hash);
-    if ($cb) {
+    if ($p{success_cb} or $p{error_cb}) {
         $cv->cb(
             sub {
                 my $cv2 = shift;
-                my $res = $cv2->recv;
-                $cb->($res);
+                try {
+                    my $res = $cv2->recv;
+                    $p{success_cb}->($res) if $p{success_cb};
+                }
+                catch {
+                    $p{error_cb}->($_);
+                };
             }
         );
     }
