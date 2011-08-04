@@ -24,6 +24,7 @@
         <li><a href="http://vancouverbiodiesel.org/faq.html">Co-op FAQ</a></li>
         <li><a href="http://twitter.com/vanbiodiesel/">Co-op on Twitter</a></li>
         <li><a href="http://en.wikipedia.org/wiki/Biodiesel">Biodiesel on Wikipedia</a></li>
+        <li><a href="/biopay.pdf">Biopay Info Sheet</a></li>
       </ul>
     </li>
     [% END %]
