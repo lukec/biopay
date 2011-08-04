@@ -186,7 +186,8 @@ sub check_for_unpaid_txns {
                 Biopay::Member->By_id($mid, sub {
                         my $member = shift;
                         if (my $hash = $member->payment_hash) {
-                            process_transactions($member, $txns);
+                            process_transactions($member, $txns)
+                                unless $member->billing_error;
                         }
                         else {
                             print 'u';
@@ -210,11 +211,31 @@ sub process_transactions {
         : "txn-" . $txns->[0]->txn_id;
     my $error = "Order '$order_num' not yet processed.";
     try {
-        $processor->process(
-            order_num => $order_num,
-            amount => $total,
-            hash => $member->payment_hash,
-        );
+        try {
+            $processor->process(
+                order_num => $order_num,
+                amount => $total,
+                hash => $member->payment_hash,
+            );
+        }
+        catch {
+            my $err = $_;
+            # There was an error processing payment for this member. Set their
+            # billing_error flag, so that we don't retry until it is cleared
+            $member->billing_error($err);
+            $member->save(
+                error_cb => sub {
+                    email_admin("Failed to set billing_error for member",
+                        "I tried to mark member " . $member->id . " with a "
+                        . "billing error for order '$order_num' but failed."
+                        . "\nError was: $err");
+                },
+            );
+
+            # Re-raise error so that it is reported properly.
+            die $err;
+        };
+
         $error = "Order '$order_num' processed but txns not marked as paid.";
         for my $txn (@$txns) {
             $txn->paid(1);
@@ -244,10 +265,9 @@ sub process_transactions {
         email_admin("Error processing payment $order_num",
             "Had a problem during payment processing: $error\n\n$err\n\n"
             . "This payment was for member ID " . $member->id
-            . " for transactions: " . join(', ', map { $_->id } @$txns
+            . " for transactions: " . join(', ', map { $_->id } @$txns)
         );
     }
-
 }
 
 sub check_for_jobs {

@@ -16,8 +16,14 @@ has 'email'  => (isa => 'Maybe[Str]', is => 'rw');
 has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
-has 'frozen' => (isa => 'Bool', is => 'rw');
 has 'PIN' => (isa => 'Maybe[Str]', is => 'rw');
+
+# Frozen: if the member is _allowed_ to withdraw fuel. Sets cardlock PIN
+has 'frozen' => (isa => 'Bool', is => 'rw');
+
+# Billing Error: 
+has 'billing_error' => (isa => 'Maybe[Str]', is => 'rw');
+
 
 has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
 has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);
@@ -28,6 +34,16 @@ has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1)
 
 sub view_base { 'members' }
 method id { $self->member_id }
+
+method as_hash {
+    my $hash = { Type => 'member' };
+    for my $key (qw/_id _rev member_id first_name last_name phone_num 
+                    email start_epoch dues_paid_until payment_hash frozen
+                    PIN billing_error/) {
+        $hash->{$key} = $self->$key;
+    }
+    return $hash;
+}
 
 sub Create {
     my $class = shift;
@@ -67,15 +83,6 @@ sub Create {
 method unpaid_transactions {
     my $mid = $self->member_id;
     return Biopay::Transaction->All_unpaid({key => "$mid"});
-}
-
-method as_hash {
-    my $hash = { Type => 'member' };
-    for my $key (qw/_id _rev member_id first_name last_name phone_num email start_epoch
-                    dues_paid_until payment_hash frozen PIN/) {
-        $hash->{$key} = $self->$key;
-    }
-    return $hash;
 }
 
 method freeze   { $self->set_freeze(1) }
