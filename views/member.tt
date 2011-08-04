@@ -57,7 +57,7 @@
   </tr>
 </table>
 </p>
-  [% SET muri = "/members/" + member.member_id %]
+  [% SET muri = "/members/" _ member.member_id %]
   <p>
     <a href="[% muri %]/edit">Edit this member!</a> |
     [% If member.frozen %]
