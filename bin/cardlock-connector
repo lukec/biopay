@@ -218,6 +218,22 @@ sub process_transactions {
                 amount => $total,
                 hash => $member->payment_hash,
             );
+            if ($member->frozen) {
+                $member->frozen(0);
+                cardlock_unfreeze($member, 0); # Un-freeze on the cardlock
+                $member->save(
+                    success_cb => sub {
+                        print ' (Un-freeze:' . $member->id . ') ';
+                    },
+                    error_cb => sub {
+                        my $err = shift;
+                        email_admin("Failed to un-freeze member",
+                            "I tried to un-freeze member " . $member->id
+                            . " after a successful payment, but saving failed."
+                            . "\nError was: $err");
+                    },
+                );
+            }
         }
         catch {
             my $err = $_;
@@ -225,7 +241,7 @@ sub process_transactions {
             # billing_error flag, so that we don't retry until it is cleared
             $member->billing_error($err);
             $member->frozen(1);
-            cardlock_freeze($member); # Freeze on the cardlock directly
+            cardlock_freeze($member, 0); # Freeze on the cardlock directly
             $member->save(
                 success_cb => sub {
                     print ' (Freeze:' . $member->id . ') ';
@@ -239,6 +255,7 @@ sub process_transactions {
                         . "\nPayment error was: $err");
                 },
             );
+            $member->send_billing_error_email($err, $total);
 
             # Re-raise error so that it is reported properly.
             die $err;
@@ -276,24 +293,6 @@ sub process_transactions {
             . " for transactions: " . join(', ', map { $_->id } @$txns)
         );
     }
-    finally {
-        if ($member->frozen) {
-            $member->frozen(0);
-            cardlock_unfreeze($member); # Un-freeze on the cardlock directly
-            $member->save(
-                success_cb => sub {
-                    print ' (Un-freeze:' . $member->id . ') ';
-                },
-                error_cb => sub {
-                    my $err = shift;
-                    email_admin("Failed to un-freeze member",
-                        "I tried to un-freeze member " . $member->id
-                        . " after a successful payment, but saving failed."
-                        . "\nError was: $err");
-                },
-            );
-        }
-    };
 }
 
 sub check_for_jobs {
@@ -313,8 +312,8 @@ sub handle_job {
         print " ($job->{command}$mid) ";
         try {
             given ($job->{command}) {
-                when ('freeze')   { cardlock_freeze($member) }
-                when ('unfreeze') { cardlock_unfreeze($member) }
+                when ('freeze')   { cardlock_freeze($member, 1) }
+                when ('unfreeze') { cardlock_unfreeze($member, 1) }
                 when ('change_PIN') {
                     $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 }
@@ -354,6 +353,7 @@ sub handle_job {
 
 sub cardlock_freeze {
     my $member = shift;
+    my $save = shift;
     my $mid = $member->id;
     my $pin = $cardlock->fetch_PIN($mid);
     $cardlock->set_PIN($mid, 0);
@@ -361,11 +361,12 @@ sub cardlock_freeze {
     $member->save( error_cb => sub {
             email_admin("Failed to save member PIN after freeze",
                 "I froze member $mid but could not save their PIN "
-                . "($pin) back to the couch.\n\n" . shift) } );
+                . "($pin) back to the couch.\n\n" . shift) } ) if $save;
 }
 
 sub cardlock_unfreeze {
     my $member = shift;
+    my $save   = shift;
     my $mid = $member->id;
     if ($member->PIN) {
         $cardlock->set_PIN($mid, $member->PIN);
@@ -373,14 +374,14 @@ sub cardlock_unfreeze {
         $member->save( error_cb => sub {
             email_admin("Failed to clear member PIN after unfreeze",
                 "I un-froze member $mid but could not clear their "
-                . "PIN.\n\n" . shift) } );
+                . "PIN.\n\n" . shift) } ) if $save;
     }
     else {
         my $random_pin = random_pin();
         try {
             $cardlock->set_PIN($mid, $random_pin);
             if ($member->email) {
-                $member->send_new_pin($random_pin);
+                $member->send_new_pin_email($random_pin);
             }
             else {
                 email_admin(

@@ -34,10 +34,11 @@ method process {
             # should happen in testing.
             return "Transaction $p{order_num} was a dup.";
         }
-        die "Transaction $p{order_num} failed: $msg\n";
+        die "Payment of \$$p{amount} failed ($p{order_num}). Error: $msg\n";
     }
     else {
-        die "Transaction $p{order_num} failed: " . $resp->status_line;
+        die "Payment of \$$p{amount} failed ($p{order_num}). Error: "
+            . $resp->status_line . "\n";
     }
 }
 

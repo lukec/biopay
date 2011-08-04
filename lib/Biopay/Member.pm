@@ -108,7 +108,7 @@ method change_PIN {
     );
 }
 
-method send_new_pin {
+method send_new_pin_email {
     my $new_PIN = shift;
     my $html = template 'email/new_pin', {
         member => $self,
@@ -123,6 +123,25 @@ method send_new_pin {
         message => $html,
     };
     debug "Just sent PIN change email to " . $self->email;
+}
+
+method send_billing_error_email {
+    my $error = shift;
+    my $amount = shift;
+    my $html = template 'email/billing-error', {
+        member => $self,
+        error => $error,
+        amount => $amount,
+    }, { layout => 'email' };
+    email {
+        to => $self->email,
+        bcc => 'lukecloss@gmail.com',
+        from => config->{email_from},
+        subject => "Biodiesel Co-op Billing Error!",
+        type => 'html',
+        message => $html,
+    };
+    debug "Just sent billing error email to " . $self->email;
 }
 
 method _build_name {

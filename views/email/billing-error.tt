@@ -1,0 +1,8 @@
+<h1>Billing Error for Member #[% member.id %]</h1>
+<p>Hello [% member.name %]!</p>
+<p>We had a problem billing your credit card for $[% amount %].</p>
+<p>[% error %]</p>
+
+<p><strong>Your account has been frozen until your payment details are updated.</strong>  You will not be able to use the cardlock to pump fuel.</p>
+
+<p>Please contact <a href="http://recyclingalternative.com">Recycling Alternative</a> at 604-874-7283 during business hours (Mon-Fri) to schedule an appointment to update your credit card details.</p>
