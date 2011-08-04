@@ -1,0 +1,5 @@
+<form action="/members" method="GET">
+  [% msg %] <input type="text" id="member_jump" name="jump_to" size="4" />
+  <input type="submit" value="Go!" />
+</form>
+<script> jQuery( function () { $("#member_jump").focus(); }); </script>
