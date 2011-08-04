@@ -48,10 +48,6 @@
     <td><strong>Dues Paid Until</strong></td>
     <td><input type="text" id="datepicker2" name="dues_paid_until_date" value="[% dues_paid_until_date || member.dues_paid_until_pretty_date %]"></td>
   </tr>
-  <tr>
-    <td><strong>Payment Hash</strong></td>
-    <td><input type="text" name="payment_hash" width="20" value="[% payment_hash || member.payment_hash %]" /></td>
-  </tr>
 </table>
   <input type="submit" value="Save" />
 </form>
