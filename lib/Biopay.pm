@@ -296,6 +296,7 @@ get '/members/:member_id/payment' => sub {
     given (params->{responseCode}) {
         when (1) { # Successful!
             $member->payment_hash(params->{customerCode});
+            $member->billing_error(undef);
             $member->save;
         }
         when (21) { # Cancelled, do nothing

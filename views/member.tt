@@ -44,6 +44,12 @@
     <td><strong>Frozen?</strong></td>
     <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
   </tr>
+  [% IF member.billing_error %]
+    <tr>
+      <td><strong>Billing Error</strong></td>
+      <td>[% member.billing_error %]</td>
+    </tr>
+  [% END %]
   <tr>
     <td><strong>Payment</strong></td>
     <td>

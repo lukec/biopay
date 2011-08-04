@@ -223,12 +223,18 @@ sub process_transactions {
             # There was an error processing payment for this member. Set their
             # billing_error flag, so that we don't retry until it is cleared
             $member->billing_error($err);
+            $member->frozen(1);
             $member->save(
+                success_cb => sub {
+                    print ' (Freeze:' . $member->id . ') ';
+                },
                 error_cb => sub {
+                    my $save_err = shift;
                     email_admin("Failed to set billing_error for member",
                         "I tried to mark member " . $member->id . " with a "
                         . "billing error for order '$order_num' but failed."
-                        . "\nError was: $err");
+                        . "\nSave error was: $save_err"
+                        . "\nPayment error was: $err");
                 },
             );
 
@@ -268,6 +274,23 @@ sub process_transactions {
             . " for transactions: " . join(', ', map { $_->id } @$txns)
         );
     }
+    finally {
+        if ($member->frozen) {
+            $member->frozen(0);
+            $member->save(
+                success_cb => sub {
+                    print ' (Un-freeze:' . $member->id . ') ';
+                },
+                error_cb => sub {
+                    my $err = shift;
+                    email_admin("Failed to un-freeze member",
+                        "I tried to un-freeze member " . $member->id
+                        . " after a successful payment, but saving failed."
+                        . "\nError was: $err");
+                },
+            );
+        }
+    };
 }
 
 sub check_for_jobs {
