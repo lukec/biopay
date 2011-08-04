@@ -71,6 +71,10 @@ method login {
 
 method fetch_PIN {
     my $card = shift;
+    unless ($self->exists) {
+        debug "No cardlock, but I would have fetch_PIN($card)";
+        return "1234";
+    }
     $self->login;
     $self->clean_read("E");
     my $output = $self->clean_read("$card\n\r");
@@ -84,6 +88,10 @@ method fetch_PIN {
 method set_PIN {
     my $card = shift;
     my $new_pin = shift;
+    unless ($self->exists) {
+        debug "No cardlock, but I would have set_PIN($card, $new_pin)";
+        return;
+    }
     $self->login;
     $self->clean_read("E");
     $self->clean_read("$card\n\r");

@@ -13,7 +13,7 @@ use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::Receipt;
-use Biopay::Util qw/email_admin/;
+use Biopay::Util qw/email_admin random_pin/;
 use AnyEvent;
 use List::Util qw/sum/;
 use Try::Tiny;
@@ -225,7 +225,7 @@ sub process_transactions {
             # billing_error flag, so that we don't retry until it is cleared
             $member->billing_error($err);
             $member->frozen(1);
-            freeze($member); # Freeze on the cardlock directly
+            cardlock_freeze($member); # Freeze on the cardlock directly
             $member->save(
                 success_cb => sub {
                     print ' (Freeze:' . $member->id . ') ';
@@ -279,7 +279,7 @@ sub process_transactions {
     finally {
         if ($member->frozen) {
             $member->frozen(0);
-            unfreeze($member); # Un-freeze on the cardlock directly
+            cardlock_unfreeze($member); # Un-freeze on the cardlock directly
             $member->save(
                 success_cb => sub {
                     print ' (Un-freeze:' . $member->id . ') ';
@@ -313,8 +313,8 @@ sub handle_job {
         print " ($job->{command}$mid) ";
         try {
             given ($job->{command}) {
-                when ('freeze') { freeze($member) }
-                when ('unfreeze') { unfreeze($member) }
+                when ('freeze')   { cardlock_freeze($member) }
+                when ('unfreeze') { cardlock_unfreeze($member) }
                 when ('change_PIN') {
                     $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 }
@@ -352,7 +352,7 @@ sub handle_job {
     );
 }
 
-sub freeze {
+sub cardlock_freeze {
     my $member = shift;
     my $mid = $member->id;
     my $pin = $cardlock->fetch_PIN($mid);
@@ -364,7 +364,7 @@ sub freeze {
                 . "($pin) back to the couch.\n\n" . shift) } );
 }
 
-sub unfreeze {
+sub cardlock_unfreeze {
     my $member = shift;
     my $mid = $member->id;
     if ($member->PIN) {
@@ -376,12 +376,31 @@ sub unfreeze {
                 . "PIN.\n\n" . shift) } );
     }
     else {
-        debug "Cannot un-freeze account, no PIN stored for $mid";
-        email_admin(
-            "Cannot un-freeze member $mid, no PIN is stored!",
-            "You should probably contact " . $member->name
-            . " at " . $member->email . " and get them to reset "
-            . "their PIN.");
+        my $random_pin = random_pin();
+        try {
+            $cardlock->set_PIN($mid, $random_pin);
+            if ($member->email) {
+                $member->send_new_pin($random_pin);
+            }
+            else {
+                email_admin(
+                    "Reset member PIN after un-freeze",
+                    "I un-froze member ID " . $member->id . " ("
+                    . $member->name . ") but had to make a random PIN.\n"
+                    . "I couldn't email them their new PIN.  The new PIN is "
+                    . "$random_pin.\n\n"
+                    . ($member->phone_num 
+                        ? "Their phone number is " . $member->phone_num . "."
+                        : "They have no phone number. :(")
+                );
+            }
+        }
+        catch {
+            email_admin("Failed to send reset PIN email to member",
+                "I tried to send an email to member " . $member->id
+                . " about their reset PIN to $random_pin, but this failed: $_"
+            );
+        };
     }
 }
 

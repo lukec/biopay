@@ -1,10 +1,12 @@
 package Biopay::Member;
-use Moose;
-use methods;
+use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
+use Dancer::Plugin::Email;
+use Moose;
 use DateTime;
 use Try::Tiny;
 use Biopay::Command;
+use methods;
 
 extends 'Biopay::Resource';
 
@@ -104,6 +106,23 @@ method change_PIN {
         new_PIN => $new_PIN,
         member_id => $self->id,
     );
+}
+
+method send_new_pin {
+    my $new_PIN = shift;
+    my $html = template 'email/new_pin', {
+        member => $self,
+        PIN => $new_PIN,
+    }, { layout => 'email' };
+    email {
+        to => $self->email,
+        bcc => 'lukecloss@gmail.com',
+        from => config->{email_from},
+        subject => "Biodiesel Co-op PIN change",
+        type => 'html',
+        message => $html,
+    };
+    debug "Just sent PIN change email to " . $self->email;
 }
 
 method _build_name {
