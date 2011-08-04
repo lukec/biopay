@@ -14,7 +14,7 @@ with 'Biopay::Roles::HasMember';
 
 method send {
     unless ($self->member->email) {
-        debug "Member " . $self->id . " does not have an email address.";
+        debug "Member " . $self->member->id. " does not have an email address.";
         return;
     }
 
