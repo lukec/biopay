@@ -7,6 +7,7 @@
     <h3>Members</h3>
     <li><a href="/members">Members</a></li>
     <li><a href="/members/create">Add new</a></li>
+    <p>[% INCLUDE 'member-jump-form.tt' msg = "Jump: " %]</p>
     <h3>Admin Actions</h3>
     <li><a href="/">Admin Home</a></li>
     <li><a href="/fuel-price">Change Fuel Price</a></li>

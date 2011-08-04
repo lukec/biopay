@@ -1,11 +1,4 @@
 <h1>Biodiesel Co-op Membership</h1>
-<form action="/members" method="GET">
-<p>
-  Quick jump to member #:
-  <input type="text" id="member_jump" name="jump_to" size="4" />
-  <input type="submit" value="Go!" />
-  </p>
-</form>
 [% IF members.size %]
 <table class="members">
   <tr>
@@ -29,9 +22,3 @@
 [% END %]
 
 
-<script>
-   jQuery( function () {
-          $("#member_jump").focus();
-     }
-   );
-</script>
