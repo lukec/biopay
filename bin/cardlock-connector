@@ -17,6 +17,7 @@ use Biopay::Util qw/email_admin/;
 use AnyEvent;
 use List::Util qw/sum/;
 use Try::Tiny;
+use Data::Dumper;
 
 $| = 1; # auto-flush STDOUT
 
@@ -224,6 +225,7 @@ sub process_transactions {
             # billing_error flag, so that we don't retry until it is cleared
             $member->billing_error($err);
             $member->frozen(1);
+            freeze($member); # Freeze on the cardlock directly
             $member->save(
                 success_cb => sub {
                     print ' (Freeze:' . $member->id . ') ';
@@ -277,6 +279,7 @@ sub process_transactions {
     finally {
         if ($member->frozen) {
             $member->frozen(0);
+            unfreeze($member); # Un-freeze on the cardlock directly
             $member->save(
                 success_cb => sub {
                     print ' (Un-freeze:' . $member->id . ') ';
@@ -308,49 +311,32 @@ sub handle_job {
         my $member = shift;
         my $mid = $member->id;
         print " ($job->{command}$mid) ";
-        given ($job->{command}) {
-            when ('freeze') {
-                my $pin = $cardlock->fetch_PIN($mid);
-                $cardlock->set_PIN($mid, 0);
-                $member->PIN($pin);
-                $member->save( error_cb => sub {
-                        email_admin("Failed to save member PIN after freeze",
-                            "I froze member $mid but could not save their PIN "
-                            . "($pin) back to the couch.\n\n" . shift) } );
-            }
-            when ('unfreeze') {
-                if ($member->PIN) {
-                    $cardlock->set_PIN($mid, $member->PIN);
-                    $member->PIN(undef);
-                    $member->save( error_cb => sub {
-                        email_admin("Failed to clear member PIN after unfreeze",
-                            "I un-froze member $mid but could not clear their "
-                            . "PIN.\n\n" . shift) } );
+        try {
+            given ($job->{command}) {
+                when ('freeze') { freeze($member) }
+                when ('unfreeze') { unfreeze($member) }
+                when ('change_PIN') {
+                    $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 }
-                else {
-                    debug "Cannot un-freeze account, no PIN stored for $mid";
-                    email_admin(
-                        "Cannot un-freeze member $mid, no PIN is stored!",
-                        "You should probably contact " . $member->name
-                        . " at " . $member->email . " and get them to reset "
-                        . "their PIN.");
+                when ('send-receipt') {
+                    debug "Sending receipt to $mid (" . $member->name . ")";
+                    # Shell out so we can avoid AE-style programming of the
+                    # receipt code
+                    system($^X, "$FindBin::Bin/send-receipt", $job->_id)
+                        and die "Could not send receipt for job " . $job->_id;
                 }
-            }
-            when ('change_PIN') {
-                $cardlock->set_PIN($mid, $job->args->{new_PIN});
-            }
-            when ('send-receipt') {
-                debug "Sending receipt to $mid (" . $member->name . ")";
-                # Shell out so we can avoid AE-style programming of the
-                # receipt code
-                system($^X, "$FindBin::Bin/send-receipt", $job->_id)
-                    and die "Could not send receipt for job " . $job->_id;
-            }
-            default {
-                debug "Skipping unknown command: '$job->{command}'\n";
-                return;
+                default {
+                    debug "Skipping unknown command: '$job->{command}'\n";
+                    return;
+                }
             }
         }
+        catch {
+            email_admin("Error running job $job->{command} for Member $mid",
+                "Tried to run the job but got error: " . shift
+                . "\n\n" . Dumper($job)
+            );
+        };
         $couch->remove_doc($job)->cb(
             sub {
                 my $cv = shift;
@@ -364,6 +350,39 @@ sub handle_job {
         );
         }
     );
+}
+
+sub freeze {
+    my $member = shift;
+    my $mid = $member->id;
+    my $pin = $cardlock->fetch_PIN($mid);
+    $cardlock->set_PIN($mid, 0);
+    $member->PIN($pin);
+    $member->save( error_cb => sub {
+            email_admin("Failed to save member PIN after freeze",
+                "I froze member $mid but could not save their PIN "
+                . "($pin) back to the couch.\n\n" . shift) } );
+}
+
+sub unfreeze {
+    my $member = shift;
+    my $mid = $member->id;
+    if ($member->PIN) {
+        $cardlock->set_PIN($mid, $member->PIN);
+        $member->PIN(undef);
+        $member->save( error_cb => sub {
+            email_admin("Failed to clear member PIN after unfreeze",
+                "I un-froze member $mid but could not clear their "
+                . "PIN.\n\n" . shift) } );
+    }
+    else {
+        debug "Cannot un-freeze account, no PIN stored for $mid";
+        email_admin(
+            "Cannot un-freeze member $mid, no PIN is stored!",
+            "You should probably contact " . $member->name
+            . " at " . $member->email . " and get them to reset "
+            . "their PIN.");
+    }
 }
 
 my %seen_members;
