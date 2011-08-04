@@ -91,6 +91,7 @@ exit;
 
 my %txn_start;
 sub check_cardlock {
+    return unless $cardlock->exists;
     print 'C';
     my $records = $cardlock->recent_transactions;
     for my $txn_hash (@$records) {

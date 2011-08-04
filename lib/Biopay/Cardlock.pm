@@ -10,10 +10,13 @@ use Try::Tiny;
 
 has 'cli' => (is => 'ro', isa => 'Control::CLI', lazy_build => 1);
 has 'fetch_price_cb' => (is => 'ro', isa => 'CodeRef', required => 1);
+has 'device' => (is => 'ro', isa => 'Str', default => '/dev/ttyS0');
+
+method exists { -r $self->device }
 
 method _build_cli {
     my $cli = Control::CLI->new(
-        Use => '/dev/ttyS0',
+        Use => $self->device,
         Dump_log => 'cardlock.log',
     );
     $cli->connect(
