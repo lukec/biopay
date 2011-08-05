@@ -332,8 +332,8 @@ sub handle_job {
         print " ($job->{command}$mid) ";
         try {
             given ($job->{command}) {
-                when ('freeze')   { cardlock_freeze($member, 1) }
-                when ('unfreeze') { cardlock_unfreeze($member, 1) }
+                when ('freeze')   { cardlock_freeze($member, 1, $job) }
+                when ('unfreeze') { cardlock_unfreeze($member, 1, $job) }
                 when ('change_PIN') {
                     $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 }
@@ -374,14 +374,17 @@ sub handle_job {
 sub cardlock_freeze {
     my $member = shift;
     my $save = shift;
+    my $job = shift;
     my $mid = $member->id;
     my $pin = $cardlock->fetch_PIN($mid);
     $cardlock->set_PIN($mid, 0);
-    $member->PIN($pin);
-    $member->save( error_cb => sub {
-            email_admin("Failed to save member PIN after freeze",
-                "I froze member $mid but could not save their PIN "
-                . "($pin) back to the couch.\n\n" . shift) } ) if $save;
+    unless ($job->args->{forget_pin}) {
+        $member->PIN($pin);
+        $member->save( error_cb => sub {
+                email_admin("Failed to save member PIN after freeze",
+                    "I froze member $mid but could not save their PIN "
+                    . "($pin) back to the couch.\n\n" . shift) } ) if $save;
+    }
 }
 
 sub cardlock_unfreeze {
