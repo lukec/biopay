@@ -6,88 +6,120 @@
 [% INCLUDE message.tt %]
 
 [% IF member %]
-<div id="stats">
-<h3>Statistics:</h3>
-<ul>
-  <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
-  <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
-</ul>
-</div>
-<div id="details">
-<p>
-<table id="member_details">
-  <tr>
-    <td><strong>ID</strong></td>
-    <td>[% member.member_id %]</td>
-  </tr>
-  <tr>
-    <td><strong>Name</strong></td>
-    <td>[% member.name %]</td>
-  </tr>
-  <tr>
-    <td><strong>Phone</strong></td>
-    <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>
-  </tr>
-  <tr>
-    <td><strong>Email</strong></td>
-    <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
-  </tr>
-  <tr>
-    <td><strong>Joined</strong></td>
-    <td>[% member.start_pretty_date %]</td>
-  </tr>
-  <tr>
-    <td><strong>Dues Until</strong></td>
-    <td>[% member.dues_paid_until_pretty_date %]</td>
-  </tr>
-  <tr>
-    <td><strong>Frozen?</strong></td>
-    <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
-  </tr>
-  [% IF member.billing_error %]
-    <tr>
-      <td><strong>Billing Error</strong></td>
-      <td>[% member.billing_error %]</td>
-    </tr>
-  [% END %]
-  <tr>
-    <td><strong>Payment</strong></td>
-    <td>
-      [% SET profile_url = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?serviceVersion=1.0&merchantId=" _ settings.merchant_id _ "&trnReturnURL=" _ payment_return_url %]
-      [% IF member.payment_hash %]
-        <a href="[% profile_url %]&operationType=M&customerCode=[% member.payment_hash %]">Modify</a>
-      [% ELSE %]
-        <a href="[% profile_url %]&operationType=N">Set up</a>
+  [% IF member.active %]
+    <div id="stats">
+    <h3>Statistics:</h3>
+    <ul>
+      <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
+      <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
+    </ul>
+    </div>
+    <div id="details">
+    <p>
+    <table id="member_details">
+      <tr>
+        <td><strong>ID</strong></td>
+        <td>[% member.member_id %]</td>
+      </tr>
+      <tr>
+        <td><strong>Name</strong></td>
+        <td>[% member.name %]</td>
+      </tr>
+      <tr>
+        <td><strong>Phone</strong></td>
+        <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>
+      </tr>
+      <tr>
+        <td><strong>Email</strong></td>
+        <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
+      </tr>
+      <tr>
+        <td><strong>Joined</strong></td>
+        <td>[% member.start_pretty_date %]</td>
+      </tr>
+      <tr>
+        <td><strong>Dues Until</strong></td>
+        <td>[% member.dues_paid_until_pretty_date %]</td>
+      </tr>
+      <tr>
+        <td><strong>Frozen?</strong></td>
+        <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
+      </tr>
+      [% IF member.billing_error %]
+        <tr>
+          <td><strong>Billing Error</strong></td>
+          <td>[% member.billing_error %]</td>
+        </tr>
       [% END %]
-    </td>
-  </tr>
-</table>
-</p>
-  [% SET muri = "/members/" _ member.member_id %]
-  <p>
-    <a href="[% muri %]/edit">Edit this member!</a> |
-    [% If member.frozen %]
-      <a href="[% muri %]/freeze">Un-Freeze</a> |
-    [% ELSE %]
-      <a href="[% muri %]/freeze">Freeze</a> |
-    [% END %]
-    <a href="[% muri %]/change-pin">Change PIN</a>
-  </p>
-</div>
+      <tr>
+        <td><strong>Payment</strong></td>
+        <td>
+          [% SET profile_url = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?serviceVersion=1.0&merchantId=" _ settings.merchant_id _ "&trnReturnURL=" _ payment_return_url %]
+          [% IF member.payment_hash %]
+            <a href="[% profile_url %]&operationType=M&customerCode=[% member.payment_hash %]">Modify</a>
+          [% ELSE %]
+            <a href="[% profile_url %]&operationType=N">Set up</a>
+          [% END %]
+        </td>
+      </tr>
+    </table>
+    </p>
+      [% SET muri = "/members/" _ member.member_id %]
+      <p>
+        <a href="[% muri %]/edit">Edit this member!</a> |
+        [% If member.frozen %]
+          <a href="[% muri %]/freeze">Un-Freeze</a> |
+        [% ELSE %]
+          <a href="[% muri %]/freeze">Freeze</a> |
+        [% END %]
+        <a href="[% muri %]/change-pin">Change PIN</a> |
+        <a href="[% muri %]/cancel">Cancel Membership</a>
+      </p>
+    </div>
 
-<ul>
-  <li>
-    <a href="[% muri %]/txns">Recent Transactions</a>
-  </li>
-    
-  <li>
-    [% IF member.unpaid_transactions.size > 0 %]
-      <a href="[% muri %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
-    [% ELSE %]
-      This member has no unpaid transactions.
-    [% END %]
-  </li>
-</ul>
+    <ul>
+      <li>
+        <a href="[% muri %]/txns">Recent Transactions</a>
+      </li>
+        
+      <li>
+        [% IF member.unpaid_transactions.size > 0 %]
+          <a href="[% muri %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
+        [% ELSE %]
+          This member has no unpaid transactions.
+        [% END %]
+      </li>
+    </ul>
+  [% ELSE %]
+    <h3>Inactive Member</h3>
+    <p>This person has cancelled their co-op membership.</p>
+    <div id="details">
+    <p>
+    <table id="member_details">
+      <tr>
+        <td><strong>ID</strong></td>
+        <td>[% member.member_id %]</td>
+      </tr>
+      <tr>
+        <td><strong>Name</strong></td>
+        <td>[% member.name %]</td>
+      </tr>
+      <tr>
+        <td><strong>Phone</strong></td>
+        <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>
+      </tr>
+      <tr>
+        <td><strong>Email</strong></td>
+        <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
+      </tr>
+      <tr>
+        <td><strong>Joined</strong></td>
+        <td>[% member.start_pretty_date %]</td>
+      </tr>
+    </table>
+    </p>
+    </div>
+  [% END %]
 [% END %]
 
 

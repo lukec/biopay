@@ -241,6 +241,18 @@ get '/members/:member_id/freeze' => sub {
     };
 };
 
+get '/members/:member_id/cancel' => sub {
+    my $member = member();
+    if (params->{please_cancel} and $member->active) {
+        $member->cancel;
+        $member->send_cancel_email if params->{send_email};
+        redirect '/members/' . $member->id . '?cancelled=1';
+    }
+    template 'cancel', {
+        member => $member,
+    };
+};
+
 get '/members/:member_id/change-pin' => sub {
     my $msg = 'Please choose a 4-digit PIN.';
     $msg = "That PIN is invalid. $msg" if params->{bad_pin};
@@ -282,6 +294,7 @@ get '/members/:member_id' => sub {
     $msg = "A freeze request was sent to the cardlock." if params->{frozen};
     $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
     $msg = "A PIN change request was sent to the cardlock." if params->{PIN_changed};
+    $msg = "This membership has been cancelled." if params->{PIN_changed};
     my $member = member();
     template 'member', {
         member => $member,

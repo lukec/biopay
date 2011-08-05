@@ -1,0 +1,29 @@
+[% IF member.active %]
+<h1>Cancel membership for [% member.name %]</h1>
+  <div class="ui-widget">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+        <strong>Note:</strong> Cancelling membership will remove their cardlock access and delete their billing data.
+        </p>
+    </div>
+  </div>
+<p>
+  [% IF member.email %]
+      <strong>Yes, cancel [% member.name %]'s membership…</strong><br />
+      <ul>
+        <li>… <a href="/members/[% member.member_id %]/cancel?please_cancel=1&send_email=1">and send them an email confirmation</a></li>
+        <li>… <a href="/members/[% member.member_id %]/cancel?please_cancel=1&send_email=0">but do not send them any email</a></li>
+      </ul>
+  [% ELSE %]
+      <a href="/members/[% member.member_id %]/cancel?please_cancel=1">Yes, cancel [% member.name %]'s membership</a>
+  [% END %]
+</p>
+<p>
+  <a href="/members/[% member.member_id %]">No, go back.</a>
+</p>
+[% ELSE %]
+<h1>[% member.name %]'s membership is already cancelled.</h1>
+<p>
+  <a href="/members/[% member.member_id %]">Go back.</a>
+</p>
+[% END %]

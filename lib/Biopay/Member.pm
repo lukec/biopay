@@ -19,6 +19,7 @@ has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'PIN' => (isa => 'Maybe[Str]', is => 'rw');
+has 'active' => (isa => 'Bool', is => 'ro', default => 1);
 
 # Frozen: if the member is _allowed_ to withdraw fuel. Sets cardlock PIN
 has 'frozen' => (isa => 'Bool', is => 'rw');
@@ -41,7 +42,7 @@ method as_hash {
     my $hash = { Type => 'member' };
     for my $key (qw/_id _rev member_id first_name last_name phone_num 
                     email start_epoch dues_paid_until payment_hash frozen
-                    PIN billing_error/) {
+                    PIN billing_error active/) {
         $hash->{$key} = $self->$key;
     }
     return $hash;
@@ -82,16 +83,22 @@ sub Create {
     }
 }
 
+method cancel {
+    $self->active(0);
+    $self->payment_hash(undef);
+    $self->freeze(forget_pin => 1); # Does an implicit save()
+}
+
 method unpaid_transactions {
     my $mid = $self->member_id;
     return Biopay::Transaction->All_unpaid({key => "$mid"});
 }
 
-method freeze   { $self->set_freeze(1) }
-method unfreeze { $self->set_freeze(0) }
+method freeze   { $self->set_freeze(1, @_) }
+method unfreeze { $self->set_freeze(0, @_) }
 method set_freeze {
     my $val = shift;
-    Biopay::Command->Create(
+    Biopay::Command->Create( @_,
         command => $val ? 'freeze' : 'unfreeze',
         member_id => $self->member_id,
     );
@@ -106,6 +113,23 @@ method change_PIN {
         new_PIN => $new_PIN,
         member_id => $self->id,
     );
+}
+
+method send_cancel_email {
+    return unless $self->email;
+    my $new_PIN = shift;
+    my $html = template 'email/cancel', {
+        member => $self,
+    }, { layout => 'email' };
+    email {
+        to => $self->email,
+        bcc => 'lukecloss@gmail.com',
+        from => config->{email_from},
+        subject => "Biodiesel Membership Cancelled",
+        type => 'html',
+        message => $html,
+    };
+    debug "Just sent membership cancellation email to " . $self->email;
 }
 
 method send_new_pin_email {
