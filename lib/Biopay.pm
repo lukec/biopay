@@ -304,6 +304,9 @@ get '/members/:member_id/payment' => sub {
         when (21) { # Cancelled, do nothing
             $msg = "Payment profile update cancelled.";
         }
+        when (7) { # Duplicate card used, likely due to testing.
+            $msg = params->{responseMessage};
+        }
         default {
             email_admin("Error saving payment profile",
                 "I tried to update a payment profile for member " . $member->name
