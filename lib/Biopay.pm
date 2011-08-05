@@ -299,9 +299,11 @@ get '/members/:member_id' => sub {
     template 'member', {
         member => $member,
         message => $msg,
-        stats => Biopay::Stats->new,
-        ( $member ? (payment_return_url => host()
-                    . '/members/' . $member->id . '/payment') : ())
+        ( $member->active ? 
+            ( stats => Biopay::Stats->new,
+            ( $member ? (payment_return_url => host()
+                        . '/members/' . $member->id . '/payment') : ())
+            ) : ())
     };
 };
 
