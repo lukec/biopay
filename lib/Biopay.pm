@@ -282,11 +282,13 @@ get '/members/:member_id' => sub {
     $msg = "A freeze request was sent to the cardlock." if params->{frozen};
     $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
     $msg = "A PIN change request was sent to the cardlock." if params->{PIN_changed};
+    my $member = member();
     template 'member', {
-        member => member(),
+        member => $member,
         message => $msg,
         stats => Biopay::Stats->new,
-        payment_return_url => host() . '/members/' . member()->id . '/payment',
+        ( $member ? (payment_return_url => host()
+                    . '/members/' . $member->id . '/payment') : ())
     };
 };
 
