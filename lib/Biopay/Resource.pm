@@ -22,7 +22,8 @@ sub By_id {
             sub {
                 my $cv2 = shift;
                 my $results = $cv2->recv;
-                my $obj = $class->new_from_couch($results->{rows}[0]{value});
+                my $val = $results->{rows}[0]{value};
+                my $obj = $val ? $class->new_from_couch($val) : undef;
                 return $cb->($obj);
             }
         );
