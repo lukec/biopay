@@ -71,11 +71,15 @@ my $sigint = AnyEvent->signal(
     signal => "INT",
     cb => sub { $main_loop->send },
 );
-my $stdin = AnyEvent->io(
+my $stdin; $stdin = AnyEvent->io(
     fh => *STDIN,
     poll => 'r',
     cb => sub {
         my $key = <STDIN>;
+        unless (defined $key) {
+            $stdin = undef;
+            return;
+        }
         chomp $key;
         given ($key) {
             when (m/^X(\d+)/) {
