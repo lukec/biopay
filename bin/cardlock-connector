@@ -190,6 +190,10 @@ sub check_for_unpaid_txns {
                 my $txns = $member{$mid};
                 Biopay::Member->By_id($mid, sub {
                         my $member = shift;
+                        unless ($member) {
+                            print " (No member $mid found) ";
+                            return;
+                        }
                         if (my $hash = $member->payment_hash) {
                             process_transactions($member, $txns)
                                 unless $member->billing_error;
