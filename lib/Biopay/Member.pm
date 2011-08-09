@@ -56,27 +56,27 @@ sub Create {
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
 
-    my $cv = couchdb->open_doc($key);
+    my $cv = couchdb->save_doc($new_doc);
     if ($success_cb or $error_cb) { # keep it async
         $cv->cb( sub {
                 my $cv2 = shift;
-                try { $cv2->recv }
-                catch {
-                    # Member didn't exist, so create them now
-                    my $cv3 = couchdb->save_doc($new_doc);
-                    return $cv3->cb( $success_cb );
+                try { 
+                    $cv2->recv;
+                    $success_cb->( $class->new_from_couch($new_doc) );
                 }
-                return $error_cb->();
+                catch {
+                    print " (save_doc($key) failed: $_) ";
+                    return $error_cb->($_);
+                }
             },
         );
     }
     else { # do it blocking
-        eval { $cv->recv };
-        if ($@) {
-            couchdb->save_doc($new_doc)->recv;
+        try {
+            $cv->recv;
             return $class->new_from_couch($new_doc);
         }
-        else {
+        catch {
             die "Member $p{member_id} already exists!";
         }
     }

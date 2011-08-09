@@ -201,6 +201,7 @@ sub check_for_unpaid_txns {
                         my $member = shift;
                         unless ($member) {
                             print " (No member $mid found) ";
+                            autovivify_member($mid);
                             return;
                         }
                         if (my $hash = $member->payment_hash) {
@@ -426,9 +427,19 @@ my %seen_members;
 sub autovivify_member {
     my $member_id = shift;
     return if $seen_members{$member_id}++;
-    my $member = Biopay::Member->Create(
+    Biopay::Member->Create(
         member_id => $member_id,
-        success_cb => sub {}, # Ignore result
+        success_cb => sub {
+            try {
+                print " (Created member $member_id) ";
+            }
+            catch {
+                print " (Failed to create member $member_id - $_) ";
+            }
+        },
+        error_cb => sub {
+            print " (Failed to create member $member_id!!!) ";
+        },
     );
 }
 
