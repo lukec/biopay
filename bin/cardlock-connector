@@ -90,7 +90,16 @@ my $stdin; $stdin = AnyEvent->io(
 );
 
 
-$main_loop->recv; # Main event loop
+try {
+    $main_loop->recv; # Main event loop
+}
+catch {
+    (my $first_line = $_) =~ s/\n.+//s;
+    email_admin(
+        "Un-caught cardlock error: $first_line",
+        "Not sure what happened: $_",
+    );
+};
 print "Exiting Connector.\n";
 exit;
 
