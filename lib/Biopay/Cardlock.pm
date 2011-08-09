@@ -17,7 +17,7 @@ method exists { -r $self->device }
 method _build_cli {
     my $cli = Control::CLI->new(
         Use => $self->device,
-        Dump_log => 'cardlock.log',
+        # Dump_log => 'cardlock.log',
     );
     $cli->connect(
         BaudRate  => 9600,
