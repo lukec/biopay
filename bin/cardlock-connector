@@ -281,6 +281,7 @@ sub process_transactions {
 
         $error = "Order '$order_num' processed but txns not marked as paid.";
         for my $txn (@$txns) {
+            print " (Marking " . $txn->id . " as paid) ";
             $txn->paid(1);
             $txn->save(
                 error_cb => sub {
