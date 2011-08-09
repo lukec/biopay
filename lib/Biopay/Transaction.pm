@@ -16,7 +16,7 @@ has 'litres'          => (isa => 'Num',  is => 'ro', required => 1);
 has 'member_id'       => (isa => 'Num',  is => 'ro', required => 1);
 has 'price'           => (isa => 'Num',  is => 'ro', required => 1);
 has 'pump'            => (isa => 'Str',  is => 'ro', required => 1);
-has 'paid'            => (isa => 'Bool', is => 'rw', required => 1);
+has 'paid'            => (isa => 'Bool', is => 'rw', default => 0);
 has 'paid_date'       => (isa => 'Num',  is => 'rw');
 
 with 'Biopay::Roles::HasMember';
