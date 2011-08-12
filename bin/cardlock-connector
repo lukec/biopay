@@ -301,6 +301,7 @@ sub process_transactions {
             member => $member,
             txns => $txns,
         )->send;
+        print " (Receipt to: " . $member->email . ") " if $member->email;
     }
     catch {
         my $err = $_;

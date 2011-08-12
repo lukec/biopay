@@ -44,7 +44,6 @@ method send {
         type => 'html',
         message => $html,
     };
-    debug "Just sent email receipt to " . $self->member->email;
 }
 
 
