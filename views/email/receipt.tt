@@ -2,13 +2,13 @@
 <p>Hello [% member.name %]!</p>
 <p>The following transactions were charged to your account:</p>
 <table width="100%">
-    <tr>
+      <tr>
         <th align="left"}>Description</th>
         <th align="right">Price</th>
         <th align="right">Litres</th>
         <th align="right">HST</th>
         <th align="right">Amount</th>
-    </tr>
+      </tr>
     [% FOREACH txn IN txns %]
       <tr>
         <td>B100 on [% txn.pretty_date %]</td>
@@ -20,7 +20,7 @@
     [% END %]
     [% IF dues %]
       <tr>
-        <td>Annual Membership Fee</td>
+        <td>Membership dues until [% member.dues_paid_until_datetime.ymd %]</td>
         <td align="right">$[% dues %] per year</td>
         <td align="right">-</td>
         <td align="right">-</td>
