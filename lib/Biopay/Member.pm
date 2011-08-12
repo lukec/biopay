@@ -176,6 +176,12 @@ method membership_is_expired {
     return $self->dues_paid_until_datetime < now_dt();
 }
 
+method renew_membership {
+    my $new_expiry = now_dt() + DateTime::Duration->new(years => 1);
+    $self->dues_paid_until($new_expiry->epoch);
+    $self->save(@_);
+}
+
 method _build_name {
     my $name = join ' ', grep { defined } ($self->first_name, $self->last_name);
     $name = "Member #" . $self->member_id if $name =~ m/^\s*$/;
