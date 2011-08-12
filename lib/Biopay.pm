@@ -203,13 +203,12 @@ post '/members/create' => sub {
 
 sub ymd_to_epoch {
     my $ymd = shift;
-    try {
+    return try {
         my ($y, $m, $d) = split m#[/-]#, $ymd;
         my $dt = DateTime->new(year => $y, month => $m, day => $d);
         $dt->set_time_zone('America/Vancouver');
         return $dt->epoch;
-    };
-    return undef;
+    } || undef;
 }
 
 get '/members/:member_id/txns' => sub {
