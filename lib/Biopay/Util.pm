@@ -1,9 +1,10 @@
 package Biopay::Util;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
+use DateTime;
 use base 'Exporter';
 
-our @EXPORT_OK = qw/email_admin random_pin/;
+our @EXPORT_OK = qw/email_admin random_pin now_dt/;
 
 sub email_admin {
     my ($subj, $body) = @_;
@@ -29,6 +30,12 @@ sub random_pin {
         my $pin = sprintf "%04d", int(rand()*10000);
         return $pin if pin_is_ok($pin);
     }
+}
+
+sub now_dt {
+    my $dt = DateTime->now;
+    $dt->set_time_zone('America/Vancouver');
+    return $dt;
 }
 
 1;
