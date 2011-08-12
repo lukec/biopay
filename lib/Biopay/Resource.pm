@@ -78,6 +78,7 @@ method save {
                 my $cv2 = shift;
                 try {
                     my $res = $cv2->recv;
+                    $self->{_rev} = $res->{rev};
                     $p{success_cb}->($res) if $p{success_cb};
                 }
                 catch {
