@@ -9,6 +9,7 @@ has 'member_id' => (is => 'ro', isa => 'Str',      required => 1);
 # Pass in one of these two:
 has 'txn_ids'   => (is => 'ro', isa => 'ArrayRef');
 has 'txns'      => (is => 'ro', isa => 'ArrayRef', lazy_build => 1);
+has 'dues'      => (is => 'ro', isa => 'Num', default => 0);
 
 with 'Biopay::Roles::HasMember';
 
@@ -26,12 +27,14 @@ method send {
         $total_litres += $_->litres;
         $total_tax += $_->taxes;
     }
-    $total_price = sprintf '%0.02f', $total_price;
+    my $dues     = sprintf '%0.02f', $self->dues;
+    $total_price = sprintf '%0.02f', $total_price + $dues;
     $total_tax   = sprintf '%0.02f', $total_tax;
 
     my $html = template 'email/receipt', {
         member => $self->member,
         txns   => $self->txns,
+        ($dues > 0 ? (dues => $dues) : ()),
         total_price  => $total_price,
         total_litres => $total_litres,
         total_tax    => $total_tax,

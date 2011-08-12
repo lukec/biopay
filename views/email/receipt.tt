@@ -10,21 +10,30 @@
         <th align="right">Amount</th>
     </tr>
     [% FOREACH txn IN txns %]
-    <tr>
+      <tr>
         <td>B100 on [% txn.pretty_date %]</td>
         <td align="right">$[% txn.price_per_litre %]/L</td>
         <td align="right">[% txn.litres %]</td>
         <td align="right">$[% txn.taxes %]</td>
         <td align="right">$[% txn.price %]</td>
-    </tr>
+      </tr>
     [% END %]
-    <tr>
+    [% IF dues %]
+      <tr>
+        <td>Annual Membership Fee</td>
+        <td align="right">$[% dues %] per year</td>
+        <td align="right">-</td>
+        <td align="right">-</td>
+        <td align="right">$[% dues %]</td>
+      </tr>
+    [% END %]
+      <tr>
         <td><strong>Total</strong></td>
         <td></td>
         <td></td>
         <td align="right"><strong>$[% total_tax %]</strong></td>
         <td align="right"><strong>$[% total_price %]</strong></td>
-    </tr>
+      </tr>
 </table>
 <br />
 

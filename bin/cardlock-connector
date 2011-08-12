@@ -39,8 +39,9 @@ unless ($couch) {
 # * Check for unpaid transactions to be run once per hour
 # * Send the admin stats once per day
 
-my $price = Biopay::Prices->new->fuel_price;
-my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $price } );
+my $fuel_price = Biopay::Prices->new->fuel_price;
+my $membership_price = Biopay::Prices->new->annual_membership_price;
+my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $fuel_price } );
 my $processor = Biopay::PaymentProcessor->new;
 
 my $main_loop = AnyEvent->condvar;
@@ -57,8 +58,8 @@ my $price_timer = AnyEvent->timer(
     cb    => sub {
         Biopay::Prices->new->fuel_price(
             sub {
-                $price = shift;
-                print " (F${price}) ";
+                $fuel_price = shift;
+                print " (F${fuel_price}) ";
             },
         );
     },
@@ -228,6 +229,12 @@ sub process_transactions {
     my $order_num = @$txns > 1 
         ? sprintf("%d-txns-%d", length(@$txns), time)
         : "txn-" . $txns->[0]->txn_id;
+
+    my $need_to_renew_membership = $member->membership_is_expired;
+    if ($need_to_renew_membership) {
+        $total += $membership_price;
+    }
+
     my $error = "Order '$order_num' not yet processed.";
     try {
         try {
@@ -236,21 +243,25 @@ sub process_transactions {
                 amount => $total,
                 hash => $member->payment_hash,
             );
-            if ($member->frozen) {
-                $member->frozen(0);
-                cardlock_unfreeze($member, 0); # Un-freeze on the cardlock
-                $member->save(
+
+            # Update the member, if necessary
+            if ($need_to_renew_membership) {
+                $member->renew_membership(
                     success_cb => sub {
-                        print ' (Un-freeze:' . $member->id . ') ';
+                        print ' (Renewed membership for: ' . $member->id . ') ';
+                        unfreeze_member($member) if $member->frozen;
                     },
                     error_cb => sub {
-                        my $err = shift;
-                        email_admin("Failed to un-freeze member",
-                            "I tried to un-freeze member " . $member->id
-                            . " after a successful payment, but saving failed."
-                            . "\nError was: $err");
+                        my $save_err = shift;
+                        email_admin("Failed to renew membership",
+                            "I tried to renew member " . $member->id
+                            . "'s dues, but the save failed: $save_err");
+                        unfreeze_member($member) if $member->frozen;
                     },
                 );
+            }
+            else {
+                unfreeze_member($member) if $member->frozen;
             }
         }
         catch {
@@ -300,6 +311,8 @@ sub process_transactions {
             member_id => $member->id,
             member => $member,
             txns => $txns,
+            ($need_to_renew_membership 
+                ? (dues => $membership_price) : ())
         )->send;
         print " (Receipt to: " . $member->email . ") " if $member->email;
     }
@@ -313,6 +326,24 @@ sub process_transactions {
             . " for transactions: " . join(', ', map { $_->id } @$txns)
         );
     }
+}
+
+sub unfreeze_member {
+    my $member = shift;
+    $member->frozen(0);
+    cardlock_unfreeze($member, 0); # Un-freeze on the cardlock
+    $member->save(
+        success_cb => sub {
+            print ' (Un-freeze:' . $member->id . ') ';
+        },
+        error_cb => sub {
+            my $err = shift;
+            email_admin("Failed to un-freeze member",
+                "I tried to un-freeze member " . $member->id
+                . " after a successful payment, but saving failed."
+                . "\nError was: $err");
+        },
+    );
 }
 
 sub check_for_jobs {

@@ -14,6 +14,11 @@ method process {
 
     debug "Sending payment request $p{order_num} for \$$p{amount} for "
         . "hash $p{hash}";
+    if (config->{merchant_test}) {
+        debug "Merchant test in effect, no transaction sent to Beanstream!";
+        return;
+    }
+
     my $resp = $self->ua->post(
         'https://www.beanstream.com/scripts/process_transaction.asp',
         [

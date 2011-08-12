@@ -6,6 +6,7 @@ use Moose;
 use DateTime;
 use Try::Tiny;
 use Biopay::Command;
+use Biopay::Util qw/now_dt/;
 use methods;
 
 extends 'Biopay::Resource';
@@ -166,6 +167,13 @@ method send_billing_error_email {
         message => $html,
     };
     debug "Just sent billing error email to " . $self->email;
+}
+
+method membership_is_expired {
+    # Assume dues are not expired if we do not have any date
+    return 0 unless $self->dues_paid_until;
+
+    return $self->dues_paid_until_datetime < now_dt();
 }
 
 method _build_name {

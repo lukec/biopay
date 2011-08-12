@@ -22,6 +22,13 @@ method set_fuel_price {
     couchdb->save_doc($doc);
 }
 
+method annual_membership_price {
+    my $cb = shift;
+    die "Callback for annual_membership_price is not implemented!" if $cb;
+    return $self->doc->{annual_membership_price}
+        || die "No annual membership price found!";
+}
+
 method doc {
     my $cb = shift;
 
