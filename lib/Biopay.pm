@@ -3,6 +3,7 @@ use 5.12.0;
 use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Auth::RBAC;
+use Dancer::Plugin::Bcrypt;
 use Biopay::Transaction;
 use Biopay::Member;
 use Biopay::Stats;
@@ -10,20 +11,15 @@ use Biopay::Prices;
 use AnyEvent;
 use DateTime;
 use DateTime::Duration;
-use Biopay::Util qw/email_admin/;
+use Biopay::Util qw/email_admin host/;
 use Try::Tiny;
 
 our $VERSION = '0.1';
 
-sub host {
-    return 'http://' . request->host if request->host =~ m/localhost/;
-    # Otherwise use the bona fide dotcloud SSL cert
-    return 'https://biopay.ssl.dotcloud.com';
-}
-
 my %public_paths = (
     map { $_ => 1 }
-    qw( / /login /terms /refunds /privacy )
+    qw( / /login /terms /refunds /privacy ),
+    '/admin-login',
 );
 
 before sub {
@@ -36,7 +32,7 @@ before sub {
         return;
     }
 
-    unless ($public_paths{$path} or $path =~ m{^/login}) {
+    unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
         debug "no bio session, redirecting to login (from $path)";
         forward '/login', {
             message => "Please log-in first.",
@@ -56,7 +52,12 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-    $tokens->{is_admin} = session('bio') ? 1 : 0;
+    my $sess = session('bio');
+    $tokens->{is_admin} = $sess && $sess->{admin} ? 1 : 0;
+    $tokens->{is_member} = $sess && $sess->{member_id};
+    if ($tokens->{is_member}) {
+      $tokens->{member} ||= Biopay::Member->By_id($sess->{member_id});
+    }
 };
 
 get '/login' => sub {
@@ -73,15 +74,100 @@ post '/login' => sub {
     if (my $errors = $auth->errors) {
         my $msg = join(', ', $auth->errors);
         debug "Auth errors: $msg";
+        if ($msg =~ m/No password has been set/) {
+            return forward "/set-password", {},
+                { method => 'GET' };
+        }
+        return forward "/login", {message => $msg}, { method => 'GET' };
+    }
+    my $member = Biopay::Member->By_email($user);
+    unless ($member) {
+        return forward "/login", { message => "That user does not exist." },
+            { method => 'GET' };
+    }
+    unless ($member->active) {
+        return forward "/login",
+            { message => "That user is no longer active." },
+            { method  => 'GET' };
+    }
+
+    debug "Allowing access to member user $user";
+    session bio => { username => $user };
+    return redirect host() . param('path') || "/";
+};
+
+get '/set-password' => sub {
+    my $user = param('username');
+    unless ($user) {
+        return forward "/login";
+    }
+    my $member = Biopay::Member->By_email($user);
+    if ($member and !$member->password) {
+        $member->send_set_password_email;
+        # Remember to save the hash
+        $member->save;
+    }
+    template 'set-password' => { member => $member };
+};
+
+get '/set-password/:hash' => sub {
+    my $hash = param('hash');
+    my $member = Biopay::Member->By_hash($hash);
+
+    template 'set-password' => { 
+        member => $member,
+        confirmed => 1,
+    };
+};
+
+post '/set-password' => sub {
+    my $hash = param('hash');
+    my $password1 = param('password1');
+    my $password2 = param('password2');
+
+    my $member = Biopay::Member->By_hash($hash);
+    unless ($member) {
+        my $msg = "Sorry, we could not find that member.";
+        return forward "/login", {message => $msg}, { method => 'GET' };
+    }
+    unless ($password1 eq $password2) {
+        return template 'set-password' => { 
+            member => $member,
+            confirmed => 1,
+            message => "The passwords do not match. Try again.",
+        };
+    }
+    $member->password(bcrypt($password1));
+    $member->login_hash(undef);
+    $member->save;
+    session bio => { member_id => $member->id };
+    return redirect host() . "/";
+};
+
+get '/admin-login' => sub {
+    template 'admin-login' => { 
+        message => param('message') || '',
+        path => param('path'),
+        host => host(),
+    };
+};
+
+post '/admin-login' => sub {
+    my $user = param('username');
+    my $auth = auth($user, param('password'));
+    if (my $errors = $auth->errors) {
+        my $msg = join(', ', $auth->errors);
+        debug "Auth errors: $msg";
         return forward "/login", {message => $msg}, { method => 'GET' };
     }
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
-        session bio => { username => $user };
+        session bio => { username => $user, admin => 1 };
         return redirect host() . param('path') || "/";
     }
     debug "Found the $user user, but they are not an admin.";
-    return forward "/login", {}, { method => 'GET' };
+    return forward "/login", {message => "Sorry, you are not an admin."},
+                             { method => 'GET' };
 };
 
 get '/logout' => sub {
@@ -360,5 +446,57 @@ sub member {
     my $id = params->{member_id} or return undef;
     return Biopay::Member->By_id($id);
 }
+
+sub session_member {
+    my $sess = session('bio');
+    if (my $id = $sess->{member_id}) {
+        return Biopay::Member->By_id($id);
+    }
+    return undef;
+}
+
+get '/member/view' => sub {
+    my $member = session_member();
+    my $msg = params->{message};
+    template 'member', {
+        member => $member,
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
+};
+
+get '/member/edit' => sub {
+    die "not yet implemented";
+    my $member = session_member();
+    my $msg = params->{message};
+    template 'member', {
+        member => $member,
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
+};
+
+
+get '/member/change-pin' => sub {
+    die "not yet implemented";
+    my $member = session_member();
+    my $msg = params->{message};
+    template 'member', {
+        member => $member,
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
+};
+
+get '/member/cancel' => sub {
+    die "not yet implemented";
+    my $member = session_member();
+    my $msg = params->{message};
+    template 'member', {
+        member => $member,
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
+};
 
 true;

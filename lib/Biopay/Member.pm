@@ -6,7 +6,8 @@ use Moose;
 use DateTime;
 use Try::Tiny;
 use Biopay::Command;
-use Biopay::Util qw/now_dt/;
+use Biopay::Util qw/now_dt host/;
+use Data::UUID;
 use methods;
 
 extends 'Biopay::Resource';
@@ -21,6 +22,7 @@ has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'PIN' => (isa => 'Maybe[Str]', is => 'rw');
 has 'active' => (isa => 'Bool', is => 'ro', default => 1);
+has 'password' => (isa => 'Maybe[Str]', is => 'rw');
 
 # Frozen: if the member is _allowed_ to withdraw fuel. Sets cardlock PIN
 has 'frozen' => (isa => 'Bool', is => 'rw');
@@ -29,12 +31,21 @@ has 'frozen' => (isa => 'Bool', is => 'rw');
 has 'billing_error' => (isa => 'Maybe[Str]', is => 'rw');
 
 
-has 'name'              => (is => 'ro', isa => 'Str',      lazy_build => 1);
-has 'start_ymd'         => (is => 'ro', isa => 'Str',      lazy_build => 1);
-has 'start_datetime'    => (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
+# Lazy Built Attributes:
+
+has 'name'       => (is  => 'ro',         isa => 'Str', lazy_build => 1);
+has 'login_hash' => (isa => 'Maybe[Str]', is  => 'rw',  lazy_build => 1);
+has 'set_password_link' => (isa => 'Maybe[Str]', is => 'ro', lazy_build => 1);
+
+# Lazy Built Date helpers
+has 'start_ymd'         => (is => 'ro', isa => 'Str', lazy_build => 1);
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
-has 'dues_paid_until_datetime' => (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
-has 'dues_paid_until_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
+has 'dues_paid_until_pretty_date' =>
+    (is => 'ro', isa => 'Str', lazy_build => 1);
+has 'start_datetime' =>
+    (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
+has 'dues_paid_until_datetime' =>
+    (is => 'ro', isa => 'Maybe[DateTime]', lazy_build => 1);
 
 sub view_base { 'members' }
 method id { $self->member_id }
@@ -43,7 +54,7 @@ method as_hash {
     my $hash = { Type => 'member' };
     for my $key (qw/_id _rev member_id first_name last_name phone_num 
                     email start_epoch dues_paid_until payment_hash frozen
-                    PIN billing_error active/) {
+                    PIN billing_error active login_hash password/) {
         $hash->{$key} = $self->$key;
     }
     return $hash;
@@ -83,6 +94,9 @@ sub Create {
         }
     }
 }
+
+sub By_email { shift->By_view('by_email', @_) }
+sub By_hash  { shift->By_view('by_hash', @_) }
 
 method cancel {
     $self->active(0);
@@ -169,6 +183,21 @@ method send_billing_error_email {
     debug "Just sent billing error email to " . $self->email;
 }
 
+method send_set_password_email {
+    my $html = template 'email/set-password', {
+        member => $self,
+    }, { layout => 'email' };
+    email {
+        to => $self->email,
+        bcc => 'lukecloss@gmail.com',
+        from => config->{email_from},
+        subject => "Biodiesel Co-op - Set your password",
+        type => 'html',
+        message => $html,
+    };
+    debug "Just sent set-password email to " . $self->email;
+}
+
 method membership_is_expired {
     # Assume dues are not expired if we do not have any date
     return 0 unless $self->dues_paid_until;
@@ -210,5 +239,10 @@ method _build_dues_paid_until_datetime {
     my $dt = DateTime->from_epoch(epoch => $self->dues_paid_until);
     $dt->set_time_zone('America/Vancouver');
     return $dt;
+}
+
+method _build_login_hash { Data::UUID->new->create_str }
+method _build_set_password_link {
+    host() . '/set-password/' . $self->login_hash;
 }
 

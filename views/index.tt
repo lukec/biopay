@@ -1,21 +1,9 @@
 <h1>Vancouver Biodiesel Co-op Billing Tool</H1>
 [% IF message %]<div class="message">[% message %]</div>[% END %]
 [% IF is_admin %]
-<p>You are logged in.  Use the sidebar to access different parts.</p>
-
-<p><strong>Co-op Statistics</strong>
-  (since July 8th, 2011)<br />
-  <div id="homepage-data">
-  <ul>
-  [% SET litres = stats.fuel_sold_alltime() %]
-    <li>Members in this system: [% stats.active_members() %]</li>
-    <li>Fuel sales:  [% stats.fuel_sales() %]</li>
-    <li>Fuel sold: [% litres %] Litres</li>
-    <li>Taxes paid (29¢/L): $[% litres * 0.29 %]</li>
-    <li>Approx CO2 reduction: [% (litres * 1.94) div 1 %]kg (<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</li>
-  </ul>
-  </div>
-</p>
+  [% INCLUDE 'index-admin.tt' %]
+[% ELSIF is_member %]
+  [% INCLUDE 'index-member.tt' %]
 [% ELSE %]
 <p>Welcome to the VBC Billing Tool.  This service processes biodiesel
 purchases for Co-op members.  At present time, this service is available
@@ -26,8 +14,11 @@ to Co-op Admin staff only.
 </p>
 <hr />
 <p>
-  <ul><li>
-  <a href="/login">Co-op Admin Login</a>
+  <ul class="login"><li>
+  <a href="/login">Member Login</a>
+  </li>
+  <li>
+  <a href="/admin-login">Admin Login</a>
   </li></ul>
 </p>
 [% END %]

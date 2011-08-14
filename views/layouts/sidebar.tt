@@ -1,6 +1,22 @@
 <div id="sidebar">
   <ul id="sidebar-items">
-    [% IF is_admin %]
+    [% IF is_member %]
+      <p>Welcome, [% member.name %]</p>
+      <h3>Transactions</h3>
+      [% IF member.unpaid_transactions.size %]
+        <li><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions %])</a></li>
+      [% END %]
+      <li><a href="/txns">All Recent</a></li>
+      <h3>My Info</h3>
+      <li><a href="/member/view">View my profile</a></li>
+      <li><a href="/member/payment">
+        [% IF member.payment_hash %]
+          Update payment details
+        [% ELSE %]
+          <strong>Add payment details</strong>
+        [% END %]
+      </a></li>
+    [% ELSIF is_admin %]
     <h3>Transactions</h3>
     <li><a href="/unpaid">Payment Owing</a></li>
     <li><a href="/txns">All Recent</a></li>

@@ -52,7 +52,7 @@
         </tr>
       [% END %]
       <tr>
-        <td><strong>Payment</strong></td>
+        <td><strong>Payment details</strong></td>
         <td>
           [% SET profile_url = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?serviceVersion=1.0&merchantId=" _ settings.merchant_id _ "&trnReturnURL=" _ payment_return_url %]
           [% IF member.payment_hash %]
@@ -64,16 +64,23 @@
       </tr>
     </table>
     </p>
-      [% SET muri = "/members/" _ member.member_id %]
       <p>
-        <a href="[% muri %]/edit">Edit this member!</a> |
-        [% If member.frozen %]
-          <a href="[% muri %]/freeze">Un-Freeze</a> |
+        [% IF is_admin %]
+            [% SET muri = "/members/" _ member.member_id %]
+            <a href="[% muri %]/edit">Edit this member!</a> |
+            [% If member.frozen %]
+              <a href="[% muri %]/freeze">Un-Freeze</a> |
+            [% ELSE %]
+              <a href="[% muri %]/freeze">Freeze</a> |
+            [% END %]
+            <a href="[% muri %]/change-pin">Change PIN</a> |
+            <a href="[% muri %]/cancel">Cancel Membership</a>
         [% ELSE %]
-          <a href="[% muri %]/freeze">Freeze</a> |
+            [% SET muri = "/member" %]
+            <a href="[% muri %]/edit">Edit my details</a> |
+            <a href="[% muri %]/change-pin">Change my PIN</a> |
+            <a href="[% muri %]/cancel">Cancel my membership</a>
         [% END %]
-        <a href="[% muri %]/change-pin">Change PIN</a> |
-        <a href="[% muri %]/cancel">Cancel Membership</a>
       </p>
     </div>
 

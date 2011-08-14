@@ -1,34 +1,8 @@
-<h1>Vancouver Biodiesel Co-op Billing Login</H1>
-[% IF message %]
-<div class="ui-widget">
-    <div class="ui-state-error ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>[% message %]</strong></p>
-    </div>
-</div>
-[% END %]
-<p>Login to the Billing system:</p>
-<form action="[% host %]/login" method="POST">
-<table class="login">
-  <tr>
-    <td>Username:</td>
-    <td><input id="username" type="text" name="username" size=20 /></td>
-  </tr>
-  <tr>
-    <td>Password:</td>
-    <td><input type="password" name="password" size=20 /></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>
-      <input type="hidden" name="path" value="[% path %]" />
-      <input type="submit" value="Login!" />
-    </td>
-</table>
-</form>
-<script>
-   jQuery( function () {
-          $("#username").focus();
-     }
-   );
-</script>
+<h1>Member Login</H1>
+[% INCLUDE message.tt %]
+<p>Login to the member area:</p>
+[% INCLUDE 'login-form.tt' action="login" %]
+
+<hr />
+<p><a href="/forgot-password">I don't know my password!</a></p>
+<p><a href="/forgot-email">I don't know my email address!</a></p>

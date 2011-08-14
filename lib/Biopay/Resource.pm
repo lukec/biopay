@@ -3,20 +3,20 @@ use Moose;
 use methods;
 use Dancer::Plugin::CouchDB;
 use Dancer ':syntax';
+use Carp qw/croak/;
 use Try::Tiny;
 
 has '_id' => (isa => 'Str', is => 'ro', required => 1);
 has '_rev' => (isa => 'Str', is => 'ro', required => 1);
 has 'Type' => (isa => 'Str', is => 'ro', required => 1);
 
-sub By_id {
+sub By_id { shift->By_view('by_id', @_) }
+sub By_view {
     my $class = shift;
-    my $id    = shift;
+    my $view  = shift;
+    my $id    = shift or croak "You must specify an ID to look up!";
     my $cb    = shift;
-    my $cv = couchdb->view($class->view_base . '/by_id', {
-            key => "$id",
-        }
-    );
+    my $cv = couchdb->view($class->view_base . '/' . $view, { key => "$id" });
     if ($cb) {
         $cv->cb(
             sub {

@@ -4,7 +4,7 @@ use Dancer::Plugin::Email;
 use DateTime;
 use base 'Exporter';
 
-our @EXPORT_OK = qw/email_admin random_pin now_dt/;
+our @EXPORT_OK = qw/email_admin random_pin now_dt host/;
 
 sub email_admin {
     my ($subj, $body) = @_;
@@ -36,6 +36,12 @@ sub now_dt {
     my $dt = DateTime->now;
     $dt->set_time_zone('America/Vancouver');
     return $dt;
+}
+
+sub host {
+    return 'http://' . request->host if request->host =~ m/localhost/;
+    # Otherwise use the bona fide dotcloud SSL cert
+    return 'https://biopay.ssl.dotcloud.com';
 }
 
 1;

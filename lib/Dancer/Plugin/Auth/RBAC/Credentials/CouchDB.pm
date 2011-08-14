@@ -27,14 +27,23 @@ sub authorize {
         my $users = $db->view('auth/by_username', { key => "$login" })->recv;
         my $doc = $users->{rows}[0];
         my $user = defined $doc ? $doc->{value} : undef;
-        if (defined($user) and bcrypt_validate_password($password, $user->{password})) {
+        unless ($user) {
+            $self->errors("Sorry, I couldn't find that account.");
+            return 0;
+        }
+        unless ($user->{password}) {
+            $self->errors("No password has been set for this user.");
+            return 0;
+        }
+        if (bcrypt_validate_password($password, $user->{password})) {
+            my @roles = ( map { $_ =~ s/^\s+|\s+$//; $_  }
+                            split /\,/, $user->{roles} || '' );
+            my %roles = map { $_ => 1 } @roles;
             my $session_data = {
                 id    => $user->{id},
                 username  => $user->{username},
-                roles => [
-                    map { $_ =~ s/^\s+|\s+$//; $_  }
-                    split /\,/, $user->{roles}
-                ],
+                roles => \@roles,
+                admin => $roles{admin},
                 error => []
             };
             return $self->credentials($session_data);

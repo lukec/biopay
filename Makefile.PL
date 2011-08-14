@@ -19,6 +19,7 @@ WriteMakefile(
         'Dancer::Plugin::Auth::RBAC'     => 0,
         'Dancer::Plugin::Bcrypt'     => 0,
         'Dancer::Plugin::Email'     => 0,
+        'Data::UUID' => 0,
         'DateTime'   => 0,
         'Email::Date::Format' => 0,
         'URI::Query' => 0,

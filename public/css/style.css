@@ -184,6 +184,11 @@ footer {
     font-size: 10px;
 }
 
+ul.login li {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
 td,th {
     padding-left: 5px;
 }

@@ -1,0 +1,24 @@
+<form action="[% host %]/[% action %]" method="POST">
+<table class="login">
+  <tr>
+    <td>Email Address:</td>
+    <td><input id="username" type="text" name="username" size=20 /></td>
+  </tr>
+  <tr>
+    <td>Password:</td>
+    <td><input type="password" name="password" size=20 /></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>
+      <input type="hidden" name="path" value="[% path %]" />
+      <input type="submit" value="Login!" />
+    </td>
+</table>
+</form>
+<script>
+   jQuery( function () {
+          $("#username").focus();
+     }
+   );
+</script>
