@@ -512,7 +512,10 @@ sub autovivify_member {
             }
         },
         error_cb => sub {
-            print " (Failed to create member $member_id!!!) ";
+            my $err = shift;
+            if ($err !~ m/^409/) { #ignore 409 conflicts
+                print " (Failed to create member $member_id!!!) ";
+            }
         },
     );
 }

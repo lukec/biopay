@@ -92,8 +92,10 @@ sub Create {
                     $success_cb->( $class->new_from_hash($new_doc) );
                 }
                 catch {
-                    print " (save_doc($key) failed: $_) ";
-                    return $error_cb->($_) if $error_cb;
+                    if ($error_cb) { $error_cb->($_) }
+                    else {
+                        print " (save_doc($key) failed: $_) ";
+                    }
                 }
             },
         );
