@@ -36,30 +36,21 @@ before sub {
     }
 
     my $path = request->path_info;
-    return if $public_paths{$path} or $path =~ m{^/(login|set-password)};
-
     if (my $m = session 'member') {
-        unless ($path =~ m{^/member/}) {
-            debug "Member cannot access '$path'";
-            session message => "Sorry, that is not available to you.";
-            redirect '/';
-        };
-        return;
+        # TODO
     }
     elsif (session 'is_admin') {
-        if ($path =~ m{^/member/}) {
-            debug "Admin cannot access '$path'";
-            session message => "Sorry, that is not available to you.";
-            return redirect '/';
-        };
-        return;
+        # TODO
     }
-
-    debug "no bio session, redirecting to login (from $path)";
-    forward '/login', {
-        message => "Please log-in first.",
-        path => request->path_info,
-    };
+    else {
+        unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
+            debug "no bio session, redirecting to login (from $path)";
+            forward '/login', {
+                message => "Please log-in first.",
+                path => request->path_info,
+            };
+        }
+    }
 };
 
 get '/' => sub {
@@ -73,40 +64,21 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-
-    if (my $msg = session 'message') {
-        $tokens->{message} ||= $msg;
-        session 'message' => undef;
-    }
+    use Data::Dumper;
+    debug Dumper session;
 
     if (session 'is_admin') {
         $tokens->{admin_username} = session 'username';
-        $tokens->{is_admin} = 1;
     }
     elsif (my $m = session 'member') {
-        my $m = $tokens->{member} ||= try {
-            Biopay::Member->By_id($m->{member_id})
-        };
+        $tokens->{member} ||= try { Biopay::Member->By_id($m->{member_id}) };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
-
-        unless ($m->active) {
-            $tokens->{member_message} ||= <<'EOT';
-Your account is cancelled. <a href="mailto:info@vancouverbiodiesel.org">Email us</a> if you have any problems.
-EOT
-        }
-        unless ($m->payment_hash) {
-            $tokens->{member_message} ||= <<EOT;
-We do not have any payment info for you!<br />
-<p>
-<a href="/member/update-payment"><strong>Please click here to update your payment details.</strong></a>
-</p>
-EOT
-        }
     }
 };
 
 get '/login' => sub {
     template 'login' => { 
+        message => param('message') || '',
         path => param('path'),
         host => host(),
     };
@@ -267,6 +239,11 @@ post '/unpaid/mark-as-paid' => sub {
 };
 
 get '/txns' => sub {
+    my $txns;
+    if (my $m = session 'member') {
+    }
+    else {
+    }
     template 'txns', {
         txns => Biopay::Transaction->All_most_recent,
     };
@@ -274,19 +251,18 @@ get '/txns' => sub {
 
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
+    my %vars = ( txn => $txn );
     if (params->{mark_as_unpaid} and $txn->paid) {
         $txn->paid(0);
         $txn->save;
-        session message =>
-            "This transaction is now marked as <strong>not paid</strong>."
+        $vars{message} = "This transaction is now marked as <strong>not paid</strong>."
     }
     if (params->{mark_as_paid} and !$txn->paid) {
         $txn->paid(1);
         $txn->save;
-        session message =>
-            "This transaction is now marked as <strong>paid</strong>."
+        $vars{message} = "This transaction is now marked as <strong>paid</strong>."
     }
-    template 'txn', { txn => $txn };
+    template 'txn', \%vars;
 };
 
 get '/members' => sub {
@@ -331,8 +307,7 @@ post '/members/create' => sub {
     $hash{start_epoch} = ymd_to_epoch(delete $hash{start_date});
     $hash{dues_paid_until} = ymd_to_epoch(delete $hash{dues_paid_until_date});
     $member = Biopay::Member->Create(%hash);
-    session message => "Created new co-op member " . $member->name;
-    redirect "/members/" . $member->id;
+    redirect "/members/" . $member->id . "?message=Created";
 };
 
 sub ymd_to_epoch {
@@ -363,13 +338,11 @@ get '/members/:member_id/freeze' => sub {
     my $member = member();
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
-        session message => "A freeze request was sent to the cardlock.";
-        redirect '/members/' . $member->id;
+        redirect '/members/' . $member->id . '?frozen=1';
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
         $member->unfreeze;
-        session message => "An un-freeze request was sent to the cardlock.";
-        redirect '/members/' . $member->id;
+        redirect '/members/' . $member->id . '?thawed=1';
     }
     template 'freeze', {
         member => $member,
@@ -378,11 +351,10 @@ get '/members/:member_id/freeze' => sub {
 
 get '/members/:member_id/cancel' => sub {
     my $member = member();
-    if (params->{force} and $member->active) {
+    if (params->{please_cancel} and $member->active) {
         $member->cancel;
         $member->send_cancel_email if params->{send_email};
-        session message => "This membership has been cancelled.";
-        return redirect '/members/' . $member->id;
+        redirect '/members/' . $member->id . '?cancelled=1';
     }
     template 'cancel', {
         member => $member,
@@ -390,35 +362,23 @@ get '/members/:member_id/cancel' => sub {
 };
 
 get '/members/:member_id/change-pin' => sub {
-    my $m = member();
+    my $msg = 'Please choose a 4-digit PIN.';
+    $msg = "That PIN is invalid. $msg" if params->{bad_pin};
     template 'change-pin', {
-        member => $m,
-        action => '/members/' . $m->id . '/change-pin',
-        message => session('message') || 'Please choose a 4-digit PIN.',
+        member => member(),
+        message => $msg,
     };
 };
-
 post '/members/:member_id/change-pin' => sub {
     my $member = member();
-    return handle_change_pin(
-        member => $member,
-        good_url => '/members/' . $member->id,
-        bad_url  => '/members/' . $member->id . '/change-pin',
-    );
-};
-
-sub handle_change_pin {
-    my %p = @_;
     my $new_PIN = params->{new_PIN} || '';
     $new_PIN = 0 unless $new_PIN =~ m/^\d{4}$/;
     if ($new_PIN) {
-        $p{member}->change_PIN($new_PIN);
-        session message => "A PIN change request was sent to the cardlock.";
-        return redirect $p{good_url};
+        $member->change_PIN($new_PIN);
+        return redirect '/members/' . $member->id . '?PIN_changed=1';
     }
-    session message => 'Sorry, the PIN must be 4 digits. Try again';
-    return redirect $p{bad_url};
-}
+    return redirect '/members/' . $member->id . '/change-pin?bad_pin=1';
+};
 
 get '/members/:member_id/edit' => sub {
     template 'member-edit', {
@@ -434,14 +394,19 @@ post '/members/:member_id/edit' => sub {
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
     $member->dues_paid_until(ymd_to_epoch(params->{dues_paid_until_date}));
     $member->save;
-    session message => 'Saved';
-    redirect "/members/" . $member->id;
+    redirect "/members/" . $member->id . "?message=Saved";
 };
 
 get '/members/:member_id' => sub {
+    my $msg = params->{message};
+    $msg = "A freeze request was sent to the cardlock." if params->{frozen};
+    $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
+    $msg = "A PIN change request was sent to the cardlock." if params->{PIN_changed};
+    $msg = "This membership has been cancelled." if params->{PIN_changed};
     my $member = member();
     template 'member', {
         member => $member,
+        message => $msg,
         ( $member->active ? 
             ( stats => Biopay::Stats->new,
             ( $member ? (payment_return_url => host()
@@ -452,39 +417,31 @@ get '/members/:member_id' => sub {
 
 get '/members/:member_id/payment' => sub {
     my $member = member();
-    forward '/members/' . $member->id, { message => update_payment_profile_message() };
-};
-
-sub update_payment_profile_message {
-    # XXX How to verify response?
-    my $member = member();
+    my $msg = "Successfully updated payment profile.";
     given (params->{responseCode}) {
-        when (undef) { return undef }
         when (1) { # Successful!
             $member->payment_hash(params->{customerCode});
             $member->billing_error(undef);
             $member->save;
-            return "Successfully updated payment profile.";
         }
         when (21) { # Cancelled, do nothing
-            return "Payment profile update cancelled.";
+            $msg = "Payment profile update cancelled.";
         }
         when (7) { # Duplicate card used, likely due to testing.
-            return params->{responseMessage};
+            $msg = params->{responseMessage};
         }
         default {
-            my $name = $member ? $member->name : 'no-name';
-            my $id   = $member ? $member->id   : 0;
             email_admin("Error saving payment profile",
-                "I tried to update a payment profile for member $name"
-                . " ($id) but it failed with code: "
+                "I tried to update a payment profile for member " . $member->name
+                . " (" . $member->id . ") but it failed with code: "
                 . params->{responseCode} . "\n\n"
                 . "Message: " . params->{responseMessage}
             );
-            return "Error updating payment profile: " . params->{responseMessage};
+            $msg = "Error updating payment profile: " . params->{responseMessage};
         }
     }
-}
+    forward '/members/' . $member->id, { message => $msg };
+};
 
 get '/fuel-price' => sub {
     template 'fuel-price', {
@@ -522,107 +479,45 @@ sub session_member {
 
 get '/member/view' => sub {
     my $member = session_member();
+    my $msg = params->{message};
     template 'member', {
         member => $member,
         stats => Biopay::Stats->new,
-        message => update_payment_profile_message() || params->{message},
-    };
-};
-
-get '/member/update-payment' => sub {
-    my $member = session_member();
-    if ($member) {
-        my $url = "https://www.beanstream.com/scripts/PaymentProfile/"
-            . "webform.asp?serviceVersion=1.0&merchantId=" 
-            . config->{merchant_id}
-            . "&trnReturnURL=" . host() . '/member/view';
-        if (my $h = $member->payment_hash) {
-            $url .= "&operationType=M&customerCode=$h";
-        }
-        else {
-            $url .= "&operationType=N";
-        }
-        return redirect $url;
-    }
-    debug "No member found, could not satisfy /update-payment";
-    return redirect "/";
-};
-
-get '/member/edit' => sub {
-    my $member = session_member();
-    my $msg = params->{message};
-    template 'member-edit', {
-        member => $member,
         message => $msg,
     };
 };
 
-post '/member/edit' => sub {
+get '/member/edit' => sub {
+    die "not yet implemented";
     my $member = session_member();
-    for my $key (qw/first_name last_name phone_num email/) {
-        $member->$key(params->{$key});
-    }
-    $member->save;
-    session message => "Saved!";
-    redirect "/member/view";
+    my $msg = params->{message};
+    template 'member', {
+        member => $member,
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
 };
 
 
 get '/member/change-pin' => sub {
-    template 'change-pin', {
-        member => session_member(),
-        action => '/member/change-pin',
-        message => session('message') || 'Please choose a 4-digit PIN.',
-    };
-};
-
-post '/member/change-pin' => sub {
+    die "not yet implemented";
     my $member = session_member();
-    return handle_change_pin(
+    my $msg = params->{message};
+    template 'member', {
         member => $member,
-        good_url => '/member/view',
-        bad_url  => '/member/change-pin',
-    );
+        stats => Biopay::Stats->new,
+        message => $msg,
+    };
 };
 
 get '/member/cancel' => sub {
+    die "not yet implemented";
     my $member = session_member();
-    if (params->{force} and $member->active) {
-        $member->cancel;
-        $member->send_cancel_email;
-        session message => <<'EOT';
-This membership has been cancelled.<br />
-<p>If you have any feedback for our co-op, please send it to us at <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.</p>
-EOT
-        forward '/member/view';
-    }
-    template 'cancel', {
+    my $msg = params->{message};
+    template 'member', {
         member => $member,
-    };
-};
-
-get '/member/txns' => sub {
-    my $m = session_member();
-    template 'txns', {
-        txns => Biopay::Transaction->All_for_member($m->id)
-    };
-};
-
-get '/member/txns/:txn_id' => sub {
-    my $m = session_member();
-    my $txn = Biopay::Transaction->By_id(params->{txn_id});
-    if ($txn->member_id != $m->id) {
-        session message => "You are not allowed to view that transaction.";
-        return redirect '/member/txns';
-    }
-    template 'txn', { txn => $txn };
-};
-
-get '/member/unpaid' => sub {
-    my $m = session_member();
-    template 'member-unpaid', {
-        member => $m,
-        txns   => Biopay::Transaction->All_unpaid({key => $m->id}),
+        stats => Biopay::Stats->new,
+        message => $msg,
     };
 };
 

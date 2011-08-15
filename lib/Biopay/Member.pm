@@ -68,7 +68,7 @@ sub Create {
     my $class = shift;
     my %p = @_;
     my $success_cb = delete $p{success_cb};
-    my $error_cb = delete $p{error_cb} || sub {};
+    my $error_cb = delete $p{error_cb};
 
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
@@ -83,7 +83,7 @@ sub Create {
                 }
                 catch {
                     print " (save_doc($key) failed: $_) ";
-                    return $error_cb->($_);
+                    return $error_cb->($_) if $error_cb;
                 }
             },
         );
