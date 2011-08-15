@@ -188,6 +188,7 @@ method send_billing_error_email {
 }
 
 method send_set_password_email {
+    delete $self->{login_hash}; # Cause it to be re-created
     my $html = template 'email/set-password', {
         member => $self,
     }, { layout => 'email' };

@@ -18,8 +18,8 @@ our $VERSION = '0.1';
 
 my %public_paths = (
     map { $_ => 1 }
-    qw( / /login /logout /terms /refunds /privacy ),
-    '/admin-login',
+    qw( / /login /logout /terms /refunds /privacy),
+    '/forgot-password', '/admin-login',
 );
 
 before sub {
@@ -144,7 +144,7 @@ post '/login' => sub {
 get '/set-password' => sub {
     my $user = param('username');
     unless ($user) {
-        return forward "/login";
+        return redirect "/login";
     }
     my $member = Biopay::Member->By_email($user);
     if ($member and !$member->password) {
@@ -631,6 +631,32 @@ get '/member/unpaid' => sub {
         member => $m,
         txns   => Biopay::Transaction->All_unpaid({key => $m->id}),
     };
+};
+
+get '/forgot-password' => sub {
+    debug session('message');
+    template 'forgot-password', {message => params->{message}};
+};
+post '/forgot-password' => sub {
+    my $email = params->{email};
+    unless ($email) {
+        return forward '/forgot-password', {
+            message => "Please enter your email address.",
+        }, {method => 'GET'};
+    }
+
+    my $m = Biopay::Member->By_email($email);
+    unless ($m) {
+        return forward '/forgot-password', {
+            message => "Sorry, a member with that email address cannot "
+                           . "be found.",
+        }, {method => 'GET'};
+    }
+
+    $m->send_set_password_email;
+    # Remember to save the hash
+    $m->save;
+    template 'forgot-password', { email_sent => 1 };
 };
 
 true;
