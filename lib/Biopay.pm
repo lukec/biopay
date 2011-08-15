@@ -36,31 +36,32 @@ before sub {
     }
 
     my $path = request->path_info;
+    return if $public_paths{$path} or $path =~ m{^/(login|set-password)};
+
     if (my $m = session 'member') {
         unless ($path =~ m{/member/}) {
             debug "Member cannot access '$path'";
-            forward '/', {
+            return forward '/', {
                 message => "Sorry, that is not available to you.",
             };
         };
+        return;
     }
     elsif (session 'is_admin') {
         if ($path =~ m{/member/}) {
             debug "Admin cannot access '$path'";
-            forward '/', {
+            return forward '/', {
                 message => "Sorry, that is not available to you.",
             };
         };
+        return;
     }
-    else {
-        unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
-            debug "no bio session, redirecting to login (from $path)";
-            forward '/login', {
-                message => "Please log-in first.",
-                path => request->path_info,
-            };
-        }
-    }
+
+    debug "no bio session, redirecting to login (from $path)";
+    forward '/login', {
+        message => "Please log-in first.",
+        path => request->path_info,
+    };
 };
 
 get '/' => sub {
@@ -363,11 +364,13 @@ get '/members/:member_id/freeze' => sub {
     my $member = member();
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
-        redirect '/members/' . $member->id . '?frozen=1';
+        session message => "A freeze request was sent to the cardlock.";
+        redirect '/members/' . $member->id;
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
         $member->unfreeze;
-        redirect '/members/' . $member->id . '?thawed=1';
+        session message => "An un-freeze request was sent to the cardlock.";
+        redirect '/members/' . $member->id;
     }
     template 'freeze', {
         member => $member,
@@ -379,7 +382,8 @@ get '/members/:member_id/cancel' => sub {
     if (params->{please_cancel} and $member->active) {
         $member->cancel;
         $member->send_cancel_email if params->{send_email};
-        redirect '/members/' . $member->id . '?cancelled=1';
+        session message => "This membership has been cancelled.";
+        redirect '/members/' . $member->id;
     }
     template 'cancel', {
         member => $member,
@@ -387,23 +391,35 @@ get '/members/:member_id/cancel' => sub {
 };
 
 get '/members/:member_id/change-pin' => sub {
-    my $msg = 'Please choose a 4-digit PIN.';
-    $msg = "That PIN is invalid. $msg" if params->{bad_pin};
+    my $m = member();
     template 'change-pin', {
-        member => member(),
-        message => $msg,
+        member => $m,
+        action => '/members/' . $m->id . '/change-pin',
+        message => session('message') || 'Please choose a 4-digit PIN.',
     };
 };
+
 post '/members/:member_id/change-pin' => sub {
     my $member = member();
+    return handle_change_pin(
+        member => $member,
+        good_url => '/members/' . $member->id,
+        bad_url  => '/members/' . $member->id . '/change-pin',
+    );
+};
+
+sub handle_change_pin {
+    my %p = @_;
     my $new_PIN = params->{new_PIN} || '';
     $new_PIN = 0 unless $new_PIN =~ m/^\d{4}$/;
     if ($new_PIN) {
-        $member->change_PIN($new_PIN);
-        return redirect '/members/' . $member->id . '?PIN_changed=1';
+        $p{member}->change_PIN($new_PIN);
+        session message => "A PIN change request was sent to the cardlock.";
+        return redirect $p{good_url};
     }
-    return redirect '/members/' . $member->id . '/change-pin?bad_pin=1';
-};
+    session message => 'Sorry, the PIN must be 4 digits. Try again';
+    return redirect $p{bad_url};
+}
 
 get '/members/:member_id/edit' => sub {
     template 'member-edit', {
@@ -424,15 +440,9 @@ post '/members/:member_id/edit' => sub {
 };
 
 get '/members/:member_id' => sub {
-    my $msg = params->{message};
-    $msg = "A freeze request was sent to the cardlock." if params->{frozen};
-    $msg = "An un-freeze request was sent to the cardlock." if params->{thawed};
-    $msg = "A PIN change request was sent to the cardlock." if params->{PIN_changed};
-    $msg = "This membership has been cancelled." if params->{PIN_changed};
     my $member = member();
     template 'member', {
         member => $member,
-        message => $msg,
         ( $member->active ? 
             ( stats => Biopay::Stats->new,
             ( $member ? (payment_return_url => host()
@@ -560,14 +570,20 @@ post '/member/edit' => sub {
 
 
 get '/member/change-pin' => sub {
-    die "not yet implemented";
-    my $member = session_member();
-    my $msg = params->{message};
-    template 'member', {
-        member => $member,
-        stats => Biopay::Stats->new,
-        message => $msg,
+    template 'change-pin', {
+        member => session_member(),
+        action => '/member/change-pin',
+        message => session('message') || 'Please choose a 4-digit PIN.',
     };
+};
+
+post '/member/change-pin' => sub {
+    my $member = session_member();
+    return handle_change_pin(
+        member => $member,
+        good_url => '/member/view',
+        bad_url  => '/member/change-pin',
+    );
 };
 
 get '/member/cancel' => sub {

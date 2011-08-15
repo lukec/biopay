@@ -18,7 +18,7 @@
     <p>
     <table id="member_details">
       <tr>
-        <td><strong>ID</strong></td>
+        <td><strong>Member ID</strong></td>
         <td>[% member.member_id %]</td>
       </tr>
       <tr>
@@ -26,23 +26,23 @@
         <td>[% member.name %]</td>
       </tr>
       <tr>
-        <td><strong>Phone</strong></td>
+        <td><strong>Phone Number</strong></td>
         <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>
       </tr>
       <tr>
-        <td><strong>Email</strong></td>
+        <td><strong>Email Address</strong></td>
         <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
       </tr>
       <tr>
-        <td><strong>Joined</strong></td>
+        <td><strong>Joined Co-op</strong></td>
         <td>[% member.start_pretty_date %]</td>
       </tr>
       <tr>
-        <td><strong>Dues Until</strong></td>
+        <td><strong>Dues Paid Until</strong></td>
         <td>[% member.dues_paid_until_pretty_date %]</td>
       </tr>
       <tr>
-        <td><strong>Frozen?</strong></td>
+        <td><strong>Account Frozen?</strong></td>
         <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
       </tr>
       [% IF member.billing_error %]

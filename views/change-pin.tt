@@ -7,7 +7,7 @@
     </div>
   </div>
 <p>
-  <form action="/members/[% member.id %]/change-pin" method="POST">
+  <form action="[% action %]" method="POST">
     Choose a new PIN: 
     <input type="text" size="4" maxlength="4" name="new_PIN" id="new_PIN" />
     <input type="submit" value="Change PIN" />
