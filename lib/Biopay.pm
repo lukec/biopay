@@ -36,13 +36,20 @@ before sub {
     }
 
     my $path = request->path_info;
-    return if session('bio');
-    unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
-        debug "no bio session, redirecting to login (from $path)";
-        forward '/login', {
-            message => "Please log-in first.",
-            path => request->path_info,
-        };
+    if (my $m = session 'member') {
+        # TODO
+    }
+    elsif (session 'is_admin') {
+        # TODO
+    }
+    else {
+        unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
+            debug "no bio session, redirecting to login (from $path)";
+            forward '/login', {
+                message => "Please log-in first.",
+                path => request->path_info,
+            };
+        }
     }
 };
 
@@ -57,18 +64,14 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-    my $sess = session('bio');
-    unless ($sess) {
-        debug "Found no bio session";
-        return;
-    }
     use Data::Dumper;
-    debug Dumper $sess;
+    debug Dumper session;
 
-    if ($sess->{is_admin}) {
-        $tokens->{admin_username} = $sess->{username};
+    if (session 'is_admin') {
+        $tokens->{admin_username} = session 'username';
+        $tokens->{is_admin} = 1;
     }
-    if (my $m = $sess->{member}) {
+    elsif (my $m = session 'member') {
         $tokens->{member} ||= try { Biopay::Member->By_id($m->{member_id}) };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
     }
@@ -106,10 +109,8 @@ post '/login' => sub {
     }
 
     debug "Allowing access to member user $user";
-    session bio => {
-        username => $user,
-        member => $member->as_hash(minimal => 1),
-    };
+    session username => $user;
+    session member => $member->as_hash(minimal => 1);
     return redirect host() . param('path') || "/";
 };
 
@@ -178,7 +179,8 @@ post '/admin-login' => sub {
     }
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
-        session bio => { username => $user, is_admin => 1 };
+        session username => $user;
+        session is_admin => 1;
         return redirect host() . param('path') || "/";
     }
     debug "Found the $user user, but they are not an admin.";
@@ -238,6 +240,11 @@ post '/unpaid/mark-as-paid' => sub {
 };
 
 get '/txns' => sub {
+    my $txns;
+    if (my $m = session 'member') {
+    }
+    else {
+    }
     template 'txns', {
         txns => Biopay::Transaction->All_most_recent,
     };
@@ -465,9 +472,8 @@ sub member {
 }
 
 sub session_member {
-    my $sess = session('bio');
-    if (my $id = $sess->{member_id}) {
-        return Biopay::Member->By_id($id);
+    if (my $m = session 'member') {
+        return Biopay::Member->By_id($m->{member_id});
     }
     return undef;
 }
