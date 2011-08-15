@@ -1,6 +1,20 @@
 <div id="sidebar">
   <ul id="sidebar-items">
-    [% IF member %]
+    [% IF is_admin %]
+      <p>Welcome, [% admin_username %] <a href="/logout">(Logout)</a></p>
+      <h3>Transactions</h3>
+      <li><a href="/unpaid">Payment Owing</a></li>
+      <li><a href="/txns">All Recent</a></li>
+      <h3>Members</h3>
+      <li><a href="/members">Members</a></li>
+      <li><a href="/members/create">Add new</a></li>
+      <p>[% INCLUDE 'member-jump-form.tt' msg = "Jump: " %]</p>
+      <h3>Admin Actions</h3>
+      <li><a href="/">Admin Home</a></li>
+      <li><a href="/fuel-price">Change Fuel Price</a></li>
+      <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
+      <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
+    [% ELSIF member %]
       <p>Welcome, [% member.name %] <a href="/logout">(Logout)</a></p>
       <h3>Transactions</h3>
       [% IF member.unpaid_transactions.size %]
@@ -16,20 +30,6 @@
           <strong>Add payment details</strong>
         [% END %]
       </a></li>
-    [% ELSIF is_admin %]
-    <p>Welcome, [% admin_username %] <a href="/logout">(Logout)</a></p>
-    <h3>Transactions</h3>
-    <li><a href="/unpaid">Payment Owing</a></li>
-    <li><a href="/txns">All Recent</a></li>
-    <h3>Members</h3>
-    <li><a href="/members">Members</a></li>
-    <li><a href="/members/create">Add new</a></li>
-    <p>[% INCLUDE 'member-jump-form.tt' msg = "Jump: " %]</p>
-    <h3>Admin Actions</h3>
-    <li><a href="/">Admin Home</a></li>
-    <li><a href="/fuel-price">Change Fuel Price</a></li>
-    <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
-    <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
     [% ELSE %]
     <li>
       <p>Our co-op sells 100% recycled, <a href="http://astm.org">ASTM certified</a>, locally sourced biodiesel fuel to our members.</p>
