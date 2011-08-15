@@ -187,7 +187,8 @@ post '/admin-login' => sub {
 };
 
 get '/logout' => sub {
-    session bio => undef;
+    session->destroy;
+    session->flush;
     return redirect '/';
 };
 
