@@ -99,7 +99,9 @@
       </li>
     </ul>
   [% ELSE %]
-    <p>This person has cancelled their co-op membership.</p>
+    [% IF is_admin %]
+      <p>This person has cancelled their co-op membership.</p>
+    [% END %]
     <div id="details">
     <p>
     <table id="member_details">
@@ -130,8 +132,10 @@
 [% END %]
 
 
-<hr />
-<p>
-<a href="/members">Back to members list</a><br />
-<a href="/admin">Back to admin section</a><br />
-</p>
+[% IF is_admin %]
+  <hr />
+  <p>
+  <a href="/members">Back to members list</a><br />
+  <a href="/admin">Back to admin section</a><br />
+  </p>
+[% END %]

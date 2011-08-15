@@ -6,10 +6,10 @@
       [% IF member.unpaid_transactions.size %]
         <li><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions %])</a></li>
       [% END %]
-      <li><a href="/txns">All Recent</a></li>
+      <li><a href="/member/txns">All Recent</a></li>
       <h3>My Info</h3>
       <li><a href="/member/view">View my profile</a></li>
-      <li><a href="/member/payment">
+      <li><a href="/member/update-payment">
         [% IF member.payment_hash %]
           Update payment details
         [% ELSE %]
