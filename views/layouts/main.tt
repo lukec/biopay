@@ -22,7 +22,7 @@
 	<div id="container">
             [% IF !params.printable %]
             <header>
-              <a href="/"><img id="headerimg" src="/images/header.png"
+              <a class="headerimg" href="/"><img id="headerimg" src="/images/header.png"
                   alt="Vancouver Biodiesel Co-op Header" /></a>
             </header>
 

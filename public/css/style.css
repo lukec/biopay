@@ -101,6 +101,10 @@ h1 {
     color: #000;
 }
 
+h2 {
+  font-size: 20px;
+}
+
 a  {color: #03c}
 a:hover {
     background-color: #03c;
@@ -200,6 +204,7 @@ td {
     text-align: right;
 }
 
+header a:hover { background: none }
 
 
 .ir { display: block; text-indent: -999em; overflow: hidden; background-repeat: no-repeat; text-align: left; direction: ltr; }
