@@ -1,6 +1,8 @@
 <h1>Unpaid Transactions for Biodiesel Member [% member.member_id %]</h1>
 [% IF txns.size %]
-<p>Back to details for <a href="/members/[% member.member_id %]">Member [% member.member_id %]</a>:</p>
+[% IF is_admin %]
+  <p>Back to details for <a href="/members/[% member.member_id %]">Member [% member.member_id %]</a>:</p>
+[% END %]
 [% INCLUDE txn_table.tt %]
 [% ELSE %]
 <p>This member has no unpaid transactions.</p>

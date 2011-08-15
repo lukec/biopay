@@ -4,7 +4,7 @@
       <p>Welcome, [% member.name %] <a href="/logout">(Logout)</a></p>
       <h3>Transactions</h3>
       [% IF member.unpaid_transactions.size %]
-        <li><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions %])</a></li>
+        <li><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions.size %])</a></li>
       [% END %]
       <li><a href="/member/txns">All Recent</a></li>
       <h3>My Info</h3>

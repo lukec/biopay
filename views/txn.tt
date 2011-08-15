@@ -44,13 +44,20 @@
   </tr>
 </table>
 
-[% IF txn.paid %]
-<p><a href="/txns/[% txn.txn_id %]?mark_as_unpaid=1">Mark this as un-paid.</a></p>
+[% IF is_admin %]
+  [% IF txn.paid %]
+  <p><a href="/txns/[% txn.txn_id %]?mark_as_unpaid=1">Mark this as un-paid.</a></p>
+  [% ELSE %]
+  <p><a href="/txns/[% txn.txn_id %]?mark_as_paid=1">Mark this as paid.</a></p>
+  [% END %]
+  <p>
+  <a href="/unpaid">Back to unpaid transactions</a><br />
+  <a href="/admin">Back to admin section</a><br />
+  </p>
 [% ELSE %]
-<p><a href="/txns/[% txn.txn_id %]?mark_as_paid=1">Mark this as paid.</a></p>
+  <p>
+  <a href="/member/txns">Back to transaction list</a><br />
+  <a href="/">Back to home</a><br />
+  </p>
 [% END %]
 
-<p>
-<a href="/unpaid">Back to unpaid transactions</a><br />
-<a href="/admin">Back to admin section</a><br />
-</p>

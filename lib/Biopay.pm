@@ -39,20 +39,18 @@ before sub {
     return if $public_paths{$path} or $path =~ m{^/(login|set-password)};
 
     if (my $m = session 'member') {
-        unless ($path =~ m{/member/}) {
+        unless ($path =~ m{^/member/}) {
             debug "Member cannot access '$path'";
-            return forward '/', {
-                message => "Sorry, that is not available to you.",
-            };
+            session message => "Sorry, that is not available to you.";
+            redirect '/';
         };
         return;
     }
     elsif (session 'is_admin') {
-        if ($path =~ m{/member/}) {
+        if ($path =~ m{^/member/}) {
             debug "Admin cannot access '$path'";
-            return forward '/', {
-                message => "Sorry, that is not available to you.",
-            };
+            session message => "Sorry, that is not available to you.";
+            return redirect '/';
         };
         return;
     }
@@ -269,11 +267,6 @@ post '/unpaid/mark-as-paid' => sub {
 };
 
 get '/txns' => sub {
-    my $txns;
-    if (my $m = session 'member') {
-    }
-    else {
-    }
     template 'txns', {
         txns => Biopay::Transaction->All_most_recent,
     };
@@ -281,18 +274,19 @@ get '/txns' => sub {
 
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
-    my %vars = ( txn => $txn );
     if (params->{mark_as_unpaid} and $txn->paid) {
         $txn->paid(0);
         $txn->save;
-        $vars{message} = "This transaction is now marked as <strong>not paid</strong>."
+        session message =>
+            "This transaction is now marked as <strong>not paid</strong>."
     }
     if (params->{mark_as_paid} and !$txn->paid) {
         $txn->paid(1);
         $txn->save;
-        $vars{message} = "This transaction is now marked as <strong>paid</strong>."
+        session message =>
+            "This transaction is now marked as <strong>paid</strong>."
     }
-    template 'txn', \%vars;
+    template 'txn', { txn => $txn };
 };
 
 get '/members' => sub {
@@ -604,6 +598,31 @@ EOT
     }
     template 'cancel', {
         member => $member,
+    };
+};
+
+get '/member/txns' => sub {
+    my $m = session_member();
+    template 'txns', {
+        txns => Biopay::Transaction->All_for_member($m->id)
+    };
+};
+
+get '/member/txns/:txn_id' => sub {
+    my $m = session_member();
+    my $txn = Biopay::Transaction->By_id(params->{txn_id});
+    if ($txn->member_id != $m->id) {
+        session message => "You are not allowed to view that transaction.";
+        return redirect '/member/txns';
+    }
+    template 'txn', { txn => $txn };
+};
+
+get '/member/unpaid' => sub {
+    my $m = session_member();
+    template 'member-unpaid', {
+        member => $m,
+        txns   => Biopay::Transaction->All_unpaid({key => $m->id}),
     };
 };
 

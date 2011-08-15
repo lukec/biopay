@@ -2,7 +2,7 @@
 <table class="transactions sortable">
   <tr>
       <th>Txn ID</th>
-      <th>Member</th>
+      [% IF is_admin %]<th>Member</th>[% END %]
       <th>Litres</th>
       <th>Price</th>
       <th>Time</th>
@@ -10,8 +10,10 @@
   </tr>
   [% FOREACH txn IN txns %]
     <tr>
-        <td align="right"><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a></td>
-        <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
+        <td align="right"><a href="[% IF !is_admin %]/member[% END %]/txns/[% txn.txn_id %]">[% txn.txn_id %]</a></td>
+        [% IF is_admin %]
+          <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
+        [% END %]
         <td>[% txn.litres %]</td>
         <td>$[% txn.price %]</td>
         <td>[% txn.pretty_date %]</td>
