@@ -182,6 +182,13 @@ post '/set-password' => sub {
             message => "The passwords do not match. Try again.",
         };
     }
+    unless (length($password1) >= 8) {
+        return template 'set-password' => { 
+            member => $member,
+            confirmed => 1,
+            message => "The password must be at least 8 characters.",
+        };
+    }
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
