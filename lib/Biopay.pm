@@ -52,11 +52,14 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-    my $sess = session('bio');
-    $tokens->{is_admin} = $sess && $sess->{admin} ? 1 : 0;
-    $tokens->{is_member} = $sess && $sess->{member_id};
-    if ($tokens->{is_member}) {
-      $tokens->{member} ||= Biopay::Member->By_id($sess->{member_id});
+    my $sess = session('bio') or return;
+    if ($sess->{admin}) {
+        $tokens->{is_admin} = 1;
+        $tokens->{admin_username} = $sess->{username};
+    }
+    if (my $id = $tokens->{member_id}) {
+        $tokens->{is_member} = 1;
+        $tokens->{member} ||= Biopay::Member->By_id($id);
     }
 };
 
