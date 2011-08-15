@@ -1,5 +1,5 @@
 <h1>Biodiesel Co-op Member Area</h1>
-[% INCLUDE message.tt message=member_message%]
+[% INCLUDE message.tt %]
 <p>
 <h3>Welcome to the members area.</h3>
 <ul>

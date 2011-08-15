@@ -1,4 +1,3 @@
-[% IF message %]<div class="message">[% message %]</div>[% END %]
 [% IF is_admin %]
   [% INCLUDE 'index-admin.tt' %]
 [% ELSIF member %]

@@ -80,6 +80,7 @@
             [% SET muri = "/member" %]
             <a href="[% muri %]/edit">Edit my details</a> |
             <a href="[% muri %]/change-pin">Change my PIN</a> |
+            <a href="[% muri %]/change-password">Change my password</a> |
             <a href="[% muri %]/cancel">Cancel my membership</a>
         [% END %]
       </p>

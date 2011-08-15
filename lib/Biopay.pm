@@ -89,13 +89,13 @@ before_template sub {
         };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
 
-        unless ($m->active) {
-            $tokens->{member_message} ||= <<'EOT';
+        unless ($m->active or $tokens->{message}) {
+            $tokens->{message} ||= <<'EOT';
 Your account is cancelled. <a href="mailto:info@vancouverbiodiesel.org">Email us</a> if you have any problems.
 EOT
         }
-        unless ($m->payment_hash) {
-            $tokens->{member_message} ||= <<EOT;
+        unless ($m->payment_hash or $tokens->{message}) {
+            $tokens->{message} ||= <<EOT;
 We do not have any payment info for you!<br />
 <p>
 <a href="/member/update-payment"><strong>Please click here to update your payment details.</strong></a>
@@ -634,7 +634,6 @@ get '/member/unpaid' => sub {
 };
 
 get '/forgot-password' => sub {
-    debug session('message');
     template 'forgot-password', {message => params->{message}};
 };
 post '/forgot-password' => sub {
@@ -657,6 +656,43 @@ post '/forgot-password' => sub {
     # Remember to save the hash
     $m->save;
     template 'forgot-password', { email_sent => 1 };
+};
+
+get '/member/change-password' => sub {
+    template 'change-password', {message => params->{message}};
+};
+post '/member/change-password' => sub {
+    my $member = session_member();
+    my $old_password = param('old_password');
+    my $password1 = param('password1');
+    my $password2 = param('password2');
+
+    unless (bcrypt_validate_password($old_password, $member->{password})) {
+        return template 'change-password' => { 
+            member => $member,
+            confirmed => 1,
+            message => "The current password is not correct.",
+        };
+    }
+    unless ($password1 eq $password2) {
+        return template 'change-password' => { 
+            member => $member,
+            confirmed => 1,
+            message => "The passwords do not match. Try again.",
+        };
+    }
+    unless (length($password1) >= 8) {
+        return template 'change-password' => { 
+            member => $member,
+            confirmed => 1,
+            message => "The password must be at least 8 characters.",
+        };
+    }
+    $member->password(bcrypt($password1));
+    $member->login_hash(undef);
+    $member->save;
+    session message => 'Your password was updated.';
+    return redirect host() . "/";
 };
 
 true;
