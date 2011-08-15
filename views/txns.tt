@@ -1,6 +1,7 @@
 <h1>Recent Biodiesel Transactions</h1>
 [% IF txns.size %]
-[% INCLUDE txn_table.tt %]
+  <p>[% IF txns.size == 1 %]One transaction[% ELSE %][% txns.size %] transactions[% END %] since July 8th, 2011.</p>
+  [% INCLUDE txn_table.tt %]
 [% ELSE %]
-<p>There are no recent transactions at this time.</p>
+<p>There are no transactions since July 8th, 2011.</p>
 [% END %]

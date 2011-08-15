@@ -18,13 +18,11 @@ our $VERSION = '0.1';
 
 my %public_paths = (
     map { $_ => 1 }
-    qw( / /login /terms /refunds /privacy ),
+    qw( / /login /logout /terms /refunds /privacy ),
     '/admin-login',
 );
 
 before sub {
-    my $path = request->path_info;
-
     # XXX hack to try to work around the 596 bug from AE::HTTP
     # If this issue persists using other couch instances
     # Let AE run until idle.
@@ -37,6 +35,8 @@ before sub {
         $w->recv; # enters "main loop" till $condvar gets −>send
     }
 
+    my $path = request->path_info;
+    return if session('bio');
     unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
         debug "no bio session, redirecting to login (from $path)";
         forward '/login', {
@@ -57,14 +57,20 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-    my $sess = session('bio') or return;
-    if ($sess->{admin}) {
-        $tokens->{is_admin} = 1;
+    my $sess = session('bio');
+    unless ($sess) {
+        debug "Found no bio session";
+        return;
+    }
+    use Data::Dumper;
+    debug Dumper $sess;
+
+    if ($sess->{is_admin}) {
         $tokens->{admin_username} = $sess->{username};
     }
-    if (my $id = $tokens->{member_id}) {
-        $tokens->{is_member} = 1;
-        $tokens->{member} ||= Biopay::Member->By_id($id);
+    if (my $m = $sess->{member}) {
+        $tokens->{member} ||= try { Biopay::Member->By_id($m->{member_id}) };
+        $tokens->{is_member} = $tokens->{member} ? 1 : 0;
     }
 };
 
@@ -100,7 +106,10 @@ post '/login' => sub {
     }
 
     debug "Allowing access to member user $user";
-    session bio => { username => $user };
+    session bio => {
+        username => $user,
+        member => $member->as_hash(minimal => 1),
+    };
     return redirect host() . param('path') || "/";
 };
 
@@ -148,8 +157,7 @@ post '/set-password' => sub {
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
-    session bio => { member_id => $member->id };
-    return redirect host() . "/";
+    return redirect host() . "/login";
 };
 
 get '/admin-login' => sub {
@@ -170,7 +178,7 @@ post '/admin-login' => sub {
     }
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
-        session bio => { username => $user, admin => 1 };
+        session bio => { username => $user, is_admin => 1 };
         return redirect host() . param('path') || "/";
     }
     debug "Found the $user user, but they are not an admin.";

@@ -51,12 +51,16 @@ sub view_base { 'members' }
 method id { $self->member_id }
 
 method as_hash {
+    my %p = @_;
     my $hash = { Type => 'member' };
-    for my $key (qw/_id _rev member_id first_name last_name phone_num 
-                    email start_epoch dues_paid_until payment_hash frozen
-                    PIN billing_error active login_hash password/) {
-        $hash->{$key} = $self->$key;
-    }
+
+    my @minimal_keys = qw/member_id first_name last_name email active/;
+    map { $hash->{$_} = $self->$_ } @minimal_keys;
+    return $hash if $p{minimal};
+
+    map { $hash->{$_} = $self->$_ }
+        qw/_id _rev phone_num start_epoch dues_paid_until payment_hash
+           frozen PIN billing_error login_hash password/;
     return $hash;
 }
 
