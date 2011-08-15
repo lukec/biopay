@@ -64,16 +64,25 @@ for my $page (qw(privacy refunds terms)) {
 
 before_template sub {
     my $tokens = shift;
-    use Data::Dumper;
-    debug Dumper session;
 
     if (session 'is_admin') {
         $tokens->{admin_username} = session 'username';
         $tokens->{is_admin} = 1;
     }
     elsif (my $m = session 'member') {
-        $tokens->{member} ||= try { Biopay::Member->By_id($m->{member_id}) };
+        my $m = $tokens->{member} ||= try {
+            Biopay::Member->By_id($m->{member_id})
+        };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
+
+        unless ($m->payment_hash) {
+            $tokens->{member_message} ||= <<EOT;
+We do not have any payment info for you!<br />
+<p>
+<a href="/member/update-payment"><strong>Please click here to update your payment details.</strong></a>
+</p>
+EOT
+        }
     }
 };
 
@@ -418,31 +427,39 @@ get '/members/:member_id' => sub {
 
 get '/members/:member_id/payment' => sub {
     my $member = member();
-    my $msg = "Successfully updated payment profile.";
+    forward '/members/' . $member->id, { message => update_payment_profile_message() };
+};
+
+sub update_payment_profile_message {
+    # XXX How to verify response?
+    my $member = member();
     given (params->{responseCode}) {
+        when (undef) { return undef }
         when (1) { # Successful!
             $member->payment_hash(params->{customerCode});
             $member->billing_error(undef);
             $member->save;
+            return "Successfully updated payment profile.";
         }
         when (21) { # Cancelled, do nothing
-            $msg = "Payment profile update cancelled.";
+            return "Payment profile update cancelled.";
         }
         when (7) { # Duplicate card used, likely due to testing.
-            $msg = params->{responseMessage};
+            return params->{responseMessage};
         }
         default {
+            my $name = $member ? $member->name : 'no-name';
+            my $id   = $member ? $member->id   : 0;
             email_admin("Error saving payment profile",
-                "I tried to update a payment profile for member " . $member->name
-                . " (" . $member->id . ") but it failed with code: "
+                "I tried to update a payment profile for member $name"
+                . " ($id) but it failed with code: "
                 . params->{responseCode} . "\n\n"
                 . "Message: " . params->{responseMessage}
             );
-            $msg = "Error updating payment profile: " . params->{responseMessage};
+            return "Error updating payment profile: " . params->{responseMessage};
         }
     }
-    forward '/members/' . $member->id, { message => $msg };
-};
+}
 
 get '/fuel-price' => sub {
     template 'fuel-price', {
@@ -480,12 +497,30 @@ sub session_member {
 
 get '/member/view' => sub {
     my $member = session_member();
-    my $msg = params->{message};
     template 'member', {
         member => $member,
         stats => Biopay::Stats->new,
-        message => $msg,
+        message => update_payment_profile_message() || params->{message},
     };
+};
+
+get '/member/update-payment' => sub {
+    my $member = session_member();
+    if ($member) {
+        my $url = "https://www.beanstream.com/scripts/PaymentProfile/"
+            . "webform.asp?serviceVersion=1.0&merchantId=" 
+            . config->{merchant_id}
+            . "&trnReturnURL=" . host() . '/member/view';
+        if (my $h = $member->payment_hash) {
+            $url .= "&operationType=M&customerCode=$h";
+        }
+        else {
+            $url .= "&operationType=N";
+        }
+        return redirect $url;
+    }
+    debug "No member found, could not satisfy /update-payment";
+    return redirect "/";
 };
 
 get '/member/edit' => sub {

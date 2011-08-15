@@ -22,7 +22,8 @@
 	<div id="container">
             [% IF !params.printable %]
             <header>
-                <img id="headerimg" src="/images/header.png" alt="Vancouver Biodiesel Co-op Header" />
+              <a href="/"><img id="headerimg" src="/images/header.png"
+                  alt="Vancouver Biodiesel Co-op Header" /></a>
             </header>
 
             [% INCLUDE layouts/sidebar.tt %]

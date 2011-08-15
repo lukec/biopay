@@ -1,4 +1,13 @@
-<p>You are logged in.  Use the sidebar to access different parts.</p>
+<h1>Biodiesel Co-op Member Area</h1>
+[% INCLUDE message.tt message=member_message%]
+<p>
+<h3>Welcome to the members area.</h3>
+<ul>
+  <li><a href="/member/txns">View your recent transactions</a></li>
+  <li><a href="/member/update-payment">Update your payment method</a></li>
+  <li><a href="/member/view">View your member details</a></li>
+</ul>
+</p>
 
 <p><strong>Co-op Statistics</strong>
   (since July 8th, 2011)<br />
