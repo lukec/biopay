@@ -75,7 +75,7 @@ sub Create {
                 my $cv2 = shift;
                 try { 
                     $cv2->recv;
-                    $success_cb->( $class->new_from_couch($new_doc) );
+                    $success_cb->( $class->new_from_hash($new_doc) );
                 }
                 catch {
                     print " (save_doc($key) failed: $_) ";
@@ -87,7 +87,7 @@ sub Create {
     else { # do it blocking
         try {
             $cv->recv;
-            return $class->new_from_couch($new_doc);
+            return $class->new_from_hash($new_doc);
         }
         catch {
             die "Member $p{member_id} already exists!";

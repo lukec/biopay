@@ -23,7 +23,7 @@ sub By_view {
                 my $cv2 = shift;
                 my $results = $cv2->recv;
                 my $val = $results->{rows}[0]{value};
-                my $obj = $val ? $class->new_from_couch($val) : undef;
+                my $obj = $val ? $class->new_from_hash($val) : undef;
                 return $cb->($obj);
             }
         );
@@ -32,7 +32,7 @@ sub By_view {
         my $results = $cv->recv;
         my $hash = $results->{rows}[0]{value};
         return undef unless $hash;
-        return $class->new_from_couch($hash);
+        return $class->new_from_hash($hash);
     }
 }
 
@@ -46,7 +46,7 @@ sub All_for_view {
 
     my $result_mapper = sub {
         my $result = shift;
-        return [ map { $class->new_from_couch($_->{value}) }
+        return [ map { $class->new_from_hash($_->{value}) }
                 @{ $result->{rows} } ];
     };
     my $cv = couchdb->view($class->view_base . $view, @_);
@@ -63,7 +63,7 @@ sub All_for_view {
     }
 }
 
-sub new_from_couch {
+sub new_from_hash {
     my $class = shift;
     my $hash = shift;
     return $class->new($hash);
