@@ -91,6 +91,11 @@ before_template sub {
         };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
 
+        unless ($m->active) {
+            $tokens->{member_message} ||= <<'EOT';
+Your account is cancelled. <a href="mailto:info@vancouverbiodiesel.org">Email us</a> if you have any problems.
+EOT
+        }
         unless ($m->payment_hash) {
             $tokens->{member_message} ||= <<EOT;
 We do not have any payment info for you!<br />
@@ -379,11 +384,11 @@ get '/members/:member_id/freeze' => sub {
 
 get '/members/:member_id/cancel' => sub {
     my $member = member();
-    if (params->{please_cancel} and $member->active) {
+    if (params->{force} and $member->active) {
         $member->cancel;
         $member->send_cancel_email if params->{send_email};
         session message => "This membership has been cancelled.";
-        redirect '/members/' . $member->id;
+        return redirect '/members/' . $member->id;
     }
     template 'cancel', {
         member => $member,
@@ -587,13 +592,18 @@ post '/member/change-pin' => sub {
 };
 
 get '/member/cancel' => sub {
-    die "not yet implemented";
     my $member = session_member();
-    my $msg = params->{message};
-    template 'member', {
+    if (params->{force} and $member->active) {
+        $member->cancel;
+        $member->send_cancel_email;
+        session message => <<'EOT';
+This membership has been cancelled.<br />
+<p>If you have any feedback for our co-op, please send it to us at <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.</p>
+EOT
+        forward '/member/view';
+    }
+    template 'cancel', {
         member => $member,
-        stats => Biopay::Stats->new,
-        message => $msg,
     };
 };
 

@@ -3,27 +3,40 @@
   <div class="ui-widget">
     <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
         <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>Note:</strong> Cancelling membership will remove their cardlock access and delete their billing data.
+        <strong>Note:</strong>
+        [% IF is_admin %]
+          Cancelling membership will remove their cardlock access and delete their billing data.
+        [% ELSE %]
+          This will remove your cardlock access and delete your billing data!
+        [% END %]
         </p>
     </div>
   </div>
 <p>
-  [% IF member.email %]
+  [% IF is_admin %]
+    [% IF member.email %]
       <strong>Yes, cancel [% member.name %]'s membership…</strong><br />
       <ul>
-        <li>… <a href="/members/[% member.member_id %]/cancel?please_cancel=1&send_email=1">and send them an email confirmation</a></li>
-        <li>… <a href="/members/[% member.member_id %]/cancel?please_cancel=1&send_email=0">but do not send them any email</a></li>
+        <li>… <a href="/members/[% member.member_id %]/cancel?force=1&send_email=1">and send them an email confirmation</a></li>
+        <li>… <a href="/members/[% member.member_id %]/cancel?force=1&send_email=0">but do not send them any email</a></li>
       </ul>
+    [% ELSE %]
+      <a href="/members/[% member.member_id %]/cancel?force=1">Yes, cancel [% member.name %]'s membership</a>
+    [% END %]
   [% ELSE %]
-      <a href="/members/[% member.member_id %]/cancel?please_cancel=1">Yes, cancel [% member.name %]'s membership</a>
+    <strong><a href="/member/cancel?force=1">Yes, cancel my membership.</a></strong>
   [% END %]
 </p>
 <p>
-  <a href="/members/[% member.member_id %]">No, go back.</a>
+  [% IF is_admin %]
+    <a href="/members/[% member.member_id %]">No, go back.</a>
+  [% ELSE %]
+    <a href="/member/view">No, go back.</a>
+  [% END %]
 </p>
 [% ELSE %]
 <h1>[% member.name %]'s membership is already cancelled.</h1>
 <p>
-  <a href="/members/[% member.member_id %]">Go back.</a>
+  <a href="[% IF is_admin %]/members/[% member.member_id %][% ELSE %]/member/view[% END %]">Go back.</a>
 </p>
 [% END %]

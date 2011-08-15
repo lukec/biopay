@@ -21,7 +21,7 @@ has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'dues_paid_until'  => (isa => 'Maybe[Num]', is => 'rw');
 has 'payment_hash' => (isa => 'Maybe[Str]', is => 'rw');
 has 'PIN' => (isa => 'Maybe[Str]', is => 'rw');
-has 'active' => (isa => 'Bool', is => 'ro', default => 1);
+has 'active' => (isa => 'Bool', is => 'rw', default => 1);
 has 'password' => (isa => 'Maybe[Str]', is => 'rw');
 
 # Frozen: if the member is _allowed_ to withdraw fuel. Sets cardlock PIN

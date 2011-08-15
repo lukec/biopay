@@ -1,4 +1,5 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
+[% INCLUDE message.tt message=member_message%]
 
 [% IF !member %]
   [% SET message = "Sorry, that member cannot be found." %]
@@ -98,7 +99,6 @@
       </li>
     </ul>
   [% ELSE %]
-    <h3>Inactive Member</h3>
     <p>This person has cancelled their co-op membership.</p>
     <div id="details">
     <p>
