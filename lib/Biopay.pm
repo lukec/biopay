@@ -11,8 +11,10 @@ use Biopay::Prices;
 use AnyEvent;
 use DateTime;
 use DateTime::Duration;
-use Biopay::Util qw/email_admin host/;
+use Biopay::Util qw/email_admin host now_dt/;
 use Try::Tiny;
+use Email::Valid;
+use Number::Phone;
 
 our $VERSION = '0.1';
 
@@ -306,8 +308,7 @@ get '/members' => sub {
 };
 
 sub new_member_dates {
-    my $now = DateTime->now;
-    $now->set_time_zone('America/Vancouver');
+    my $now = now_dt();
     my $one_year = $now + DateTime::Duration->new(years => 1);
     return (
         start_date => $now->ymd('/'),
@@ -697,7 +698,75 @@ post '/member/change-password' => sub {
 };
 
 get '/new-member' => sub {
-    template 'new-member';
+    my $dt = now_dt();
+    my $date = sprintf('%s %d, %d', $dt->month_name, $dt->day, $dt->year);
+    template 'new-member', {
+        today_date => $date,
+        show_agreement => params->{show_agreement},
+        message => params->{message},
+        first_name => params->{first_name} || 'First name',
+        last_name => params->{last_name} || 'Last name',
+        map { $_ => params->{$_} } qw/email phone address PIN/
+    };
+};
+
+post '/new-member' => sub {
+    my $msg;
+    (my $fname = params->{first_name}) =~ s/^First name.*//;
+    (my $lname = params->{first_name}) =~ s/^Last name.*//;
+    my $phone = params->{phone};
+    my $np = Number::Phone->new('+1' . $phone);
+    my $phone_is_valid = $np && $np->is_valid;
+    my $address = params->{address};
+    my $email = params->{email};
+    my $pin = params->{PIN};
+    my $checked
+        = params->{chk_video} && params->{chk_vehicle} && params->{chk_terms};
+    if (!$fname or !$lname) {
+        $msg = "Your first and last name are required!";
+    }
+    elsif (!$address) {
+        $msg = "Your home address is required!";
+    }
+    elsif (!$email) {
+        $msg = "Your email address is required!";
+    }
+    elsif (!Email::Valid->address($email)) {
+        $msg = "Sorry, that does not look like a valid email address.";
+    }
+    elsif (!$phone) {
+        $msg = "Your phone number is required!";
+    }
+    elsif (!$phone_is_valid) {
+        $msg = "Sorry, that does not look like a valid phone number.";
+    }
+    elsif (!$pin) {
+        $msg = "A 4 digit cardlock PIN is required!";
+    }
+    elsif ($pin !~ m/^\d{4}$/) {
+        $msg = "Sorry, the cardlock PIN must be 4 digits.";
+    }
+    elsif (!$checked) {
+        $msg = "Please click the checkboxes to agree to the terms.";
+    }
+
+
+    if ($msg) {
+        return forward '/new-member', {
+            show_agreement => 1,
+            message => "Error: $msg",
+            map { $_ => params->{$_} }
+                qw/first_name last_name email phone address PIN/
+        }, { method => 'GET' };
+    }
+
+    # Create the new member
+    return forward '/new-member', {
+        show_agreement => 1,
+        message => "Yay, it's all good!",
+        map { $_ => params->{$_} }
+            qw/first_name last_name phone address PIN/
+    }, { method => 'GET' };
 };
 
 true;

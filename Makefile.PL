@@ -22,6 +22,8 @@ WriteMakefile(
         'Data::UUID' => 0,
         'DateTime'   => 0,
         'Email::Date::Format' => 0,
+        'Email::Valid' => 0,
+        'Number::Phone' => 0,
         'URI::Query' => 0,
         'Plack'      => 0,
         'Template'   => 0,

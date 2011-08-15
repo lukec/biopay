@@ -5,8 +5,21 @@ $(function() {
     $("#orientation").show('clip');
   });
 
-  $("#intro").show();
-  $("#orientation").hide();
+  $("#orientationbtn").click(function() {
+      $("#orientation").hide('clip');
+      $("#membershipagreement").show('clip');
+  });
+
+
+  [% IF show_agreement %]
+    $("#intro").hide();
+    $("#orientation").hide();
+    $("#membershipagreement").show();
+  [% ELSE %]
+    $("#intro").show();
+    $("#orientation").hide();
+    $("#membershipagreement").hide();
+  [% END %]
 });
 </script>
 
@@ -53,5 +66,91 @@ $(function() {
   <hr />
   <a href="#" id="orientationbtn">I've watched the video, I understand the
     basics of biodiesel, and I am comfortable running Biodiesel in my
-    vehicle.</a>
+    vehicle. I want to sign up!</a>
+</div>
+
+<div id="membershipagreement">
+    <h1>Vancouver Biodiesel Co-operative Membership Agreement</h1>
+    [% INCLUDE message.tt %]
+    <form action="/new-member" method="POST">
+    <center>
+        <p>This Membership Agreement ("Agreement") is made today, [% today_date %].</p>
+        <p><strong>Between: the Vancouver Biodiesel Cooperative (the "VBC")</strong></p>
+        <p><strong>AND member:</strong>
+          <input id="fname" type="text" name="first_name" size="12" value="[% first_name %]"/> 
+          <input id="lname" type="text" name="last_name" size="12" value="[% last_name %]"/> 
+        </p>
+    </center>
+    <p>Member agrees herein to the purchase of one membership unit of the Vancouver Biodiesel Cooperative, in accordance with the following terms and conditions: </p>
+    <ul>
+        <li>Member agrees to pay a one time amount of $25 to the VBC upon the date of this Agreement, which amount will compromise of the following:
+          <ul>
+              <li>$10 annual coop membership fee, valid from this date forward one year</li>
+              <li>$10 one time administration fee</li>
+              <li>$5 cardlock card purchase (replacement fee of $5 applies)</li>
+          </ul>
+        </li>
+        <li>Member agrees to pay an annual membership fee of $10 upon joining and on the first purchase of fuel after their annual membership has expired.</li>
+        <li>Member agrees to waive any and all liability and all rights of action which may arise now and in perpetuity against the VBC, the Recycling Alternative and any Directors or Employees thereof, and to indemnify them and hold them harmless from any liability or costs incurred as a result of using any products purchased from the VBC and/or Recycling Alternative.</li>
+    </ul>
+
+    <p>As a member of the VBC, <input id="fullname" type="text" size="24" value="" />, has the following individual rights and obligations:
+    <ul>
+      <li>Keep informed of VBC activity and provide input regarding issues on products (B100 biodiesel) and services provided from biodiesel pump (tank, card lock system, pump).</li>
+      <li>Let a VBC executive or Recycling Alternative representative know of any irregularities (in purchased product, vehicle or otherwise) that may effect other VBC members.</li>
+      <li>Inform the VBC executive, or a Recycling Alternative representative know of any changes to your contact information and vehicle information.</li>
+      <li>Upkeep of our facilities - please treat with care for long-term use.</li>
+      <li>Be responsible for monitoring your engine's fuel filter.  For your benefit, we recommend initially changing your filter every 3 months.</li>
+      <li>We recommend blending B100 biodiesel when temperatures fall below 10°C</li>
+    </ul>
+    </p>
+
+    <p>The VBC agrees to:
+      <ul>
+        <li>Issue 1 share certificate and membership number.</li>
+        <li>Enroll member in our database and issue a card for the cardlock system and biodiesel pump starting on [% today_date %].</li>
+        <li>Provide B100 biodiesel for retail at 360 Industrial Aveenue and to ensure that the tank is at levels required to meet demand.</li>
+        <li>Seek the most economical, sustainable, and socially responsible biodiesel available to the market that meets or exceeds ASTM D 6751 quality standards.</li>
+        <li>Provide information package on using B100 biodiesel.</li>
+        <li>Respect and protect privacy of member and not to release any personal, corporate or otherwise private information without prior consent.</li>
+      </ul>
+    </p>
+
+    <p>Signed this [% today_date %].</p>
+    <p>Member name in lieu of signature: <input type="text" id="fullname2" /></p>
+    <p>Home Address: <input type="text" name="address" size="40" value="[% address %]" /></p>
+    <p>Email Address: <input type="text" name="email" size="30" value="[% email %]" /></p>
+    <p>Phone Number: <input type="text" name="phone" size="12" value="[% phone %]" /></p>
+    <p>Cardlock PIN: <input type="text" name="PIN" size="4" value="[% PIN %]" /></p>
+
+    <p>The information entered here is correct to the best of my knowledge, and I agree to the following conditions: (please check)</p>
+    <ul>
+      <li><input type="checkbox" name="chk_video" value="1" /> I have watched the orientation video in it's entirety. </li>
+      <li><input type="checkbox" name="chk_vehicle" value="1" /> I understand the implications of using biodiesel in my vehicle. </li>
+      <li><input type="checkbox" name="chk_terms" value="1" /> I have read the membership agreement and agree to it's terms. </li>
+    </ul>
+    <input type="submit" value="Create my membership!" />
+
+    </form>
+    <script>
+        $(function() {
+            $("#fname").focus(function() { $(this).val('') })
+            $("#lname").focus(function() { $(this).val('') })
+            var fillInName = function() {
+                var name = "";
+                var fname = $("#fname").val();
+                var lname = $("#lname").val();
+                if (typeof(fname) != 'undefined') {
+                  if (typeof(lname) != 'undefined') {
+                    name = fname + ' ' + lname;
+                    $("#fullname").val(name);
+                    $("#fullname2").val(name);
+                  }
+                }
+            };
+            $("#fname").blur(fillInName);
+            $("#lname").blur(fillInName);
+            fillInName();
+        });
+    </script>
 </div>
