@@ -24,12 +24,17 @@ my %public_paths = (
 
 before sub {
     my $path = request->path_info;
-    if (session('bio')) {
-        # Let AE run, it can cleanup any lingering AE::HTTP state
+
+    # XXX hack to try to work around the 596 bug from AE::HTTP
+    # If this issue persists using other couch instances
+    # Let AE run until idle.
+    #  - The thinking here is that maybe this will allow AE::HTTP to
+    #    close down any lingering old connections before blindly trying
+    #    to reuse them.
+    {
         my $w = AnyEvent->condvar;
         my $idle = AnyEvent->idle (cb => sub { $w->send });
         $w->recv; # enters "main loop" till $condvar gets −>send
-        return;
     }
 
     unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
