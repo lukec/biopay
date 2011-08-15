@@ -3,20 +3,17 @@
 [% ELSIF member %]
   [% INCLUDE 'index-member.tt' %]
 [% ELSE %]
-  <p>Welcome to the VBC Billing Tool.  This service processes biodiesel
-  purchases for Co-op members.  At present time, this service is available
-  to Co-op Admin staff only.
-  </p>
+  <h1>Vancouver Biodiesel Co-op Billing</h1>
+  <p>Welcome to the VBC Billing system. This service tracks biodiesel purchases, processes payments and offers administration.</p>
   <p>
-    This system processes biodiesel fuel purchases and annual membership dues for co-op members.  It is owned and operated by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact us <a href="mailto:info@vancouverbiodiesel.org">via email</a> or phone Recyling Alternative.
+    This system is owned and operated for the Vancouver Biodiesel Co-op by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact the co-op <a href="mailto:info@vancouverbiodiesel.org">via email</a> or contact Recycling Alternative directly.
   </p>
   <hr />
   <p>
-    <ul class="login"><li>
-    <a href="/login">Member Login</a>
-    </li>
-    <li>
-    <a href="/admin-login">Admin Login</a>
-    </li></ul>
+    <ul class="login">
+      <li> <a href="/login">Member Login</a> </li>
+      <li> <a href="/new-member">New Member Sign-up!</a> </li>
+      <li> <a href="/admin-login">Admin Login</a> </li>
+    </ul>
   </p>
 [% END %]

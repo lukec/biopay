@@ -19,7 +19,8 @@ our $VERSION = '0.1';
 my %public_paths = (
     map { $_ => 1 }
     qw( / /login /logout /terms /refunds /privacy),
-    '/forgot-password', '/admin-login',
+    '/forgot-password', '/admin-login', '/biodiesel-faq',
+    '/new-member',
 );
 
 before sub {
@@ -67,7 +68,7 @@ get '/' => sub {
         stats => Biopay::Stats->new,
     };
 };
-for my $page (qw(privacy refunds terms)) {
+for my $page (qw(privacy refunds terms biodiesel-faq)) {
     get "/$page" => sub { template $page };
 }
 
@@ -693,6 +694,10 @@ post '/member/change-password' => sub {
     $member->save;
     session message => 'Your password was updated.';
     return redirect host() . "/";
+};
+
+get '/new-member' => sub {
+    template 'new-member';
 };
 
 true;
