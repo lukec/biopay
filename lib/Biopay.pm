@@ -37,10 +37,20 @@ before sub {
 
     my $path = request->path_info;
     if (my $m = session 'member') {
-        # TODO
+        unless ($path =~ m{/member/}) {
+            debug "Member cannot access '$path'";
+            forward '/', {
+                message => "Sorry, that is not available to you.",
+            };
+        };
     }
     elsif (session 'is_admin') {
-        # TODO
+        if ($path =~ m{/member/}) {
+            debug "Admin cannot access '$path'";
+            forward '/', {
+                message => "Sorry, that is not available to you.",
+            };
+        };
     }
     else {
         unless ($public_paths{$path} or $path =~ m{^/(login|set-password)}) {
@@ -65,6 +75,11 @@ for my $page (qw(privacy refunds terms)) {
 before_template sub {
     my $tokens = shift;
 
+    if (my $msg = session 'message') {
+        $tokens->{message} ||= $msg;
+        session 'message' => undef;
+    }
+
     if (session 'is_admin') {
         $tokens->{admin_username} = session 'username';
         $tokens->{is_admin} = 1;
@@ -88,7 +103,6 @@ EOT
 
 get '/login' => sub {
     template 'login' => { 
-        message => param('message') || '',
         path => param('path'),
         host => host(),
     };
@@ -317,7 +331,8 @@ post '/members/create' => sub {
     $hash{start_epoch} = ymd_to_epoch(delete $hash{start_date});
     $hash{dues_paid_until} = ymd_to_epoch(delete $hash{dues_paid_until_date});
     $member = Biopay::Member->Create(%hash);
-    redirect "/members/" . $member->id . "?message=Created";
+    session message => 'Created';
+    redirect "/members/" . $member->id;
 };
 
 sub ymd_to_epoch {
@@ -404,7 +419,8 @@ post '/members/:member_id/edit' => sub {
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
     $member->dues_paid_until(ymd_to_epoch(params->{dues_paid_until_date}));
     $member->save;
-    redirect "/members/" . $member->id . "?message=Saved";
+    session message => 'Saved';
+    redirect "/members/" . $member->id;
 };
 
 get '/members/:member_id' => sub {
@@ -524,14 +540,22 @@ get '/member/update-payment' => sub {
 };
 
 get '/member/edit' => sub {
-    die "not yet implemented";
     my $member = session_member();
     my $msg = params->{message};
-    template 'member', {
+    template 'member-edit', {
         member => $member,
-        stats => Biopay::Stats->new,
         message => $msg,
     };
+};
+
+post '/member/edit' => sub {
+    my $member = session_member();
+    for my $key (qw/first_name last_name phone_num email/) {
+        $member->$key(params->{$key});
+    }
+    $member->save;
+    session message => "Saved!";
+    redirect "/member/view";
 };
 
 

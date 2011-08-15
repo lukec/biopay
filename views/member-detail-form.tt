@@ -8,10 +8,14 @@
     });
 </script>
 
-[% IF member && member.member_id %]
-  <form action="/members/[% member.member_id %]/edit" method="POST">
+[% IF is_admin %]
+  [% IF member && member.member_id %]
+    <form action="/members/[% member.member_id %]/edit" method="POST">
+  [% ELSE %]
+    <form action="/members/create" method="POST">
+  [% END %]
 [% ELSE %]
-  <form action="/members/create" method="POST">
+  <form action="/member/edit" method="POST">
 [% END %]
 <table id="member_details">
   <tr>
@@ -40,14 +44,16 @@
     <td><strong>Email</strong></td>
     <td><input type="text" name="email" width="15" value="[% email || member.email %]" /></td>
   </tr>
-  <tr>
-    <td><strong>Joined</strong></td>
-    <td><input type="text" id="datepicker1" name="start_date" value="[% start_date || member.start_pretty_date %]"></td>
-  </tr>
-  <tr>
-    <td><strong>Dues Paid Until</strong></td>
-    <td><input type="text" id="datepicker2" name="dues_paid_until_date" value="[% dues_paid_until_date || member.dues_paid_until_pretty_date %]"></td>
-  </tr>
+  [% IF is_admin %]
+    <tr>
+      <td><strong>Joined</strong></td>
+      <td><input type="text" id="datepicker1" name="start_date" value="[% start_date || member.start_pretty_date %]"></td>
+    </tr>
+    <tr>
+      <td><strong>Dues Paid Until</strong></td>
+      <td><input type="text" id="datepicker2" name="dues_paid_until_date" value="[% dues_paid_until_date || member.dues_paid_until_pretty_date %]"></td>
+    </tr>
+  [% END %]
 </table>
   <input type="submit" value="Save" />
 </form>
