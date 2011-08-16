@@ -13,7 +13,7 @@
   <p>
     <ul class="login">
       <li> <a href="/login">Member Login</a> </li>
-      <li> <a href="/new-member">New Member Sign-up!</a> </li>
+      <!-- <li> <a href="/new-member">New Member Sign-up!</a> </li> -->
       <li> <a href="/admin-login">Admin Login</a> </li>
     </ul>
   </p>
