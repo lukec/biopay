@@ -6,6 +6,7 @@ use Dancer::Plugin::Auth::RBAC;
 use Dancer::Plugin::Bcrypt;
 use Biopay::Transaction;
 use Biopay::Member;
+use Biopay::PotentialMember;
 use Biopay::Stats;
 use Biopay::Prices;
 use AnyEvent;
@@ -15,6 +16,7 @@ use Biopay::Util qw/email_admin host now_dt/;
 use Try::Tiny;
 use Email::Valid;
 use Number::Phone;
+use Data::Dumper;
 
 our $VERSION = '0.1';
 
@@ -76,6 +78,8 @@ for my $page (qw(privacy refunds terms biodiesel-faq)) {
 
 before_template sub {
     my $tokens = shift;
+
+    $tokens->{info_email_link} = '<a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>';
 
     if (my $msg = session 'message') {
         $tokens->{message} ||= $msg;
@@ -461,12 +465,12 @@ get '/members/:member_id' => sub {
 
 get '/members/:member_id/payment' => sub {
     my $member = member();
-    forward '/members/' . $member->id, { message => update_payment_profile_message() };
+    forward '/members/' . $member->id, { message => update_payment_profile_message($member) };
 };
 
 sub update_payment_profile_message {
     # XXX How to verify response?
-    my $member = member();
+    my $member = shift;
     given (params->{responseCode}) {
         when (undef) { return undef }
         when (1) { # Successful!
@@ -534,7 +538,7 @@ get '/member/view' => sub {
     template 'member', {
         member => $member,
         stats => Biopay::Stats->new,
-        message => update_payment_profile_message() || params->{message},
+        message => update_payment_profile_message($member) || params->{message},
     };
 };
 
@@ -751,6 +755,28 @@ post '/new-member' => sub {
     }
 
 
+    my $member = try {
+        Biopay::PotentialMember->Create(
+            first_name => $fname,
+            last_name  => $lname,
+            phone_num  => $phone,
+            email      => $email,
+            PIN         => $pin,
+        );
+    }
+    catch {
+        if ($_ =~ m/^409/) {
+            Biopay::PotentialMember->By_email($email);
+        }
+        else {
+            $msg = "Sorry, there was an error creating your account: $_";
+            email_admin("Error creating new member account",
+                "Error creating new potential member: $_\n\n"
+                . "First='$fname' Last='$lname' phone='$phone'\n"
+                . "Email='$email' PIN='$pin'\n");
+        }
+    };
+
     if ($msg) {
         return forward '/new-member', {
             show_agreement => 1,
@@ -760,19 +786,39 @@ post '/new-member' => sub {
         }, { method => 'GET' };
     }
 
-    # Assign member number
-    # Create the new member in the couch
-    # Confirm email? set-password?
-    # Collect payment details
-    # Process sign-up fee
-    # Activate cardlock
-    # Send welcome email
-    return forward '/new-member', {
-        show_agreement => 1,
-        message => "Yay, it's all good!",
-        map { $_ => params->{$_} }
-            qw/first_name last_name phone address PIN/
-    }, { method => 'GET' };
+    return template 'new-member-payment', {
+        member => $member,
+        payment_url => $member->payment_setup_url,
+    };
+};
+
+get '/new-member/:hash' => sub {
+    my $hash = params->{hash};
+    my $pm = try { Biopay::PotentialMember->By_hash($hash) }
+    catch {
+        email_admin("Failed to load PotentialMember($hash)",
+            "When accepting payment info at /new-member/$hash, we could"
+            . " not find the member.\n\nError: $_\n\n"
+            . Dumper(scalar params));
+
+    };
+    my $msg = update_payment_profile_message($pm);
+    if ($pm->payment_hash) {
+        debug "Payment profile for " .$pm->email. " was successfully created.";
+        Biopay::Command->Create(
+            command => 'register-member',
+            member_email => $pm->email,
+        );
+        return template 'new-member-complete', {
+            member => $pm,
+        }
+    }
+
+    template 'new-member-payment', {
+        member => $pm,
+        payment_url => $pm->payment_setup_url,
+        message => $msg,
+    };
 };
 
 true;

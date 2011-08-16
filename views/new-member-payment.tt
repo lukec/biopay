@@ -1,0 +1,12 @@
+<h1>Payment Details</h1>
+[% INCLUDE message.tt %]
+
+[% IF message %]
+  <p>Looks like there was a problem entering your payment details.  You can either try again or email [% info_email_link %] for help.</p>
+[% ELSE %]
+  <p>Great, the membership form looks good.</p>
+  <p>Next up, we need to collect your payment details for the initial sign-up fee and to charge your future biodiesel purchases to.</p>
+  <p>Your credit card data will be stored in a secure, PCI compliant vault.</p>
+[% END %]
+
+<a href="[% payment_url %]">Click here to enter your payment details.</a>

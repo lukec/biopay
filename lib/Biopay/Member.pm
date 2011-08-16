@@ -70,6 +70,7 @@ sub Create {
     my $success_cb = delete $p{success_cb};
     my $error_cb = delete $p{error_cb};
 
+    $p{member_id} ||= $class->NextMemberID();
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
 
@@ -101,6 +102,31 @@ sub Create {
 
 sub By_email { shift->By_view('by_email', @_) }
 sub By_hash  { shift->By_view('by_hash', @_) }
+
+sub NextMemberID {
+    my $class = shift;
+    my $tries = shift // 3;
+
+    my $cv = couchdb->open_doc("MemberIDs");
+    try { 
+        my $doc = $cv->recv;
+        die "MemberIDs->{nextID} is not found!" unless $doc->{nextID};
+        my $id = $doc->{nextID}++;
+        couchdb->save_doc($doc);
+        return $id;
+    }
+    catch {
+        if ($_ =~ m/^404/) {
+            die "Could not load the 'MemberIDs' doc! Make sure it exists.";
+        }
+        elsif ($_ =~ m/^409/) {
+            debug "Conflict when fetching NextMemberID - tries=$tries";
+            return $class->NextMemberID(--$tries) if $tries > 0;
+            die "Failed to allocate a MemberID after 3 attempts!";
+        }
+        die "Failed to load 'MemberIDs' doc: $_";
+    };
+}
 
 method cancel {
     $self->active(0);
