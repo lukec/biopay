@@ -1,8 +1,9 @@
 package Biopay::Prices;
 use Moose;
-use methods;
 use Dancer::Plugin::CouchDB;
 use Dancer ':syntax';
+use Try::Tiny;
+use methods;
 
 method fuel_price {
     my $cb = shift;
@@ -43,12 +44,11 @@ method doc {
         );
     }
 
-    my $doc = eval { $cv->recv };
-    if ($@) {
-	if ($@ =~ m/^404/) {
-	    die "Could not load the 'prices' doc! Make sure it exists.";
-	}
-	else { die "Failed to load 'prices' doc: $@" };
-    }
-    return $doc;
+    return try { $cv->recv }
+    catch {
+        if ($_ =~ m/^404/) {
+            die "Could not load the 'prices' doc! Make sure it exists.";
+        }
+        else { die "Failed to load 'prices' doc: $_" }
+    };
 }
