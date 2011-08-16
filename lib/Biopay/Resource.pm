@@ -89,7 +89,9 @@ method save {
         );
     }
     else {
-        return $cv->recv;
+        my $res = $cv->recv;
+        $self->{_rev} = $res->{rev};
+        return $res;
     }
 }
 
