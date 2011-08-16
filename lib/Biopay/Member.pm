@@ -161,72 +161,60 @@ method change_PIN {
 }
 
 method send_cancel_email {
-    return unless $self->email;
-    my $new_PIN = shift;
-    my $html = template 'email/cancel', {
-        member => $self,
-    }, { layout => 'email' };
-    email {
-        to => $self->email,
-        bcc => 'lukecloss@gmail.com',
-        from => config->{email_from},
-        subject => "Biodiesel Membership Cancelled",
-        type => 'html',
-        message => $html,
-    };
-    debug "Just sent membership cancellation email to " . $self->email;
+    $self->_send_email(
+        template => 'cancel',
+        subject  => 'Membership Cancelled',
+    );
 }
 
 method send_new_pin_email {
     my $new_PIN = shift;
-    my $html = template 'email/new_pin', {
-        member => $self,
-        PIN => $new_PIN,
-    }, { layout => 'email' };
-    email {
-        to => $self->email,
-        bcc => 'lukecloss@gmail.com',
-        from => config->{email_from},
-        subject => "Biodiesel Co-op PIN change",
-        type => 'html',
-        message => $html,
-    };
-    debug "Just sent PIN change email to " . $self->email;
+    $self->_send_email(
+        template => 'new_pin',
+        subject  => 'Cardlock PIN change',
+        args => {
+            PIN => $new_PIN,
+        },
+    );
 }
 
 method send_billing_error_email {
     my $error = shift;
     my $amount = shift;
-    my $html = template 'email/billing-error', {
-        member => $self,
-        error => $error,
-        amount => $amount,
-    }, { layout => 'email' };
-    email {
-        to => $self->email,
-        bcc => 'lukecloss@gmail.com',
-        from => config->{email_from},
-        subject => "Biodiesel Co-op Billing Error!",
-        type => 'html',
-        message => $html,
-    };
-    debug "Just sent billing error email to " . $self->email;
+    $self->_send_email(
+        template => 'billing-error',
+        subject  => 'Billing Error!',
+        args => {
+            error => $error,
+            amount => $amount,
+        },
+    );
 }
 
 method send_set_password_email {
     delete $self->{login_hash}; # Cause it to be re-created
-    my $html = template 'email/set-password', {
+    $self->_send_email(
+        template => 'set-password',
+        subject  => 'Set your password',
+    );
+}
+
+method _send_email {
+    return unless $self->email;
+    my %p = @_;
+    my $html = template "email/$p{template}", {
         member => $self,
+        %{ $p{args} || {} },
     }, { layout => 'email' };
     email {
         to => $self->email,
         bcc => 'lukecloss@gmail.com',
         from => config->{email_from},
-        subject => "Biodiesel Co-op - Set your password",
+        subject => "Biodiesel Co-op - $p{subject}",
         type => 'html',
         message => $html,
     };
-    debug "Just sent set-password email to " . $self->email;
+    debug "Just sent $p{template} email to " . $self->email;
 }
 
 method membership_is_expired {
