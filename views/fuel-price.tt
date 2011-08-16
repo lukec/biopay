@@ -1,11 +1,6 @@
 <h1>Change Fuel Price</h1>
-  <div class="ui-widget">
-    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>Note:</strong> [% IF message %][% message %][% ELSE %]Price changes will only apply to subseqent transactions.[% END %]
-        </p>
-    </div>
-  </div>
+[% IF !message %][% SET message = "Price changes will only apply to subsequent transactions." %][% END %]
+[% INCLUDE message.tt %]
 <p>
   <form action="/fuel-price" method="POST">
     Enter the new fuel price: $
