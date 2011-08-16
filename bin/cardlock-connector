@@ -75,6 +75,10 @@ my $sigint = AnyEvent->signal(
     signal => "INT",
     cb => sub { $main_loop->send },
 );
+my $sigterm = AnyEvent->signal(
+    signal => "TERM",
+    cb => sub { print "$0 shutting down.\n"; $main_loop->send },
+);
 my $stdin; $stdin = AnyEvent->io(
     fh => *STDIN,
     poll => 'r',
