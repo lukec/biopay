@@ -39,7 +39,8 @@ sub now_dt {
 }
 
 sub host {
-    return 'http://' . request->host if request->host =~ m/localhost/;
+    return 'http://' . request->host
+        if request && request->host =~ m/localhost/;
     # Otherwise use the bona fide dotcloud SSL cert
     return 'https://biopay.ssl.dotcloud.com';
 }
