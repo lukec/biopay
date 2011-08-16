@@ -760,7 +760,13 @@ post '/new-member' => sub {
         }, { method => 'GET' };
     }
 
-    # Create the new member
+    # Assign member number
+    # Create the new member in the couch
+    # Confirm email? set-password?
+    # Collect payment details
+    # Process sign-up fee
+    # Activate cardlock
+    # Send welcome email
     return forward '/new-member', {
         show_agreement => 1,
         message => "Yay, it's all good!",
