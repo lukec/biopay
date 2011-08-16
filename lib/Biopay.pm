@@ -41,7 +41,8 @@ before sub {
     }
 
     my $path = request->path_info;
-    return if $public_paths{$path} or $path =~ m{^/(login|set-password)};
+    return if $public_paths{$path}
+               or $path =~ m{^/(login|set-password|new-member)};
 
     if (my $m = session 'member') {
         unless ($path =~ m{^/member/}) {
@@ -131,7 +132,7 @@ post '/login' => sub {
         }
         return forward "/login", {message => $msg}, { method => 'GET' };
     }
-    my $member = Biopay::Member->By_email($user);
+    my $member = Biopay::Member->By_id($user);
     unless ($member) {
         return forward "/login", { message => "That user does not exist." },
             { method => 'GET' };
@@ -153,7 +154,7 @@ get '/set-password' => sub {
     unless ($user) {
         return redirect "/login";
     }
-    my $member = Biopay::Member->By_email($user);
+    my $member = Biopay::Member->By_id($user);
     if ($member and !$member->password) {
         $member->send_set_password_email;
         # Remember to save the hash
@@ -199,6 +200,7 @@ post '/set-password' => sub {
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
+    session message => "Successfully saved your password. Please login.";
     return redirect host() . "/login";
 };
 
@@ -643,17 +645,17 @@ get '/forgot-password' => sub {
     template 'forgot-password', {message => params->{message}};
 };
 post '/forgot-password' => sub {
-    my $email = params->{email};
-    unless ($email) {
+    my $member_id = params->{member_id};
+    unless ($member_id) {
         return forward '/forgot-password', {
-            message => "Please enter your email address.",
+            message => "Please enter your member ID.",
         }, {method => 'GET'};
     }
 
-    my $m = Biopay::Member->By_email($email);
+    my $m = Biopay::Member->By_id($member_id);
     unless ($m) {
         return forward '/forgot-password', {
-            message => "Sorry, a member with that email address cannot "
+            message => "Sorry, a member with that member ID cannot "
                            . "be found.",
         }, {method => 'GET'};
     }
@@ -717,7 +719,7 @@ get '/new-member' => sub {
 post '/new-member' => sub {
     my $msg;
     (my $fname = params->{first_name}) =~ s/^First name.*//;
-    (my $lname = params->{first_name}) =~ s/^Last name.*//;
+    (my $lname = params->{last_name}) =~ s/^Last name.*//;
     my $phone = params->{phone};
     my $np = Number::Phone->new('+1' . $phone);
     my $phone_is_valid = $np && $np->is_valid;
@@ -794,26 +796,40 @@ post '/new-member' => sub {
 
 get '/new-member/:hash' => sub {
     my $hash = params->{hash};
-    my $pm = try { Biopay::PotentialMember->By_hash($hash) }
-    catch {
-        email_admin("Failed to load PotentialMember($hash)",
-            "When accepting payment info at /new-member/$hash, we could"
-            . " not find the member.\n\nError: $_\n\n"
-            . Dumper(scalar params));
-
-    };
-    my $msg = update_payment_profile_message($pm);
-    if ($pm->payment_hash) {
-        debug "Payment profile for " .$pm->email. " was successfully created.";
-        Biopay::Command->Create(
-            command => 'register-member',
-            member_email => $pm->email,
-        );
-        return template 'new-member-complete', {
-            member => $pm,
+    my ($msg, $pm, $member);
+    try {
+        $pm = Biopay::PotentialMember->By_hash($hash);
+        unless ($pm) {
+            $msg = "We could not find a member at that location.";
+            return;
+        }
+        $msg = update_payment_profile_message($pm);
+        if ($pm->payment_hash) {
+            debug "Payment profile for " .$pm->email. " was created.";
+            $member = $pm->make_real;
+            Biopay::Command->Create(
+                command => 'register-member',
+                member_id => $member->id,
+                PIN => $pm->PIN,
+            );
         }
     }
+    catch {
+        email_admin("Failed to process payment profile from new member",
+            "When accepting payment info at /new-member/$hash, we had"
+            . " the following error: $_\n\n"
+            . ($pm ? "Member email=" . $pm->email." and PIN=".$pm->PIN . "\n\n"
+                   : '')
+            . Dumper(scalar params));
+        $msg = "Sorry, we had an error: $_";
+    };
 
+    unless ($pm) {
+        session message => $msg;
+        return redirect '/';
+    }
+
+    return template 'new-member-complete' if $member;
     template 'new-member-payment', {
         member => $pm,
         payment_url => $pm->payment_setup_url,

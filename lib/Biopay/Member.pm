@@ -6,7 +6,7 @@ use Moose;
 use DateTime;
 use Try::Tiny;
 use Biopay::Command;
-use Biopay::Util qw/now_dt host/;
+use Biopay::Util qw/now_dt host email_admin/;
 use Data::UUID;
 use methods;
 
@@ -70,7 +70,16 @@ sub Create {
     my $success_cb = delete $p{success_cb};
     my $error_cb = delete $p{error_cb};
 
-    $p{member_id} ||= $class->NextMemberID();
+    unless ($p{member_id}) {
+        try {
+            $p{member_id} = $class->NextMemberID();
+        }
+        catch {
+            email_admin("Error fetching NextMemberID",
+                "Could not find the next member id: $_");
+            die $_;
+        };
+    }
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
 
@@ -199,22 +208,45 @@ method send_set_password_email {
     );
 }
 
+method send_welcome_email {
+    my $pin = shift;
+    $self->_send_email(
+        template => 'welcome',
+        subject  => 'Welcome to the Co-op!',
+        args => {
+            PIN => $pin,
+        }
+    );
+}
+
 method _send_email {
-    return unless $self->email;
     my %p = @_;
-    my $html = template "email/$p{template}", {
-        member => $self,
-        %{ $p{args} || {} },
-    }, { layout => 'email' };
-    email {
-        to => $self->email,
-        bcc => 'lukecloss@gmail.com',
-        from => config->{email_from},
-        subject => "Biodiesel Co-op - $p{subject}",
-        type => 'html',
-        message => $html,
+    unless ($self->email) {
+        debug "Attempted to send $p{template} email to " . $self->id
+            . " but they have no email address set.";
+        return;
+    }
+    try {
+        my $html = template "email/$p{template}", {
+            member => $self,
+            %{ $p{args} || {} },
+        }, { layout => 'email' };
+        email {
+            to => $self->email,
+            bcc => 'lukecloss@gmail.com',
+            from => config->{email_from},
+            subject => "Biodiesel Co-op - $p{subject}",
+            type => 'html',
+            message => $html,
+        };
+        debug "Just sent $p{template} email to " . $self->email;
+    }
+    catch {
+        debug "Failed to send $p{template} email to " . $self->email . ": $_";
+        email_admin("Failed to send $p{template} email",
+            "I attempted to send an email to " . $self->email
+            . " but failed: $_");
     };
-    debug "Just sent $p{template} email to " . $self->email;
 }
 
 method membership_is_expired {

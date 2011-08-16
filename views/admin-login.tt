@@ -1,4 +1,4 @@
 <h1>Admin Login</H1>
 [% INCLUDE message.tt %]
 <p>Login to the Admin area:</p>
-[% INCLUDE 'login-form.tt' action="admin-login" %]
+[% INCLUDE 'login-form.tt' action="admin-login" desc="Admin username"%]

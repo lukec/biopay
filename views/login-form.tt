@@ -1,7 +1,7 @@
 <form action="[% host %]/[% action %]" method="POST">
 <table class="login">
   <tr>
-    <td>Email Address:</td>
+    <td>[% desc %]:</td>
     <td><input id="username" type="text" name="username" size=20 /></td>
   </tr>
   <tr>

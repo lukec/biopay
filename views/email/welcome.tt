@@ -1,0 +1,10 @@
+<h1>Welcome to the Vancouver Biodiesel Co-op!</h1>
+
+<p>Congratulations! You are now a member of the Vancouver Biodiesel Co-op!</p>
+
+<p>We have successfully charged your credit card for the $25 sign-up fee, and we have activated the cardlock for you.  You can now visit our pump to fill up with B100 Biodiesel!</p>
+
+<p><strong>To use the cardlock:</strong> you are member # [% member.id %] and your self-selected PIN is [% PIN %].
+
+<p>To login to our online member area, where you can view your past transactions and manage your billing details, <a href="[% member.set_password_link %]">click here</a> to set your password.</p>
+

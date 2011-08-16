@@ -30,6 +30,13 @@ method annual_membership_price {
         || die "No annual membership price found!";
 }
 
+method signup_price {
+    my $cb = shift;
+    die "Callback for signup_price is not implemented!" if $cb;
+    return $self->doc->{signup_price}
+        || die "No signup_price found!";
+}
+
 method doc {
     my $cb = shift;
 

@@ -1,7 +1,7 @@
 <h1>Signup is complete!</h1>
 <p>Your payment data is now securely stored in our system.  We will process your sign-up dues and activate the cardlock for you in the next few minutes.</p>
 
-<p>You should receive a welcome email soon with your member code, and an email receipt for your signup fees.</p>
+<p>You should receive a welcome email soon with your member code and a receipt for your signup dues.</p>
 
 <p>If you have any remaining questions, concerns or great ideas, please share them with us at [% info_email_link %].</p>
 
