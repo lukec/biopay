@@ -380,6 +380,17 @@ sub handle_job {
                     return;
                 }
             }
+            $couch->remove_doc($job)->cb(
+                sub {
+                    my $cv = shift;
+                    try { $cv->recv }
+                    catch {
+                        email_admin("Error removing a $job->{command} job",
+                            "Failed to remove $job->{_id}\n\n$_"
+                        );
+                    };
+                }
+            );
         }
         catch {
             email_admin("Error running job $job->{command} for Member $mid",
@@ -387,19 +398,7 @@ sub handle_job {
                 . "\n\n" . Dumper($job)
             );
         };
-        $couch->remove_doc($job)->cb(
-            sub {
-                my $cv = shift;
-                try { $cv->recv }
-                catch {
-                    email_admin("Error removing a $job->{command} job",
-                        "Failed to remove $job->{_id}\n\n$_"
-                    );
-                };
-            }
-        );
-        }
-    );
+    });
 }
 
 sub cardlock_freeze {
