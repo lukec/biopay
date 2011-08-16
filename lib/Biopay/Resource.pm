@@ -46,8 +46,9 @@ sub All_for_view {
 
     my $result_mapper = sub {
         my $result = shift;
-        return [ map { $class->new_from_hash($_->{value}) }
-                @{ $result->{rows} } ];
+        return [ grep { defined } 
+                    map { try { $class->new_from_hash($_->{value}) } }
+                        @{ $result->{rows} } ];
     };
     my $cv = couchdb->view($class->view_base . $view, @_);
     if ($cb) {
