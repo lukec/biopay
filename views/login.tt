@@ -5,3 +5,5 @@
 
 <hr />
 <p><a href="/forgot-password">I forgot my password!</a></p>
+<hr />
+<p><a href="/admin-login">Admin Login</a></p>
