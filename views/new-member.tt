@@ -121,7 +121,7 @@ $(function() {
     <p>Home Address: <input type="text" name="address" size="40" value="[% address %]" /></p>
     <p>Email Address: <input type="text" name="email" size="30" value="[% email %]" /></p>
     <p>Phone Number: <input type="text" name="phone" size="12" value="[% phone %]" /></p>
-    <p>Cardlock PIN: <input type="text" name="PIN" size="4" value="[% PIN %]" /></p>
+    <p>Desired Cardlock PIN: <input type="text" name="PIN" size="4" value="[% PIN %]" /> (Should be 4 digits)</p>
 
     <p>The information entered here is correct to the best of my knowledge, and I agree to the following conditions: (please check)</p>
     <ul>
