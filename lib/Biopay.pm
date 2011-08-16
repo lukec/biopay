@@ -115,6 +115,7 @@ EOT
 
 get '/login' => sub {
     template 'login' => { 
+        message => param('message') || '',
         path => param('path'),
         host => host(),
     };
@@ -218,7 +219,7 @@ post '/admin-login' => sub {
     if (my $errors = $auth->errors) {
         my $msg = join(', ', $auth->errors);
         debug "Auth errors: $msg";
-        return forward "/login", {message => $msg}, { method => 'GET' };
+        return forward "/admin-login", {message => $msg}, { method => 'GET' };
     }
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
