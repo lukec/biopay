@@ -12,8 +12,7 @@ has 'payment_args' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 method process {
     my %p = @_;
 
-    debug "Sending payment request $p{order_num} for \$$p{amount} for "
-        . "hash $p{hash}";
+    print " (Payment: $p{order_num} for \$$p{amount}) ";
     if (config->{merchant_test}) {
         debug "Merchant test in effect, no transaction sent to Beanstream!";
         return;
