@@ -4,6 +4,6 @@
 [% INCLUDE 'login-form.tt' action="login" desc="Member ID"%]
 
 <hr />
-<p><a href="/forgot-password">I forgot my password!</a></p>
+<p><a href="/forgot-password">I've never logged in before - OR - I forgot my password!</a></p>
 <hr />
 <p><a href="/admin-login">Admin Login</a></p>
