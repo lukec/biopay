@@ -53,7 +53,7 @@ method as_hash {
 method _build_pretty_date {
     my $t = $self->datetime;
     return $t->month_name . ' ' . $t->day . ', ' . $t->year
-        . ' at ' . sprintf("%02d:%02d", $t->hour_12, $t->minute) . ' ' . $t->am_or_pm;
+        . ' at ' . sprintf("%2d:%02d", $t->hour_12, $t->minute) . ' ' . $t->am_or_pm;
 }
 
 method _build_pretty_paid_date {
