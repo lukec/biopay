@@ -5,7 +5,7 @@
   <p><a href="[% pay_url %]">[% pay_url %]</a></p>
 [% ELSE %]
   <p>Because you have not yet logged in to our online member area, you'll need to create a password first.</p>
-  <p>To pick a password, click here:
+  <p>To pick a password, click here:<br />
     [% SET url=member.set_password_link %]
     <a href="[% url %]">[% url %]</a>
   </p>
