@@ -431,6 +431,10 @@ get '/members/:member_id/cancel' => sub {
 
 get '/members/:member_id/send-update-payment-email' => sub {
     my $member = member();
+    unless ($member->email) {
+        session message => "That member does not have an email address set.";
+        return redirect '/members/' . $member->id;
+    }
     $member->send_payment_update_email;
     session message => "An email has been sent to the user requesting "
         . "that they update their payment methods.";
