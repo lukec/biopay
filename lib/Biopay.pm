@@ -334,6 +334,7 @@ get '/members' => sub {
         redirect "/members/$mid" if $mid =~ m/^\d+$/;
     }
     my $members = Biopay::Member->All;
+    $members = [ sort { $a->id <=> $b->id } @$members ];
     template 'members', { members => $members };
 };
 
