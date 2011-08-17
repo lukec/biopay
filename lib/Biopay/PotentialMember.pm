@@ -13,6 +13,7 @@ extends 'Biopay::Resource';
 has 'first_name' => (isa => 'Str', is => 'ro', required => 1);
 has 'last_name'  => (isa => 'Str', is => 'ro', required => 1);
 has 'phone_num'  => (isa => 'Str', is => 'ro', required => 1);
+has 'address'    => (isa => 'Str', is => 'ro', required => 1);
 has 'email'      => (isa => 'Str', is => 'ro', required => 1);
 has 'PIN'        => (isa => 'Str', is => 'ro', required => 1);
 has 'hash'       => (isa => 'Str', is => 'ro', required => 1);
@@ -29,7 +30,7 @@ method as_hash {
         Type => 'potential_member',
         map { $_ => $self->$_ }
             qw/first_name last_name phone_num email PIN hash payment_hash
-               _id _rev/,
+               address _id _rev/,
     };
 }
 
@@ -71,7 +72,7 @@ method make_real {
     my $new_expiry = $now + DateTime::Duration->new(years => 1);
     my $member = Biopay::Member->Create( @_,
         (map { $_ => $self->$_ }
-            qw/first_name last_name phone_num email payment_hash/),
+            qw/first_name last_name address phone_num email payment_hash/),
         start_epoch => $now->epoch,
         dues_paid_until => $new_expiry->epoch,
         login_hash => Data::UUID->new->create_str,

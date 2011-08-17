@@ -44,6 +44,10 @@
     <td><strong>Email</strong></td>
     <td><input type="text" name="email" width="15" value="[% email || member.email %]" /></td>
   </tr>
+  <tr>
+    <td><strong>Home Address</strong></td>
+    <td><input type="text" name="address" width="15" value="[% address || member.address %]" /></td>
+  </tr>
   [% IF is_admin %]
     <tr>
       <td><strong>Joined</strong></td>

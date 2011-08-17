@@ -15,6 +15,7 @@ extends 'Biopay::Resource';
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
 has 'first_name' => (isa => 'Maybe[Str]', is => 'rw');
 has 'last_name'  => (isa => 'Maybe[Str]', is => 'rw');
+has 'address'    => (isa => 'Maybe[Str]', is => 'rw');
 has 'phone_num'  => (isa => 'Maybe[Str]', is => 'rw');
 has 'email'  => (isa => 'Maybe[Str]', is => 'rw');
 has 'start_epoch'  => (isa => 'Maybe[Num]', is => 'rw');
@@ -59,7 +60,7 @@ method as_hash {
     return $hash if $p{minimal};
 
     map { $hash->{$_} = $self->$_ }
-        qw/_id _rev phone_num start_epoch dues_paid_until payment_hash
+        qw/_id _rev address phone_num start_epoch dues_paid_until payment_hash
            frozen PIN billing_error login_hash password/;
     return $hash;
 }

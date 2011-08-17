@@ -35,6 +35,10 @@
         <td><a href="mailto:[% member.email %]">[% member.email %]</a></td>
       </tr>
       <tr>
+        <td><strong>Home Address</strong></td>
+        <td>[% member.address %]</td>
+      </tr>
+      <tr>
         <td><strong>Joined Co-op</strong></td>
         <td>[% member.start_pretty_date %]</td>
       </tr>

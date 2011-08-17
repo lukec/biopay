@@ -458,7 +458,7 @@ get '/members/:member_id/edit' => sub {
 
 post '/members/:member_id/edit' => sub {
     my $member = member();
-    for my $key (qw/first_name last_name phone_num email/) {
+    for my $key (qw/first_name last_name phone_num email address/) {
         $member->$key(params->{$key});
     }
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
@@ -589,7 +589,7 @@ get '/member/edit' => sub {
 
 post '/member/edit' => sub {
     my $member = session_member();
-    for my $key (qw/first_name last_name phone_num email/) {
+    for my $key (qw/first_name last_name phone_num email address/) {
         $member->$key(params->{$key});
     }
     $member->save;
@@ -776,6 +776,7 @@ post '/new-member' => sub {
         Biopay::PotentialMember->Create(
             first_name => $fname,
             last_name  => $lname,
+            address    => $address,
             phone_num  => $phone,
             email      => $email,
             PIN         => $pin,
