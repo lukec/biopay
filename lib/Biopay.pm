@@ -81,6 +81,7 @@ before_template sub {
     my $tokens = shift;
 
     $tokens->{info_email_link} = '<a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>';
+    $tokens->{host} = host();
 
     if (my $msg = session 'message') {
         $tokens->{message} ||= $msg;
@@ -171,6 +172,7 @@ get '/set-password/:hash' => sub {
     template 'set-password' => { 
         member => $member,
         confirmed => 1,
+        path => param('path'),
     };
 };
 
@@ -202,14 +204,15 @@ post '/set-password' => sub {
     $member->login_hash(undef);
     $member->save;
     session message => "Successfully saved your password. Please login.";
-    return redirect host() . "/login";
+    set_member_session($member);
+    my $path = param('path') || '/';
+    return redirect host() . $path;
 };
 
 get '/admin-login' => sub {
     template 'admin-login' => { 
         message => param('message') || '',
         path => param('path'),
-        host => host(),
     };
 };
 
