@@ -6,7 +6,7 @@
 [% ELSE %]
   <p>Because you have not yet logged in to our online member area, you'll need to create a password first.</p>
   <p>To pick a password, click here:<br />
-    [% SET url=member.set_password_link %]
+    [% SET url=member.set_password_link _ '?payment=1' %]
     <a href="[% url %]">[% url %]</a>
   </p>
   <p>Once you have created a password, you can update your payment method and other details.</p>

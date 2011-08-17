@@ -213,7 +213,13 @@ post '/set-password' => sub {
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
-    session message => "Successfully saved your password.";
+    if (param('payment')) {
+        session message => "Password saved. You can now "
+            . '<a href="/member/update-payment">update your payment details</a>';
+    }
+    else {
+        session message => "Successfully saved your password.";
+    }
     set_member_session($member);
     my $path = param('path') || '/';
     return redirect host() . $path;
