@@ -297,6 +297,11 @@ get '/txns' => sub {
 
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
+    unless ($txn) {
+        session message => "Sorry, transaction " . params->{txn_id} . " does not exist.";
+        return redirect '/';
+    }
+
     if (params->{mark_as_unpaid} and $txn->paid) {
         $txn->paid(0);
         $txn->save;
@@ -470,6 +475,11 @@ post '/members/:member_id/edit' => sub {
 
 get '/members/:member_id' => sub {
     my $member = member();
+    unless ($member) {
+        session message => "Sorry, member " . param('member_id') . " does not exist.";
+        return redirect '/';
+    }
+
     template 'member', {
         member => $member,
         ( $member->active ? 
