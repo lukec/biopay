@@ -152,7 +152,13 @@ post '/login' => sub {
 
 sub set_member_session {
     my $member = shift;
+    destroy_session();
     session member => $member->as_hash(minimal => 1);
+}
+
+sub destroy_session {
+    session->destroy;
+    session->flush;
 }
 
 get '/set-password' => sub {
@@ -240,8 +246,7 @@ post '/admin-login' => sub {
 };
 
 get '/logout' => sub {
-    session->destroy;
-    session->flush;
+    destroy_session();
     return redirect '/';
 };
 
