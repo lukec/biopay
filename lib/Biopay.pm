@@ -55,8 +55,9 @@ before sub {
     elsif (session 'is_admin') {
         if ($path =~ m{^/member/}) {
             debug "Admin cannot access '$path'";
-            session message => "Sorry, that is not available to you.";
-            return redirect '/';
+            session message => "You are logged in as an admin. Please login with your member ID to see that page.";
+            session path => $path;
+            return redirect '/login';
         };
         return;
     }
@@ -117,7 +118,7 @@ EOT
 get '/login' => sub {
     template 'login' => { 
         message => param('message') || '',
-        path => param('path'),
+        path => param('path') || session('path'),
     };
 };
 
@@ -206,7 +207,7 @@ post '/set-password' => sub {
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
-    session message => "Successfully saved your password. Please login.";
+    session message => "Successfully saved your password.";
     set_member_session($member);
     my $path = param('path') || '/';
     return redirect host() . $path;
