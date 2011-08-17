@@ -6,7 +6,7 @@
 [% ELSE %]
   <p>Great, the membership form looks good.</p>
   <p>Next up, we need to collect your payment details for the initial sign-up fee and to charge your future biodiesel purchases to.</p>
-  <p>Your credit card data will be stored in a secure, PCI compliant vault.</p>
+  <p>Your credit card data will be stored in a secure, <a href="http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard">PCI compliant</a> system.</p>
 [% END %]
 
 <a href="[% payment_url %]">Click here to enter your payment details.</a>
