@@ -14,7 +14,7 @@ use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::Receipt;
-use Biopay::Util qw/email_admin random_pin/;
+use Biopay::Util qw/email_admin email_board random_pin/;
 use AnyEvent;
 use List::Util qw/sum/;
 use Try::Tiny;
@@ -434,8 +434,11 @@ sub register_member {
         
         # Activate Cardlock
         $cardlock->set_PIN($member->id, $PIN);
-
         $member->send_welcome_email($PIN);
+
+        email_board("New member - " . $member->id,
+            "Hello Board, we just had a new member join the co-op: "
+            . $member->name . ".\n");
     };
     catch {
         my $err = "Failed to register new member: $_";

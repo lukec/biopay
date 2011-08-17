@@ -4,7 +4,7 @@ use Dancer::Plugin::Email;
 use DateTime;
 use base 'Exporter';
 
-our @EXPORT_OK = qw/email_admin random_pin now_dt host/;
+our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host/;
 
 sub email_admin {
     my ($subj, $body) = @_;
@@ -14,6 +14,17 @@ sub email_admin {
         from => config->{email_from},
         subject => "Cardlock error: $subj",
         message => $body || 'Sorry!',
+    };
+};
+
+sub email_board {
+    my ($subj, $body) = @_;
+    debug "Emailing board: $subj";
+    email {
+        to => 'vancouver-biodiesel-board@googlegroups.com',
+        from => config->{email_from},
+        subject => "Biopay: $subj",
+        message => $body,
     };
 };
 
