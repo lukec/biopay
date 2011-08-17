@@ -1,0 +1,16 @@
+<p>Please update the payment details for your Vancouver Biodiesel Co-op membership.</p>
+
+[% SET pay_url=host _ '/member/update-payment' %]
+[% IF member.password %]
+  <p><a href="[% pay_url %]">[% pay_url %]</a></p>
+[% ELSE %]
+  <p>Because you have not yet logged in to our online member area, you'll need to create a password first.</p>
+  <p>To pick a password, click here:
+    [% SET url=member.set_password_link %]
+    <a href="[% url %]">[% url %]</a>
+  </p>
+  <p>Once you have created a password, you can update your payment method and other details.</p>
+[% END %]
+
+<p>Thank you very much!</p>
+<p>The Vancouver Biodiesel Co-op Board of Directors.</p>

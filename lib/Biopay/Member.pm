@@ -221,6 +221,14 @@ method send_welcome_email {
     );
 }
 
+method send_payment_update_email {
+    $self->_send_email(
+        template => 'update-payment',
+        subject => 'Please update your payment details',
+    );
+}
+
+
 method _send_email {
     my %p = @_;
     unless ($self->email) {

@@ -65,6 +65,7 @@
       </tr>
     </table>
     </p>
+      <hr />
       <p>
         [% IF is_admin %]
             [% SET muri = "/members/" _ member.member_id %]
@@ -76,6 +77,8 @@
             [% END %]
             <a href="[% muri %]/change-pin">Change PIN</a> |
             <a href="[% muri %]/cancel">Cancel Membership</a>
+            <br />
+            <a href="[% muri %]/send-update-payment-email">Send request to update Payment Profile</a>
         [% ELSE %]
             [% SET muri = "/member" %]
             <a href="[% muri %]/edit">Edit my details</a> |
@@ -84,6 +87,7 @@
             <a href="[% muri %]/cancel">Cancel my membership</a>
         [% END %]
       </p>
+      <hr />
     </div>
 
     <ul>

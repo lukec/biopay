@@ -118,7 +118,6 @@ get '/login' => sub {
     template 'login' => { 
         message => param('message') || '',
         path => param('path'),
-        host => host(),
     };
 };
 
@@ -146,10 +145,14 @@ post '/login' => sub {
     }
 
     debug "Allowing access to member user $user";
-    session username => $user;
-    session member => $member->as_hash(minimal => 1);
+    set_member_session($member);
     return redirect host() . param('path') || "/";
 };
+
+sub set_member_session {
+    my $member = shift;
+    session member => $member->as_hash(minimal => 1);
+}
 
 get '/set-password' => sub {
     my $user = param('username');
@@ -406,6 +409,14 @@ get '/members/:member_id/cancel' => sub {
     template 'cancel', {
         member => $member,
     };
+};
+
+get '/members/:member_id/send-update-payment-email' => sub {
+    my $member = member();
+    $member->send_payment_update_email;
+    session message => "An email has been sent to the user requesting "
+        . "that they update their payment methods.";
+    return redirect '/members/' . $member->id;
 };
 
 get '/members/:member_id/change-pin' => sub {
