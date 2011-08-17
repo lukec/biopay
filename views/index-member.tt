@@ -3,8 +3,8 @@
 <p>
 <h3>Welcome to the members area.</h3>
 <ul>
-  <li><a href="/member/txns">View your recent transactions</a></li>
   <li><a href="/member/update-payment">Update your payment method</a></li>
+  <li><a href="/member/txns">View your recent transactions</a></li>
   <li><a href="/member/view">View your member details</a></li>
 </ul>
 </p>
