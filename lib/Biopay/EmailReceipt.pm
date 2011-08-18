@@ -1,4 +1,4 @@
-package Biopay::Receipt;
+package Biopay::EmailReceipt;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
 use Moose;

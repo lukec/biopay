@@ -13,7 +13,7 @@ use Biopay::Transaction;
 use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
-use Biopay::Receipt;
+use Biopay::EmailReceipt;
 use Biopay::Util qw/email_admin email_board random_pin/;
 use AnyEvent;
 use List::Util qw/sum/;
@@ -314,7 +314,7 @@ sub process_transactions {
         $error = "Order '$order_num' processed, txns marked as paid, but "
                 . "receipt is not sent.";
             
-        Biopay::Receipt->new(
+        Biopay::EmailReceipt->new(
             member_id => $member->id,
             member => $member,
             txns => $txns,
