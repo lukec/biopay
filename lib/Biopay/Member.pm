@@ -13,8 +13,7 @@ use methods;
 extends 'Biopay::Resource';
 
 has 'member_id' => (isa => 'Num', is => 'ro', required => 1);
-has 'first_name' => (isa => 'Maybe[Str]', is => 'rw');
-has 'last_name'  => (isa => 'Maybe[Str]', is => 'rw');
+has 'name'       => (isa => 'Maybe[Str]', is => 'rw', lazy_build => 1);
 has 'address'    => (isa => 'Maybe[Str]', is => 'rw');
 has 'phone_num'  => (isa => 'Maybe[Str]', is => 'rw');
 has 'email'  => (isa => 'Maybe[Str]', is => 'rw');
@@ -34,7 +33,6 @@ has 'billing_error' => (isa => 'Maybe[Str]', is => 'rw');
 
 # Lazy Built Attributes:
 
-has 'name'       => (is  => 'ro',         isa => 'Str', lazy_build => 1);
 has 'login_hash' => (isa => 'Maybe[Str]', is  => 'rw',  lazy_build => 1);
 has 'set_password_link' => (isa => 'Maybe[Str]', is => 'ro', lazy_build => 1);
 
@@ -55,7 +53,7 @@ method as_hash {
     my %p = @_;
     my $hash = { Type => 'member' };
 
-    my @minimal_keys = qw/member_id first_name last_name email active/;
+    my @minimal_keys = qw/member_id name email active/;
     map { $hash->{$_} = $self->$_ } @minimal_keys;
     return $hash if $p{minimal};
 
@@ -273,11 +271,7 @@ method renew_membership {
     $self->save(@_);
 }
 
-method _build_name {
-    my $name = join ' ', grep { defined } ($self->first_name, $self->last_name);
-    $name = "Member #" . $self->member_id if $name =~ m/^\s*$/;
-    return $name;
-}
+method _build_name { "Member #" . $self->member_id }
 
 method _build_start_pretty_date {
     return 'Unknown' unless $self->start_datetime;

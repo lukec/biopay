@@ -355,7 +355,7 @@ get '/members/create' => sub {
 };
 
 post '/members/create' => sub {
-    my @member_attrs = qw/member_id first_name last_name phone_num email 
+    my @member_attrs = qw/member_id name phone_num email 
                    start_date dues_paid_until_date payment_hash/;
     my %hash = map { $_ => params->{$_} } @member_attrs;
 
@@ -480,7 +480,7 @@ get '/members/:member_id/edit' => sub {
 
 post '/members/:member_id/edit' => sub {
     my $member = member();
-    for my $key (qw/first_name last_name phone_num email address/) {
+    for my $key (qw/name phone_num email address/) {
         $member->$key(params->{$key});
     }
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
@@ -616,7 +616,7 @@ get '/member/edit' => sub {
 
 post '/member/edit' => sub {
     my $member = session_member();
-    for my $key (qw/first_name last_name phone_num email address/) {
+    for my $key (qw/name phone_num email address/) {
         $member->$key(params->{$key});
     }
     $member->save;
@@ -752,8 +752,7 @@ get '/new-member' => sub {
         today_date => $date,
         show_agreement => params->{show_agreement},
         message => params->{message},
-        first_name => params->{first_name} || 'First name',
-        last_name => params->{last_name} || 'Last name',
+        name => params->{name} || 'Name',
         map { $_ => params->{$_} } qw/email phone address PIN/
     };
 };

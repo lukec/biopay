@@ -29,12 +29,8 @@
     </td>
   </tr>
   <tr>
-    <td><strong>First name</strong></td>
-    <td><input type="text" name="first_name" width="15" value="[% first_name || member.first_name %]" /></td>
-  </tr>
-  <tr>
-    <td><strong>Last name</strong></td>
-    <td><input type="text" name="last_name" width="15" value="[% last_name || member.last_name %]" /></td>
+    <td><strong>Name</strong></td>
+    <td><input type="text" name="name" width="15" value="[% name || member.name %]" /></td>
   </tr>
   <tr>
     <td><strong>Phone</strong></td>

@@ -70,9 +70,11 @@ method payment_setup_url {
 method make_real {
     my $now = now_dt();
     my $new_expiry = $now + DateTime::Duration->new(years => 1);
+    my $name = join ' ', $self->first_name, $self->last_name;
     my $member = Biopay::Member->Create( @_,
+        name => $name,
         (map { $_ => $self->$_ }
-            qw/first_name last_name address phone_num email payment_hash/),
+            qw/address phone_num email payment_hash/),
         start_epoch => $now->epoch,
         dues_paid_until => $new_expiry->epoch,
         login_hash => Data::UUID->new->create_str,
