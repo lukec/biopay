@@ -26,9 +26,6 @@ sub Create {
     die "order_num is mandatory!" unless $p{order_num};
     die "member_id is mandatory!" unless $p{member_id};
     die "items is mandatory!"     unless $p{items};
-    for my $i (@{ $p{items} }) {
-
-    }
     $p{at} ||= time();
 
     my $key = "receipt:$p{order_num}";
