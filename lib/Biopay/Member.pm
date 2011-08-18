@@ -1,9 +1,12 @@
 package Biopay::Member;
+use strict;
+use warnings;
 use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Email;
 use Moose;
 use DateTime;
+use DateTime::Duration;
 use Try::Tiny;
 use Biopay::Command;
 use Biopay::Util qw/now_dt host email_admin/;
