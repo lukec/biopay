@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use Dancer qw/:syntax/;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Text::CSV_XS;
+use Biopay::Member;
+
+BEGIN {
+    Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+    Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+    Dancer::Config::load();
+}
+
+my $csv = Text::CSV_XS->new;
+open my $fh, "<:encoding(utf8)", "members.csv" or die "members.csv: $!";
+while (my $row = $csv->getline ($fh)) {
+    my ($mid, $expiry, $name, $phone, $email, $joined, $address) = @$row;
+    my $data = {
+        id => $mid,
+        expiry => $expiry,
+        name => $name,
+        phone_num => $phone,
+        email => $email,
+        joined => $joined,
+        address => $address,
+    };
+
+    next unless $mid;
+    my $m = Biopay::Member->By_id($mid);
+    if ($m and $name) {
+        update_member($m, $data);
+    }
+    else {
+        print "Member $mid not found\n";
+    }
+}
+
+exit;
+
+sub update_member {
+    my $m = shift;
+    my $data = shift;
+    my $changed = 0;
+
+    # my ($mid, $expiry, $name, $phone, $email, $joined, $address) = @$row;
+    print "Checking member #$data->{id} ($data->{name})\n";
+
+    for my $attr (qw/name phone_num email address/) {
+        if (($m->$attr||'') ne $data->{$attr}) {
+            print "  ... updating $attr to $data->{$attr}\n";
+            $m->$attr($data->{$attr});
+            $changed++;
+        }
+    }
+
+    my $joined = $data->{joined};
+    if ($joined =~ m(^(\d+)/(\d+)/(\d+)$)) {
+        my $new_epoch = dmy_to_epoch($1, $2, $3);
+        if (($m->start_epoch||0) != $new_epoch) {
+            print "  ... updating join date to $1/$2/$3\n";
+            $m->start_epoch($new_epoch);
+            $changed++;
+        }
+    }
+    else {
+        die "Couldn't parse date format for $data->{id}: '$joined'";
+    }
+
+    if ($changed) {
+        print "  ... Saving!\n";
+        $m->save;
+    }
+}
+
+sub dmy_to_epoch {
+    my ($d, $m, $y) = @_;
+    if ($m > 12) {
+        my $x = $m;
+        $m = $d;
+        $d = $x;
+    }
+    my $dt = DateTime->new(year => $y, month => $m, day => $d);
+    $dt->set_time_zone('America/Vancouver');
+    return $dt->epoch;
+}
