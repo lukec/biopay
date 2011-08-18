@@ -14,6 +14,7 @@ use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::EmailReceipt;
+use Biopay::Receipt;
 use Biopay::Util qw/email_admin email_board random_pin/;
 use AnyEvent;
 use List::Util qw/sum/;
@@ -232,6 +233,10 @@ sub process_transactions {
     return unless @$txns;
     my $total = sum map { $_->price } @$txns;
     print ' (Bio-' . $member->id . ":\$$total) ";
+    my $items = [
+        map { { amount => $_->price, type => 'txn', desc => $_->txn_id } }
+            @$txns
+    ];
 
     my $order_num = @$txns > 1 
         ? sprintf("%d-txns-%d", length(@$txns), time)
@@ -240,6 +245,11 @@ sub process_transactions {
     my $need_to_renew_membership = $member->membership_is_expired;
     if ($need_to_renew_membership) {
         $total += $membership_price;
+        push @$items, {
+            amount => $membership_price,
+            type   => 'dues',
+            desc   => 'Membership Dues',
+        };
     }
 
     my $error = "Order '$order_num' not yet processed.";
@@ -250,6 +260,13 @@ sub process_transactions {
                 amount => $total,
                 hash => $member->payment_hash,
             );
+            Biopay::Receipt->Create(
+                member_id => $member->id,
+                order_num => $order_num,
+                amount    => $total,
+                items     => $items,
+            );
+
 
             # Update the member, if necessary
             if ($need_to_renew_membership) {
@@ -426,10 +443,19 @@ sub register_member {
 
     try {
         # Process sign-up fee
+        my $order_num = 'signup:' . $member->id;
         $processor->process(
-            order_num => "signup:" . $member->id,
+            order_num => $order_num,
             amount => $signup_price,
             hash => $member->payment_hash,
+        );
+        Biopay::Receipt->Create(
+            member_id => $member->id,
+            order_num => $order_num,
+            amount    => $signup_price,
+            items     => [
+                { amount => $signup_price, type => 'signup', desc => 'Signup' }
+            ]
         );
         
         # Activate Cardlock
