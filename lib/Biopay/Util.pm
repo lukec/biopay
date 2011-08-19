@@ -21,7 +21,7 @@ sub email_board {
     my ($subj, $body) = @_;
     debug "Emailing board: $subj";
     email {
-        to => 'vancouver-biodiesel-board@googlegroups.com',
+        to => config->{board_email},
         from => config->{email_from},
         subject => "Biopay: $subj",
         message => $body,
