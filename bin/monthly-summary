@@ -89,8 +89,7 @@ my $html = template "email/monthly-report", {
     data       => \%data,
 }, { layout => 'email' };
 email {
-#    to => 'vancouver-biodiesel-board@googlegroups.com',
-    to => 'lukecloss@gmail.com',
+    to => config->{board_email},
     from => config->{email_from},
     subject => "This month in the Bio Co-op",
     message => $html,
