@@ -1,0 +1,34 @@
+<h1>Biodiesel Co-op Monthly Report</h1>
+
+<p>Here's the activity from [% start_time %] to [% end_time %] in the co-op:</p>
+
+<h2>New Members</h2>
+[% IF data.signups.size > 0 %]
+<p>[% data.signups.size %] new members signed up this month!</p>
+<ul>
+  [% FOREACH m IN data.signups %]
+    <li>Member ID [% m.id %] - [% m.name %]</li>
+  [% END %]
+</ul>
+[% ELSE %]
+<p>There were no new member signups this month.</p>
+[% END %]
+
+<h2>Revenue</h2>
+<p>This month there were [% data.fuel_purchases %] fuel purchases buying a total of [% data.litres_purchased %] litres for $[% data.fuel_sum %].</p>
+<p>In addition, we received $[% data.dues_received %] in membership dues.</p>
+
+<h2>Costs</h2>
+<p>In total we processed $[% data.txn_sum %] over [% data.txn_count %] transactions.</p>
+<p>The total cost to accept this money was $[% data.billing_cost %].</p>
+<p>Cost breakdown for the payment gateway:</p>
+<ul>
+  <li>Monthly fee: $[% data.costs.monthly %]</li>
+  <li>Per-transaction fee: $[% data.costs.per_txn %] * [% data.txn_count %] =
+        $[% data.per_txn_fee %]</li>
+  <li>Per-transaction rate: %[% data.costs.rate %] * $[% data.txn_sum %] =
+        $[% data.txn_rate_fee %]</li>
+</ul>
+
+<hr />
+<p>See you next month!</p>

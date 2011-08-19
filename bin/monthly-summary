@@ -1,0 +1,98 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use DateTime;
+use DateTime::Duration;
+use Dancer qw/:syntax/;
+use Dancer::Plugin::Email;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::Receipt;
+use Biopay::Prices;
+use Biopay::Transaction;
+use Biopay::Member;
+
+# Load appdir and templates
+Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+Dancer::Config::load();
+
+my $membership_price = Biopay::Prices->new->annual_membership_price;
+
+my $start = DateTime->now;
+$start->set_day(1);
+$start->set_hour(0);
+$start->set_minute(0);
+$start->set_second(0);
+my $end_time = $start + DateTime::Duration->new(months => 1);
+my $start_epoch = $start->epoch;
+my $end_epoch   = $end_time->epoch;
+
+
+
+# Number of new member signups
+# Amount of dues received
+# Number of TXNs
+# Amount of all TXNs
+# Litres Purchased
+# Beanstream dues incurred
+my %data = (
+    signups => [],
+    dues_received => 0,
+    txn_count => 0,
+    txn_sum => 0,
+    litres_purchased => 0,
+    fuel_purchases => 0,
+);
+
+my $receipts = Biopay::Receipt->By_date({
+    startkey => $start_epoch,
+    endkey   => $end_epoch,
+});
+
+for my $r (@$receipts) {
+    for my $i (@{ $r->{items} }) {
+        given ($i->{type}) {
+            when ('signup') {
+                push @{ $data{signups} },
+                    Biopay::Member->By_id($r->{member_id});
+                $data{dues_received} += $membership_price;
+            }
+            when ('dues') {
+                $data{dues_received} += $i->{amount};
+            }
+            when ('txn') {
+                my $txn = Biopay::Transaction->By_id($i->{desc});
+                $data{litres_purchased} += $txn->litres;
+                $data{fuel_purchases}++;
+                $data{fuel_sum} += $txn->price;
+            }
+        }
+    }
+    $data{txn_count}++;
+    $data{txn_sum} += $r->{amount};
+}
+
+my %costs;
+map { $costs{$_} = config->{"beanstream_$_"} || die "Can't find config for beanstream_$_" } qw/monthly per_txn rate/;
+$data{costs} = \%costs;
+$data{per_txn_fee} = sprintf('%.02f',
+    int($costs{per_txn} * $data{txn_count} * 100) / 100);
+$data{txn_rate_fee} = sprintf '%.02f',
+    int($costs{rate} / 100 * $data{txn_sum} * 100) / 100;
+$data{billing_cost} = sprintf '%.02f',
+    $costs{monthly} + $data{per_txn_fee} + $data{txn_rate_fee};
+
+my $html = template "email/monthly-report", {
+    start_time => $start->ymd,
+    end_time   => $end_time->ymd,
+    data       => \%data,
+}, { layout => 'email' };
+email {
+#    to => 'vancouver-biodiesel-board@googlegroups.com',
+    to => 'lukecloss@gmail.com',
+    from => config->{email_from},
+    subject => "This month in the Bio Co-op",
+    message => $html,
+    type => 'html',
+}
