@@ -1,0 +1,56 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use DateTime;
+use DateTime::Duration;
+use Dancer qw/:syntax/;
+use Dancer::Plugin::Email;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::Receipt;
+use Biopay::Prices;
+use Biopay::Transaction;
+use Biopay::Member;
+use List::Util qw/sum/;
+
+# Load appdir and templates
+Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+Dancer::Config::load();
+
+my $membership_price = Biopay::Prices->new->annual_membership_price;
+
+my $txns = Biopay::Transaction->All_unpaid();
+my %by_member;
+for my $t (@$txns) {
+    push @{ $by_member{ $t->member_id } }, $t;
+}
+
+my @txns_by_member;
+my ($total_amount, $total_count) = (0,0);
+for my $mid (keys %by_member) {
+    my $mtxns = $by_member{$mid};
+    my $sum   = sum map { $_->price } @$mtxns;
+    my $m = Biopay::Member->By_id($mid);
+    push @txns_by_member, {
+        member => $m,
+        txns   => $mtxns,
+        count  => scalar(@$mtxns),
+        amount => sprintf('%.02f', $sum),
+    };
+    $total_amount += $sum;
+    $total_count  += @$mtxns;
+}
+@txns_by_member = sort { $b->{amount} <=> $a->{amount} } @txns_by_member;
+my $html = template "email/weekly-unpaid-summary", {
+    txns => \@txns_by_member,
+    total_amount => sprintf('%.02f', $total_amount),
+    total_count  => $total_count,
+}, { layout => 'email' };
+email {
+    to => config->{board_email},
+    from => config->{email_from},
+    subject => "Weekly un-paid biodiesel summary",
+    message => $html,
+    type => 'html',
+}

@@ -1,0 +1,24 @@
+<h1>Weekly un-paid fuel summary</h1>
+<p>This is an up-to-date list of biodiesel purchases which have not been paid for.  Please organize amongst yourselves to contact these members and have them update their billing info.</p>
+
+[% IF txns.size %]
+<h2>Summary</h2>
+<p>Right now, a total of $[% total_amount %] is un-paid across [% total_count %] transactions.</p>
+
+<h2>Detailed Breakdown</h2>
+<ul>
+  [% FOREACH i IN txns %]
+    <li>
+      <strong>Member #[% i.member.id %] - [% i.member.name %] - owes $[% i.amount %] from [% i.count %] purchases.</strong>
+      <ul>
+        [% FOREACH txn IN i.txns %]
+          <li>Transaction [% txn.id %] - $[% txn.price %] on [% txn.pretty_date %]</li>
+        [% END %]
+      </ul>
+    </li>
+    <br />
+  [% END %]
+</ul>
+[% ELSE %]
+<strong>Woot! There are no un-paid transactions! Great job, Board!</strong>
+[% END %]
