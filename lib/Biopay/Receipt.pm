@@ -17,6 +17,9 @@ has 'amount'    => (isa => 'Num', is => 'ro', required => 1);
 has 'items'     => (isa => 'ArrayRef[HashRef]', is => 'ro', required => 1);
 has 'at'        => (isa => 'Num', is => 'ro', required => 1);
 
+sub By_date { shift->All_for_view('/by_date', @_) }
+sub view_base { 'receipts' }
+
 sub Create {
     my $class = shift;
     my %p = @_;
