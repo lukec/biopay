@@ -19,7 +19,8 @@ Dancer::Config::load();
 
 my $membership_price = Biopay::Prices->new->annual_membership_price;
 
-my $start = DateTime->now;
+# Always Run for the previous month.
+my $start = DateTime->now - DateTime::Duration->new(months => 1);
 $start->set_day(1);
 $start->set_hour(0);
 $start->set_minute(0);
