@@ -11,6 +11,7 @@ use Try::Tiny;
 use Biopay::Command;
 use Biopay::Util qw/now_dt host email_admin email_board/;
 use Data::UUID;
+use LWP::UserAgent;
 use methods;
 
 extends 'Biopay::Resource';
@@ -142,7 +143,25 @@ sub NextMemberID {
 
 method cancel {
     $self->active(0);
-    $self->payment_hash(undef);
+    if (my $ph = $self->payment_hash) {
+        try {
+            my $url = "https://www.beanstream.com/scripts/PaymentProfile/"
+                . "webform.asp?serviceVersion=1.0&merchantId=" 
+                . config->{merchant_id}
+                . "&operationType=M&status=C&customerCode=$ph";
+            my $ua = LWP::UserAgent->new;
+            my $res = $ua->get($url);
+            die $res->status_line unless $res->is_success;
+            $self->payment_hash(undef);
+        }
+        catch {
+            email_admin("Failed to cancel payment profile",
+                "I attempted to cancel payment profile for member #"
+                . $self->id . " with payment hash $ph, but failed: $_");
+        }
+
+
+    }
     $self->freeze(forget_pin => 1); # Does an implicit save()
 
     my $unpaid = $self->unpaid_transactions;
