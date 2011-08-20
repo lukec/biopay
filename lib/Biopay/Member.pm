@@ -9,7 +9,7 @@ use DateTime;
 use DateTime::Duration;
 use Try::Tiny;
 use Biopay::Command;
-use Biopay::Util qw/now_dt host email_admin/;
+use Biopay::Util qw/now_dt host email_admin email_board/;
 use Data::UUID;
 use methods;
 
@@ -40,7 +40,6 @@ has 'login_hash' => (isa => 'Maybe[Str]', is  => 'rw',  lazy_build => 1);
 has 'set_password_link' => (isa => 'Maybe[Str]', is => 'ro', lazy_build => 1);
 
 # Lazy Built Date helpers
-has 'start_ymd'         => (is => 'ro', isa => 'Str', lazy_build => 1);
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
 has 'dues_paid_until_pretty_date' =>
     (is => 'ro', isa => 'Str', lazy_build => 1);
@@ -145,6 +144,17 @@ method cancel {
     $self->active(0);
     $self->payment_hash(undef);
     $self->freeze(forget_pin => 1); # Does an implicit save()
+
+    my $unpaid = $self->unpaid_transactions;
+    email_board("VBC - Cancelled membership - " . $self->name,
+        "Sorry to report that " . $self->name . ", Co-op member #"
+        . $self->id . " has cancelled their membership.\n\n"
+        . (@$unpaid ? "The member has " . @$unpaid . " unpaid transactions!\n\n"
+                    : '')
+        . "They have been a member since " . $self->start_datetime->ymd . ".\n"
+        . "\nDetails here: " . host() . '/members/' . $self->id . "\n\n"
+    );
+
 }
 
 method unpaid_transactions {
