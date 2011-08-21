@@ -4,9 +4,11 @@
 [% IF message %]
   <p>Looks like there was a problem entering your payment details.  You can either try again or email [% info_email_link %] for help.</p>
 [% ELSE %]
-  <p>Great, the membership form looks good.</p>
+  <div class="alert-message success">
+    Great, your membership form looks good.
+  </div>
   <p>Next up, we need to collect your payment details for the initial sign-up fee and to charge your future biodiesel purchases to.</p>
   <p>Your credit card data will be stored in a secure, <a href="http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard">PCI compliant</a> system hosted by <a href="http://beanstream.com">BeanStream</a>.</p>
 [% END %]
 
-<a href="[% payment_url %]">Click here to enter your payment details.</a>
+<a class="btn large primary" href="[% payment_url %]">Enter your payment details</a>

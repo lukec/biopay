@@ -1,49 +1,49 @@
-<div id="sidebar">
-  <ul id="sidebar-items">
-    [% IF is_admin %]
-      <p>Welcome, [% admin_username %] <a href="/logout">(Logout)</a></p>
-      <h3>Transactions</h3>
-      <li><a href="/unpaid">Payment Owing</a></li>
-      <li><a href="/txns">All Recent</a></li>
-      <h3>Members</h3>
-      <li><a href="/members">Members</a></li>
-      <li><a href="/members/create">Add new</a></li>
-      <p>[% INCLUDE 'member-jump-form.tt' msg = "Jump: " %]</p>
-      <h3>Admin Actions</h3>
-      <li><a href="/">Admin Home</a></li>
-      <li><a href="/fuel-price">Change Fuel Price</a></li>
-      <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
-      <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
-    [% ELSIF member %]
-      <p>Welcome, [% member.name %] <a href="/logout">(Logout)</a></p>
-      <h3>Transactions</h3>
-      [% IF member.unpaid_transactions.size %]
-        <li><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions.size %])</a></li>
-      [% END %]
-      <li><a href="/member/txns">All Recent</a></li>
-      <h3>My Info</h3>
-      <li><a href="/member/view">View my profile</a></li>
-      <li><a href="/member/update-payment">
+<div class="sidebar">
+  <h3>About the Co-op</h3>
+  [% IF is_admin %]
+    <p>Welcome, [% admin_username %] <a href="/logout">(Logout)</a></p>
+    <h3>Transactions</h3>
+    <dl>
+    <li><a href="/unpaid">Payment Owing</a></li>
+    <li><a href="/txns">All Recent</a></li>
+    </dl>
+    <h3>Members</h3>
+    <dl>
+    <li><a href="/members">Members</a></li>
+    <li><a href="/members/create">Add new</a></li>
+    </dl>
+    <p>[% INCLUDE 'member-jump-form.tt' msg = "Jump: " %]</p>
+    <h3>Admin Actions</h3>
+    <dl>
+    <li><a href="/">Admin Home</a></li>
+    <li><a href="/fuel-price">Change Fuel Price</a></li>
+    <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
+    <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
+    </dl>
+  [% ELSIF member %]
+    <p>Welcome, [% member.name %] <a href="/logout">(Logout)</a></p>
+    <dl>
+      <dt><a href="/member/update-payment">
         [% IF member.payment_hash %]
           Update payment details
         [% ELSE %]
           <strong>Add payment details</strong>
         [% END %]
-      </a></li>
-    [% ELSE %]
-    <li>
-      <p>Our co-op sells 100% recycled, <a href="http://astm.org">ASTM certified</a>, locally sourced biodiesel fuel to our members.</p>
-    </li>
-    <li>
-      <h3>About the Co-op</h3>
-      <ul class="links">
-        <li><a href="http://www.vancouverbiodiesel.org/">Biodiesel Co-op Homepage</a></li>
-        <li><a href="http://vancouverbiodiesel.org/faq.html">Co-op FAQ</a></li>
-        <li><a href="http://twitter.com/vanbiodiesel/">Co-op on Twitter</a></li>
-        <li><a href="http://en.wikipedia.org/wiki/Biodiesel">Biodiesel on Wikipedia</a></li>
-        <li><a href="/biopay.pdf">Biopay Info Sheet</a></li>
-      </ul>
-    </li>
+      </a></dt>
+      <dt><a href="/member/view">View my profile</a></dt>
+    [% IF member.unpaid_transactions.size %]
+      <dt><a href="/member/unpaid">Payment Owing ([% member.unpaid_transactions.size %])</a></dt>
     [% END %]
-  </ul>
+      <dt><a href="/member/txns">Recent Purchases</a></dt>
+    </dl>
+  [% ELSE %]
+    <p>Our co-op sells 100% recycled, <a href="http://astm.org">ASTM certified</a>, locally sourced biodiesel fuel to our members.</p>
+    <dl>
+      <li><a href="http://www.vancouverbiodiesel.org/">Biodiesel Co-op Homepage</a></li>
+      <li><a href="http://vancouverbiodiesel.org/faq.html">Co-op FAQ</a></li>
+      <li><a href="http://twitter.com/vanbiodiesel/">Co-op on Twitter</a></li>
+      <li><a href="http://en.wikipedia.org/wiki/Biodiesel">Biodiesel on Wikipedia</a></li>
+      <li><a href="/biopay.pdf">Biopay Info Sheet</a></li>
+    </dl>
+  [% END %]
 </div>

@@ -1,5 +1,4 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
-[% INCLUDE message.tt message=member_message%]
 
 [% IF !member %]
   [% SET message = "Sorry, that member cannot be found." %]
@@ -7,6 +6,9 @@
 [% INCLUDE message.tt %]
 
 [% IF member %]
+  [% IF member.frozen %]
+    <div class="alert-message warning">This member's account is <strong>frozen</strong>!</div>
+  [% END %]
   [% IF member.active %]
     <div id="stats">
     <h3>Statistics:</h3>
@@ -17,7 +19,7 @@
     </div>
     <div id="details">
     <p>
-    <table id="member_details">
+    <table class="common-table zebra-striped">
       <tr>
         <td><strong>Member ID</strong></td>
         <td>[% member.member_id %]</td>
@@ -73,22 +75,22 @@
       <p>
         [% IF is_admin %]
             [% SET muri = "/members/" _ member.member_id %]
-            <a href="[% muri %]/edit">Edit this member!</a> |
+            <a class="btn" href="[% muri %]/edit">Edit this member!</a> &middot;
             [% If member.frozen %]
-              <a href="[% muri %]/freeze">Un-Freeze</a> |
+              <a class="btn" href="[% muri %]/freeze">Un-Freeze</a> &middot;
             [% ELSE %]
-              <a href="[% muri %]/freeze">Freeze</a> |
+              <a class="btn" href="[% muri %]/freeze">Freeze</a> &middot;
             [% END %]
-            <a href="[% muri %]/change-pin">Change PIN</a> |
-            <a href="[% muri %]/cancel">Cancel Membership</a>
+            <a class="btn" href="[% muri %]/change-pin">Change PIN</a> &middot;
+            <a class="btn" href="[% muri %]/cancel">Cancel Membership</a>
             <br />
-            <a href="[% muri %]/send-update-payment-email">Send request to update Payment Profile</a>
+            <a class="btn" href="[% muri %]/send-update-payment-email">Send request to update Payment Profile</a>
         [% ELSE %]
             [% SET muri = "/member" %]
-            <a href="[% muri %]/edit">Edit my details</a> |
-            <a href="[% muri %]/change-pin">Change my PIN</a> |
-            <a href="[% muri %]/change-password">Change my password</a> |
-            <a href="[% muri %]/cancel">Cancel my membership</a>
+            <a class="btn" href="[% muri %]/edit">Edit my details</a> &middot;
+            <a class="btn" href="[% muri %]/change-pin">Change my PIN</a> &middot;
+            <a class="btn" href="[% muri %]/change-password">Change my password</a> &middot;
+            <a class="btn" href="[% muri %]/cancel">Cancel my membership</a>
         [% END %]
       </p>
       <hr />
@@ -109,7 +111,7 @@
     </ul>
   [% ELSE %]
     [% IF is_admin %]
-      <p>This person has cancelled their co-op membership.</p>
+      <div class="alert-message warning">This person has cancelled their co-op membership.</div>
     [% END %]
     <div id="details">
     <p>
@@ -142,9 +144,8 @@
 
 
 [% IF is_admin %]
-  <hr />
   <p>
-  <a href="/members">Back to members list</a><br />
-  <a href="/admin">Back to admin section</a><br />
+  <a class="btn" href="/members">Back to members list</a><br />
+  <a class="btn" href="/admin">Back to admin section</a><br />
   </p>
 [% END %]

@@ -25,7 +25,7 @@ $(function() {
 
 <div id="intro">
   <h1>So you want to join the Biodiesel Co-op?</h1>
-  <p><strong>Great! We'd love to have you!</strong></p>
+  <h1><small>Great! We'd love to have you!</small></h1>
 
   <h2>What the Vancouver Biodiesel Co-op is:</h2>
   <ul>
@@ -41,13 +41,18 @@ $(function() {
     <li>A place to purchase Petro-diesel or Bio-diesel blends.</li>
   </ul>
 
-  <p>Great! <a href="#" id="introbtn">I want to join the co-op!</a></p>
+  <div class="actions">
+    <a href="#" id="introbtn" class="btn large primary">I want to join the co-op!</a>
+  </div>
 </div>
 
 <div id="orientation">
   <h1>New Member Orientation</h1>
-  <p>To join the Biodiesel co-op, we request that you watch the following
-  orientation video to learn about our fuel and operations.</p>
+  <div class="alert-message info">
+    <p><strong>To join the Biodiesel co-op,</strong> we request that you watch the following orientation video.</p>
+    <p><strong>If you are new to biodiesel,</strong> you should also <a
+    href="/biodiesel-faq" target="_blank">read our Biodiesel FAQ</a>.
+  </div>
   <object width="480" height="390"><param name="movie"
     value="http://www.youtube-nocookie.com/v/ZB5KeOfwuSc?version=3&amp;hl=en_US&amp;rel=0"></param><param
     name="allowFullScreen" value="true"></param><param
@@ -55,25 +60,24 @@ $(function() {
     src="http://www.youtube-nocookie.com/v/ZB5KeOfwuSc?version=3&amp;hl=en_US&amp;rel=0"
     type="application/x-shockwave-flash" width="480" height="390"
     allowscriptaccess="always" allowfullscreen="true"></embed></object>
-  <p>If you are new to biodiesel, you should also <a
-    href="/biodiesel-faq" target="_blank">read the Biodiesel FAQ</a>. (Opens
-  in a new window)</p>
+  <p>&nbsp;</p>
+  <div class="alert-message warning">
+    <p>If you have any questions or concerns, please email us at <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.</p>
+    <p>We will do all we can to help you make an informed choice about running biodiesel in your vehicle.</p>
+  </div>
   <hr />
-  <p>If you have any questions or concerns, please email us at <a
-    href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.
-  We will do all we can to help you make an informed choice about running
-  biodiesel in your vehicle.</p>
-  <hr />
-  <a href="#" id="orientationbtn">I've watched the video, I understand the
-    basics of biodiesel, and I am comfortable running Biodiesel in my
-    vehicle. I want to sign up!</a>
+  <div class="actions">
+    <p><strong>I've watched the video, I understand the basics of biodiesel, and I am comfortable running Biodiesel in my vehicle.</strong></p>
+    <a href="#" id="orientationbtn" class="btn large primary">I want to sign up!</a>
+  </div>
 </div>
 
 <div id="membershipagreement">
     <h1>Vancouver Biodiesel Co-operative Membership Agreement</h1>
     [% INCLUDE message.tt %]
     <form action="/new-member" method="POST">
-    <center>
+      <fieldset>
+      <center>
         <p>This Membership Agreement ("Agreement") is made today, [% today_date %].</p>
         <p><strong>Between: the Vancouver Biodiesel Cooperative (the "VBC")</strong></p>
         <p><strong>AND member:</strong>
@@ -117,20 +121,53 @@ $(function() {
     </p>
 
     <p>Signed this [% today_date %].</p>
-    <p>Member name in lieu of signature: <input type="text" id="fullname2" /></p>
-    <p>Home Address: <input type="text" name="address" size="40" value="[% address %]" /></p>
-    <p>Email Address: <input type="text" name="email" size="30" value="[% email %]" /></p>
-    <p>Phone Number: <input type="text" name="phone" size="12" value="[% phone %]" /></p>
-    <p>Desired Cardlock PIN: <input type="text" name="PIN" size="4" value="[% PIN %]" /> (Should be 4 digits)</p>
+    <label for="">Member name:</label>
+    <div class="input"><input type="text" id="fullname2" /></div>
 
-    <p>The information entered here is correct to the best of my knowledge, and I agree to the following conditions: (please check)</p>
-    <ul>
-      <li><input type="checkbox" name="chk_video" value="1" /> I have watched the orientation video in it's entirety. </li>
-      <li><input type="checkbox" name="chk_vehicle" value="1" /> I understand the implications of using biodiesel in my vehicle. </li>
-      <li><input type="checkbox" name="chk_terms" value="1" /> I have read the membership agreement and agree to it's terms. </li>
-    </ul>
-    <input type="submit" value="Create my membership!" />
+    <label for="">Home Address:</label>
+    <div class="input"><input type="text" class="xlInput" name="address" size="40" value="[% address %]" /></div>
+    <label for="">Email Address:</label>
+    <div class="input"><input type="text" class="xlInput" name="email" size="30" value="[% email %]" /></div>
+    <label for="">Phone Number:</label>
+    <div class="input"><input type="text" class="xlInput" name="phone" size="12" value="[% phone %]" /></div>
+    <label for="">Desired Cardlock PIN:</label>
+    <div class="input"><input type="text" class="xlInput" name="PIN" size="4" value="[% PIN %]" /> (Should be 4 digits)</div>
 
+    <p>&nbsp;</p>
+    <label for="">I agree that …</label>
+    <div class="input">
+      <ul class="inputs-list">
+        <li>
+          <label>
+            <input type="checkbox" name="chk_video" value="1" />
+            <span>
+              … I have watched the orientation video in it's entirety.
+            </span>
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" name="chk_vehicle" value="1" />
+            <span>
+              … I understand the implications of using biodiesel in my vehicle.
+            </span>
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" name="chk_terms" value="1" />
+            <span>
+              … I read the membership agreement and agree to it's terms.
+            </span>
+          </label>
+        </li>
+      </ul>
+    </div>
+    <div class="actions">
+      <input type="submit" class="btn large primary" value="Create my membership!" />
+    </div>
+
+      </fieldset>
     </form>
     <script>
         $(function() {

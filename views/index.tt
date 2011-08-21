@@ -3,18 +3,19 @@
 [% ELSIF member %]
   [% INCLUDE 'index-member.tt' %]
 [% ELSE %]
-  <h1>Vancouver Biodiesel Co-op Billing</h1>
+  <h1>Biopay Co-op Centre</h1>
   [% INCLUDE message.tt %]
-  <p>Welcome to the VBC Billing system. This service tracks biodiesel purchases, processes payments and offers administration.</p>
+  <p>Welcome to the Vancouver Biodiesel Co-op Billing system. This service tracks biodiesel purchases, processes payments and offers administration.</p>
   <p>
-    This system is owned and operated for the Vancouver Biodiesel Co-op by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact the co-op <a href="mailto:info@vancouverbiodiesel.org">via email</a> or contact Recycling Alternative directly.
+    This system is owned and operated for the Vancouver Biodiesel Co-op by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact the co-op <a href="mailto:info@vancouverbiodiesel.org">via email</a> or contact <a href="http://recyclingalternative.com">Recycling Alternative</a> directly.
   </p>
-  <hr />
   <p>
-    <ul class="login">
-      <li> <a href="/login">Member Login</a> </li>
-      <!-- <li> <a href="/new-member">New Member Sign-up!</a> </li> -->
-      <li> <a href="/admin-login">Admin Login</a> </li>
-    </ul>
+    <h3>Interested in joining the co-op?</h3>
+    <a class="btn large primary" href="/new-member">Sign up!</a>
+  </p>
+  <p>
+    <h3>Already a member?</h3>
+    <a class="btn large primary" href="/login">Member Login</a> or 
+    <a class="btn large" href="/admin-login">Admin Login</a>
   </p>
 [% END %]

@@ -3,12 +3,18 @@
 [% INCLUDE message.tt %]
 <p>
   <form action="/fuel-price" method="POST">
-    Enter the new fuel price: $
-    <input type="text" size="4" maxlength="4" name="new_price" id="new_price" value="[% current_price %]" /> / Litre
-    <input type="submit" value="Change Price" />
-</p>
-<p>
-  <a href="/">Oops, go back.</a>
+    <fieldset>
+      <legend>Enter the new fuel price</legend>
+      <label for="">Price per litre:</label>
+      <div class="input">
+        $<input type="text" class="xlarge" size="4" maxlength="4" name="new_price" id="new_price" value="[% current_price %]" />
+      </div>
+      <div class="actions">
+        <input type="submit" class="btn large primary" value="Change Price" />
+        <a class="btn large" href="/">Oops, go back.</a>
+      </div>
+    </fieldset>
+  </form>
 </p>
 <script>
    jQuery( function () {

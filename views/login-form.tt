@@ -1,20 +1,24 @@
 <form action="[% host %]/[% action %]" method="POST">
-<table class="login">
-  <tr>
-    <td>[% desc %]:</td>
-    <td><input id="username" type="text" name="username" size=20 /></td>
-  </tr>
-  <tr>
-    <td>Password:</td>
-    <td><input type="password" name="password" size=20 /></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>
-      <input type="hidden" name="path" value="[% path %]" />
-      <input type="submit" value="Login!" />
-    </td>
-</table>
+  <fieldset>
+    <legend>Log in to the [% area %] area:</legend>
+    <label for="">[% name %]:</label>
+    <div class="input">
+      <input id="username" class="xlInput" type="text" name="username" size=20 />
+    </div>
+
+    <label for="">Password:</label>
+    <div class="input">
+      <input class="xlInput" type="password" name="password" size=20 />
+    </div>
+
+    <input type="hidden" name="path" value="[% path %]" />
+
+    <div class="actions">
+      <button type="submit" class="btn large primary">Login!</button> or
+      <a class="btn primary" href="/forgot-password">I forgot my password!</a> or 
+      <a class="btn primary" href="/forgot-password">I have never logged in!</a>
+    </div>
+  </fieldset>
 </form>
 <script>
    jQuery( function () {

@@ -1,48 +1,58 @@
 <!doctype html>
-<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]--><!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]--><!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]--><!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]--><!--[if (gt IE 9)|!(IE)]><!--> <html lang="en" class="no-js"> <!--<![endif]--><head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	
-        <title>Vancouver Biodiesel Co-op Billing Tool</title>
-	<meta name="description" content="Vancouver Biodiesel Co-op billing
-        and membership management tool.">
-	<meta name="author" content="Luke Closs">
-	
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
-	<link rel="shortcut icon" href="/favicon.ico">
-	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-	<link rel="stylesheet" href="/css/style.css?v=3">
-        <link type="text/css" href="/css/ui-lightness/jquery-ui-1.8.14.custom.css" rel="stylesheet" />   
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> 
+<html lang="en" class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<script src="/javascripts/libs/modernizr-1.7.min.js"></script></head>
-<body>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-	<script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
-	<div id="container">
-            [% IF !params.printable %]
-            <header>
-              <a class="headerimg" href="/"><img id="headerimg" src="/images/header.png"
-                  alt="Vancouver Biodiesel Co-op Header" /></a>
-            </header>
+    <title>Vancouver Biodiesel Co-op Billing Tool</title>
+    <meta name="description" content="Vancouver Biodiesel Co-op billing
+    and membership management tool.">
+    <meta name="author" content="Luke Closs">
 
-            [% INCLUDE layouts/sidebar.tt %]
-            [% END %]
-            <div id="main" role="main">
-                [% content %]
-            </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            <footer>
-            <p><a href="/terms">Terms of Service</a> | <a href="/refunds">Refund Policy</a> | <a href="/privacy">Privacy Policy</a></p>
-            <p>This service was created by <a href="http://recyclingalternative.com">Recycling Alternative</a> and <a href="http://twitter.com/lukec">@lukec</a> for the <a href="http://vancouverbiodiesel.org">Vancouver Biodiesel Co-op</a>.</p>
-            </footer>
-	</div>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/bootstrap-1.0.0.css">
+  </head>
+  <body>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
+    <div class="container">
+      <div class="container-fluid">
+        [% IF !params.printable %]
+          <header>
+            <a class="headerimg" href="/"><img id="headerimg" src="/images/header.png"
+                alt="Vancouver Biodiesel Co-op Header" /></a>
+          </header>
+        [% END %]
 
-	<script src="/javascripts/plugins.js"></script>
-	<script src="/javascripts/script.js"></script>
-	<script src="/javascripts/sorttable.js"></script>
-	<!--[if lt IE 7 ]>
-	<script src="/javascripts/libs/dd_belatedpng.js"></script>
-	<script> DD_belatedPNG.fix('img, .png_bg');</script>
-	<![endif]--></body>
+        [% IF !params.printable %][% INCLUDE layouts/sidebar.tt %][% END %]
+
+        <div class="content">
+          [% content %]
+        </div>
+
+      </div>
+      [% IF !params.printable %]
+        <footer style="padding: 30px 0 0 0">
+          <p><a href="/terms">Terms of Service</a> | <a href="/refunds">Refund Policy</a> | <a href="/privacy">Privacy Policy</a></p>
+          <p>This service was created by <a href="http://recyclingalternative.com">Recycling Alternative</a> and <a href="http://twitter.com/lukec">@lukec</a> for the <a href="http://vancouverbiodiesel.org">Vancouver Biodiesel Co-op</a>.</p>
+        </footer>
+      [% END %]
+    </div>
+
+    <script src="/javascripts/plugins.js"></script>
+    <script src="/javascripts/script.js"></script>
+    <script src="/javascripts/sorttable.js"></script>
+    <!--[if lt IE 7 ]>
+    <script src="/javascripts/libs/dd_belatedpng.js"></script>
+    <script> DD_belatedPNG.fix('img, .png_bg');</script>
+    <![endif]-->
+  </body>
 </html>

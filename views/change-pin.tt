@@ -1,19 +1,20 @@
 <h1>Change PIN for Member [% member.name %]</h1>
-  <div class="ui-widget">
-    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>Note:</strong> [% message %]
-        </p>
-    </div>
-  </div>
+[% INCLUDE message.tt %]
 <p>
   <form action="[% action %]" method="POST">
-    Choose a new PIN: 
-    <input type="text" size="4" maxlength="4" name="new_PIN" id="new_PIN" />
-    <input type="submit" value="Change PIN" />
-</p>
-<p>
-  <a href="/members/[% member.member_id %]">Oops, go back.</a>
+    <fieldset>
+      <legend>Choose a new 4-digit PIN:</legend>
+      <label for="">New PIN:</label>
+      <div class="input">
+        <input type="text" class="xlarge" size="4" maxlength="4" name="new_PIN" id="new_PIN" />
+      </div>
+
+      <div class="actions">
+        <input type="submit" class="btn large primary" value="Change PIN" />
+        <a class="btn large" href="/members/[% member.member_id %]">Oops, go back.</a>
+      </div>
+    </fieldset>
+  </form>
 </p>
 <script>
    jQuery( function () {

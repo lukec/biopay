@@ -1,25 +1,12 @@
-<h1>Biodiesel Co-op Member Area</h1>
+<h1>Welcome to the members area.</h1>
 [% INCLUDE message.tt %]
-<p>
-<h3>Welcome to the members area.</h3>
-<ul>
-  <li>[% IF !member.payment_hash %]
-      <a href="/member/update-payment"><strong>Update your payment method</strong></a>
-      [% ELSE %]
-      <a href="/member/update-payment">Update your payment method</a>
-      [% END %]
-  </li>
-  <li><a href="/member/txns">View your recent transactions</a></li>
-  <li><a href="/member/view">View your member details</a></li>
-</ul>
-</p>
 
 <p><strong>Co-op Statistics</strong>
   (since July 8th, 2011)<br />
   <div id="homepage-data">
   <ul>
   [% SET litres = stats.fuel_sold_alltime() %]
-    <li>Members in this system: [% stats.active_members() %]</li>
+    <li>Active Members: [% stats.active_members() %]</li>
     <li>Fuel sales:  [% stats.fuel_sales() %]</li>
     <li>Fuel sold: [% litres %] Litres</li>
     <li>Taxes paid (29¢/L): $[% litres * 0.29 %]</li>

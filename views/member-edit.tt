@@ -1,5 +1,4 @@
 <h1>Biodiesel Member [% member.member_id %]</h1>
-<p>Editing details for member [% member.member_id %]:</p>
 
 [% INCLUDE 'member-detail-form.tt' %]
 

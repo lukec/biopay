@@ -1,5 +1,9 @@
 <h1>Signup is complete!</h1>
-<p>Your payment data is now securely stored in our system.  We will process your sign-up dues and activate the cardlock for you in the next few minutes.</p>
+<div class="alert-message success">
+  Your payment data is now securely stored in our system.
+</div>
+
+<p>We will process your sign-up dues and activate the cardlock for you in the next few minutes.</p>
 
 <p>You should receive a welcome email soon with your member code and a receipt for your signup dues.</p>
 

@@ -1,12 +1,21 @@
 <h1>Biodiesel Co-op Membership</h1>
 [% IF members.size %]
-<table class="members">
-  <tr>
+<script src="http://autobahn.tablesorter.com/jquery.tablesorter.min.js"></script> 
+<script >
+  $(function() {
+    $("table#member_table").tablesorter();
+  });
+</script>
+
+<table id="member_table" class="common-table zebra-striped">
+  <thead>
+    <tr>
       <th>Member ID</th>
       <th>Name</th>
       <th>Frozen</th>
       <th>Join Date</th>
-  </tr>
+    </tr>
+  </thead>
   [% FOREACH member IN members %]
     <tr>
         <td align="right"><a href="/members/[% member.member_id %]">[% member.member_id %]</a></td>

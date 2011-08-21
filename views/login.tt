@@ -1,9 +1,4 @@
-<h1>Member Login</H1>
 [% INCLUDE message.tt %]
-<p>Login to the member area:</p>
-[% INCLUDE 'login-form.tt' action="login" desc="Member ID"%]
+[% INCLUDE 'login-form.tt' action="login" area="Members" name="Member ID" show_links=1 %]
 
-<hr />
-<p><a href="/forgot-password">I've never logged in before - OR - I forgot my password!</a></p>
-<hr />
-<p><a href="/admin-login">Admin Login</a></p>
+<a class="btn " href="/admin-login">Admin Login</a>

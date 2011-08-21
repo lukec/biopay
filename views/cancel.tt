@@ -1,42 +1,39 @@
 [% IF member.active %]
-<h1>Cancel membership for [% member.name %]</h1>
-  <div class="ui-widget">
-    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
-        <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-        <strong>Note:</strong>
-        [% IF is_admin %]
-          Cancelling membership will remove their cardlock access and delete their billing data.
-        [% ELSE %]
-          This will remove your cardlock access and delete your billing data!
-        [% END %]
-        </p>
-    </div>
+  <h1>Cancel membership for [% member.name %]</h1>
+  <div class="alert-message warning">
+    <strong>Note:</strong>
+      [% IF is_admin %]
+        Cancelling membership will remove their cardlock access and delete their billing data.
+      [% ELSE %]
+        This will remove your cardlock access and delete your billing data!
+      [% END %]
   </div>
-<p>
-  [% IF is_admin %]
-    [% IF member.email %]
-      <strong>Yes, cancel [% member.name %]'s membership…</strong><br />
-      <ul>
-        <li>… <a href="/members/[% member.member_id %]/cancel?force=1&send_email=1">and send them an email confirmation</a></li>
-        <li>… <a href="/members/[% member.member_id %]/cancel?force=1&send_email=0">but do not send them any email</a></li>
-      </ul>
+  <p>
+    <div class="actions">
+    [% IF is_admin %]
+      [% IF member.email %]
+        <ul class="unstyled">
+          <li><a class="btn large primary" href="/members/[% member.member_id %]/cancel?force=1&send_email=1">Cancel and send an email confirmation</a></li>
+          <li><a class="btn large" href="/members/[% member.member_id %]/cancel?force=1&send_email=0">Cancel but do not send any email</a></li>
+        </ul>
+      [% ELSE %]
+        <a class="btn large" href="/members/[% member.member_id %]/cancel?force=1">Yes, cancel [% member.name %]'s membership</a>
+      [% END %]
     [% ELSE %]
-      <a href="/members/[% member.member_id %]/cancel?force=1">Yes, cancel [% member.name %]'s membership</a>
+      <a class="btn large" href="/member/cancel?force=1">Yes, cancel my membership.</a>
     [% END %]
-  [% ELSE %]
-    <strong><a href="/member/cancel?force=1">Yes, cancel my membership.</a></strong>
-  [% END %]
-</p>
-<p>
-  [% IF is_admin %]
-    <a href="/members/[% member.member_id %]">No, go back.</a>
-  [% ELSE %]
-    <a href="/member/view">No, go back.</a>
-  [% END %]
-</p>
+    </div>
+  </p>
+  <p>
+    [% IF is_admin %]
+      <a class="btn" href="/members/[% member.member_id %]">No, go back.</a>
+    [% ELSE %]
+      <a class="btn" href="/member/view">No, go back.</a>
+    [% END %]
+  </p>
 [% ELSE %]
-<h1>[% member.name %]'s membership is already cancelled.</h1>
-<p>
-  <a href="[% IF is_admin %]/members/[% member.member_id %][% ELSE %]/member/view[% END %]">Go back.</a>
-</p>
+  <h1>[% member.name %]'s membership is already cancelled.</h1>
+  <p>
+    <a href="[% IF is_admin %]/members/[% member.member_id %][% ELSE %]/member/view[% END %]">Go back.</a>
+  </p>
 [% END %]

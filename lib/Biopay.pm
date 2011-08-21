@@ -47,7 +47,7 @@ before sub {
     if (my $m = session 'member') {
         unless ($path =~ m{^/member/}) {
             debug "Member cannot access '$path'";
-            session message => "Sorry, that is not available to you.";
+            session error => "Sorry, that is not available to you.";
             redirect '/';
         };
         return;
@@ -55,7 +55,7 @@ before sub {
     elsif (session 'is_admin') {
         if ($path =~ m{^/member/}) {
             debug "Admin cannot access '$path'";
-            session message => "You are logged in as an admin. Please login with your member ID to see that page.";
+            session warning => "You are logged in as an admin. Please login with your member ID to see that page.";
             session path => $path;
             return redirect '/login';
         };
@@ -84,9 +84,12 @@ before_template sub {
     $tokens->{info_email_link} = '<a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>';
     $tokens->{host} = host();
 
-    if (my $msg = session 'message') {
-        $tokens->{message} ||= $msg;
-        session 'message' => undef;
+    for my $type (qw/error warning success message/) {
+        my $msg;
+        if ($msg = session $type) {
+            session $type => undef;
+        }
+        $tokens->{$type} ||= $msg || param($type);
     }
 
     if (session 'is_admin') {
@@ -99,18 +102,22 @@ before_template sub {
         };
         $tokens->{is_member} = $tokens->{member} ? 1 : 0;
 
-        unless ($m->active or $tokens->{message}) {
-            $tokens->{message} ||= <<'EOT';
-Your account is cancelled. <a href="mailto:info@vancouverbiodiesel.org">Email us</a> if you have any problems.
-EOT
-        }
-        unless ($m->payment_hash or $tokens->{message}) {
-            $tokens->{message} ||= <<EOT;
+        if ($m->active) {
+            unless ($m->payment_hash or $tokens->{message}) {
+                $tokens->{message} ||= <<EOT;
 We do not have any payment info for you!<br />
 <p>
 <a href="/member/update-payment"><strong>Please click here to update your payment details.</strong></a>
 </p>
 EOT
+            }
+        }
+        else {
+            unless ($m->active or $tokens->{message}) {
+                $tokens->{warning} ||= <<'EOT';
+Your account is cancelled. <a href="mailto:info@vancouverbiodiesel.org">Email us</a> if this is incorrect.
+EOT
+            }
         }
     }
 };
@@ -136,12 +143,12 @@ post '/login' => sub {
     }
     my $member = Biopay::Member->By_id($user);
     unless ($member) {
-        return forward "/login", { message => "That user does not exist." },
+        return forward "/login", { error => "This user does not exist." },
             { method => 'GET' };
     }
     unless ($member->active) {
         return forward "/login",
-            { message => "That user is no longer active." },
+            { error => "This user is no longer active." },
             { method  => 'GET' };
     }
 
@@ -194,20 +201,20 @@ post '/set-password' => sub {
     my $member = Biopay::Member->By_hash($hash);
     unless ($member) {
         my $msg = "Sorry, we could not find that member.";
-        return forward "/login", {message => $msg}, { method => 'GET' };
+        return forward "/login", {error => $msg}, { method => 'GET' };
     }
     unless ($password1 eq $password2) {
         return template 'set-password' => { 
             member => $member,
             confirmed => 1,
-            message => "The passwords do not match. Try again.",
+            error => "The passwords do not match. Try again.",
         };
     }
     unless (length($password1) >= 8) {
         return template 'set-password' => { 
             member => $member,
             confirmed => 1,
-            message => "The password must be at least 8 characters.",
+            error => "The password must be at least 8 characters.",
         };
     }
     $member->password(bcrypt($password1));
@@ -215,11 +222,11 @@ post '/set-password' => sub {
     $member->save;
     set_member_session($member);
     if (param('payment')) {
-        session message => "Password saved. You can now "
+        session success => "Password saved. You can now "
             . '<a href="/member/update-payment">update your payment details</a>';
     }
     else {
-        session message => "Successfully saved your password.";
+        session success => "Successfully saved your password.";
     }
     my $path = param('path') || '/';
     return redirect host() . $path;
@@ -227,7 +234,6 @@ post '/set-password' => sub {
 
 get '/admin-login' => sub {
     template 'admin-login' => { 
-        message => param('message') || '',
         path => param('path'),
     };
 };
@@ -310,20 +316,20 @@ get '/txns' => sub {
 get '/txns/:txn_id' => sub {
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
     unless ($txn) {
-        session message => "Sorry, transaction " . params->{txn_id} . " does not exist.";
+        session error => "Sorry, transaction " . params->{txn_id} . " does not exist.";
         return redirect '/';
     }
 
     if (params->{mark_as_unpaid} and $txn->paid) {
         $txn->paid(0);
         $txn->save;
-        session message =>
+        session success =>
             "This transaction is now marked as <strong>not paid</strong>."
     }
     if (params->{mark_as_paid} and !$txn->paid) {
         $txn->paid(1);
         $txn->save;
-        session message =>
+        session success =>
             "This transaction is now marked as <strong>paid</strong>."
     }
     template 'txn', { txn => $txn };
@@ -371,7 +377,7 @@ post '/members/create' => sub {
     $hash{start_epoch} = ymd_to_epoch(delete $hash{start_date});
     $hash{dues_paid_until} = ymd_to_epoch(delete $hash{dues_paid_until_date});
     $member = Biopay::Member->Create(%hash);
-    session message => "Created new co-op member " . $member->name;
+    session success => "Created new co-op member " . $member->name;
     redirect "/members/" . $member->id;
 };
 
@@ -421,7 +427,7 @@ get '/members/:member_id/cancel' => sub {
     if (params->{force} and $member->active) {
         $member->cancel;
         $member->send_cancel_email if params->{send_email};
-        session message => "This membership has been cancelled.";
+        session success => "This membership has been cancelled.";
         return redirect '/members/' . $member->id;
     }
     template 'cancel', {
@@ -432,11 +438,11 @@ get '/members/:member_id/cancel' => sub {
 get '/members/:member_id/send-update-payment-email' => sub {
     my $member = member();
     unless ($member->email) {
-        session message => "That member does not have an email address set.";
+        session error => "That member does not have an email address set.";
         return redirect '/members/' . $member->id;
     }
     $member->send_payment_update_email;
-    session message => "An email has been sent to the user requesting "
+    session success => "An email has been sent to the user requesting "
         . "that they update their payment methods.";
     return redirect '/members/' . $member->id;
 };
@@ -446,7 +452,6 @@ get '/members/:member_id/change-pin' => sub {
     template 'change-pin', {
         member => $m,
         action => '/members/' . $m->id . '/change-pin',
-        message => session('message') || 'Please choose a 4-digit PIN.',
     };
 };
 
@@ -468,7 +473,7 @@ sub handle_change_pin {
         session message => "A PIN change request was sent to the cardlock.";
         return redirect $p{good_url};
     }
-    session message => 'Sorry, the PIN must be 4 digits. Try again';
+    session warning => 'Sorry, the PIN must be 4 digits. Try again';
     return redirect $p{bad_url};
 }
 
@@ -486,14 +491,14 @@ post '/members/:member_id/edit' => sub {
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
     $member->dues_paid_until(ymd_to_epoch(params->{dues_paid_until_date}));
     $member->save;
-    session message => 'Saved';
+    session success => 'Saved';
     redirect "/members/" . $member->id;
 };
 
 get '/members/:member_id' => sub {
     my $member = member();
     unless ($member) {
-        session message => "Sorry, member " . param('member_id') . " does not exist.";
+        session error => "Sorry, member " . param('member_id') . " does not exist.";
         return redirect '/';
     }
 
@@ -620,7 +625,7 @@ post '/member/edit' => sub {
         $member->$key(params->{$key});
     }
     $member->save;
-    session message => "Saved!";
+    session success => "Saved!";
     redirect "/member/view";
 };
 
@@ -629,7 +634,6 @@ get '/member/change-pin' => sub {
     template 'change-pin', {
         member => session_member(),
         action => '/member/change-pin',
-        message => session('message') || 'Please choose a 4-digit PIN.',
     };
 };
 
@@ -647,7 +651,7 @@ get '/member/cancel' => sub {
     if (params->{force} and $member->active) {
         $member->cancel;
         $member->send_cancel_email;
-        session message => <<'EOT';
+        session warning => <<'EOT';
 This membership has been cancelled.<br />
 <p>If you have any feedback for our co-op, please send it to us at <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.</p>
 EOT
@@ -669,7 +673,7 @@ get '/member/txns/:txn_id' => sub {
     my $m = session_member();
     my $txn = Biopay::Transaction->By_id(params->{txn_id});
     if ($txn->member_id != $m->id) {
-        session message => "You are not allowed to view that transaction.";
+        session error => "You are not allowed to view that transaction.";
         return redirect '/member/txns';
     }
     template 'txn', { txn => $txn };
@@ -741,7 +745,7 @@ post '/member/change-password' => sub {
     $member->password(bcrypt($password1));
     $member->login_hash(undef);
     $member->save;
-    session message => 'Your password was updated.';
+    session success => 'Your password was updated.';
     return redirect host() . "/";
 };
 
@@ -753,7 +757,8 @@ get '/new-member' => sub {
         show_agreement => params->{show_agreement},
         message => params->{message},
         name => params->{name} || 'Name',
-        map { $_ => params->{$_} } qw/email phone address PIN/
+        map { $_ => params->{$_} }
+            qw/first_name last_name email phone address PIN/
     };
 };
 
@@ -806,7 +811,7 @@ post '/new-member' => sub {
             phone_num  => $phone,
             email      => $email,
             PIN         => $pin,
-        );
+        ) unless $msg;
     }
     catch {
         if ($_ =~ m/^409/) {
@@ -824,7 +829,7 @@ post '/new-member' => sub {
     if ($msg) {
         return forward '/new-member', {
             show_agreement => 1,
-            message => "Error: $msg",
+            error => "Error: $msg",
             map { $_ => params->{$_} }
                 qw/first_name last_name email phone address PIN/
         }, { method => 'GET' };
@@ -867,7 +872,7 @@ get '/new-member/:hash' => sub {
     };
 
     unless ($pm) {
-        session message => $msg;
+        session error => $msg;
         return redirect '/';
     }
 

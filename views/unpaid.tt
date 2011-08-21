@@ -4,13 +4,15 @@
 <p>Biodiesel transactions that are currently unpaid as of [% now %]:</p>
 
 <form action="/unpaid/mark-as-paid" method="POST">
-<table class="transactions">
-  <tr>
+<table class="common-table zebra-striped">
+  <thead>
+    <tr>
       <th>Member ID</th>
       <th>Time</th>
       <th>Price</th>
       <th>Paid?</th>
-  </tr>
+    </tr>
+  </thead>
   [% FOREACH member_txns IN txns %]
     [% SET total = 0 %]
     [% FOREACH txn IN member_txns %]
@@ -28,18 +30,14 @@
       <td><strong>$[% total %]</strong></td>
       <td></td>
     </tr>
-    <tr>
-      <td>&nbsp;</td>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
   [% END %]
 </table>
-<p>
-  Send an email receipt? <input type="checkbox" name="send_receipt" value="1" />
-</p>
-<input type="submit" value="Mark these transactions as paid" />
+  <div class="actions">
+    <p>
+      Send an email receipt? <input type="checkbox" name="send_receipt" value="1" />
+    </p>
+    <input class="btn primary" type="submit" value="Mark these transactions as paid" />
+  </div>
 </form>
 
 [% ELSE %]

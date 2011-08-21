@@ -1,7 +1,5 @@
-<h1>Admin Login</H1>
 [% INCLUDE message.tt %]
-<p>Login to the Admin area:</p>
-[% INCLUDE 'login-form.tt' action="admin-login" desc="Admin username"%]
+[% INCLUDE 'login-form.tt' action="admin-login" area="Admin" name="Admin username"%]
 
 <hr />
 <p><a href="/login">Member Login</a></p>
