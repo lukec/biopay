@@ -447,6 +447,39 @@ get '/members/:member_id/send-update-payment-email' => sub {
     return redirect '/members/' . $member->id;
 };
 
+get '/members/:member_id/send-email' => sub {
+    my $member = member();
+    unless ($member->email) {
+        session error => "That member does not have an email address set.";
+        return redirect '/members/' . $member->id;
+    }
+
+    template 'send-member-email', {
+        member => $member,
+    };
+};
+
+post '/members/:member_id/send-email' => sub {
+    my $member = member();
+    unless ($member->email) {
+        session error => "That member does not have an email address set.";
+        return redirect '/members/' . $member->id;
+    }
+
+    my $subj = params->{email_subject};
+    my $body = params->{email_body};
+    unless ($subj and $body) {
+        session error => "You must enter a subject and body for the message.";
+        return redirect '/members/' . $member->id . '/send-email';
+    }
+
+    $member->send_custom_email($subj, $body);
+
+    session success => "Email has been sent.";
+    redirect '/members/' . $member->id;
+};
+
+
 get '/members/:member_id/change-pin' => sub {
     my $m = member();
     template 'change-pin', {

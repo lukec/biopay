@@ -75,8 +75,10 @@
             [% END %]
             <a class="btn" href="[% muri %]/change-pin">Change PIN</a> &middot;
             <a class="btn" href="[% muri %]/cancel">Cancel Membership</a>
-            <br />
+            </p>
+            <p>
             <a class="btn" href="[% muri %]/send-update-payment-email">Send request to update Payment Profile</a>
+            <a class="btn" href="[% muri %]/send-email">Email this member</a>
         [% ELSE %]
             [% SET muri = "/member" %]
             <a class="btn" href="[% muri %]/edit">Edit my details</a> &middot;

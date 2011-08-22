@@ -1,0 +1,25 @@
+<h1>Send [% member.name %] a message</h1>
+<p>Enter the subject and body of the message you'd like to send.  You may include HTML in the message body.</p>
+<form action="/members/[% member.id %]/send-email" method="POST">
+  <fieldset>
+    <legend>Enter your message to this member:</legend>
+    <label for="">Subject:</label>
+    <div class="input">
+      <input type="text" id="email_subject" class="xlarge" name="email_subject" />
+    </div>
+    <label for="">Body:</label>
+    <div class="input">
+      <textarea class="xlarge" name="email_body"></textarea>
+    </div>
+    <span class="help-block">
+      You may include HTML in the message body.
+    </span>
+    
+    <div class="actions">
+      <input type="submit" class="btn large primary" value="Send Email" />
+      <a href="/members/[% member.id %]" class="btn large">Cancel</a>
+    </div>
+  </fieldset>
+</form>
+
+<script> jQuery( function () { $("#email_subject").focus(); }); </script>

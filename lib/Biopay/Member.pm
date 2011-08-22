@@ -273,6 +273,15 @@ method send_payment_update_email {
     );
 }
 
+method send_custom_email {
+    my ($subj, $body) = @_;
+    $self->_send_email(
+        template => 'custom',
+        subject => $subj,
+        args => { body => $body },
+    );
+}
+
 
 method _send_email {
     my %p = @_;
