@@ -10,13 +10,6 @@
     <div class="alert-message warning">This member's account is <strong>frozen</strong>!</div>
   [% END %]
   [% IF member.active %]
-    <div id="stats">
-    <h3>Statistics:</h3>
-    <ul>
-      <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
-      <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
-    </ul>
-    </div>
     <div id="details">
     <p>
     <table class="common-table zebra-striped">
@@ -95,7 +88,10 @@
       <hr />
     </div>
 
+    <h3>Activity:</h3>
     <ul>
+      <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
+      <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
       <li>
         <a href="[% muri %]/txns">Recent Transactions</a>
       </li>
