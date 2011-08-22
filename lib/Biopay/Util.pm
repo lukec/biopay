@@ -2,9 +2,11 @@ package Biopay::Util;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
 use DateTime;
+use Digest::SHA1 qw/sha1_hex/;
 use base 'Exporter';
 
-our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host/;
+our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host
+                    beanstream_url beanstream_response_is_valid/;
 
 sub email_admin {
     my ($subj, $body) = @_;
@@ -54,6 +56,38 @@ sub host {
         if request && request->host =~ m/localhost/;
     # Otherwise use the bona fide dotcloud SSL cert
     return 'https://biopay.ssl.dotcloud.com';
+}
+
+sub beanstream_url {
+    my $query_str = shift;
+    my $base = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?";
+
+    my $hash_value = sha1_hex($query_str . config->{merchant_hash_key});
+    $query_str .= "&hashValue=$hash_value";
+
+    unless (beanstream_response_is_valid($query_str)) {
+        die "Could not decode our own hash! - $query_str";
+    }
+    return $base . $query_str;
+}
+
+sub beanstream_response_is_valid {
+    my $uri = shift || request->request_uri;
+    $uri =~ s/.+?\?//;
+    (my $query_str = $uri) =~ s#(.+?)&hashValue=(.+)$#$1#;
+    my $hv = $2;
+    unless ($query_str and $hv) {
+        debug "Couldn't extract the hashValue from the query_string in $uri";
+        return 0;
+    }
+
+    my $q_hash = sha1_hex($query_str . config->{merchant_hash_key});
+    if ($q_hash eq $hv) {
+        return 1;
+    }
+
+    debug "Computed hash '$q_hash' does not match hashValue '$hv'";
+    return 0;
 }
 
 1;
