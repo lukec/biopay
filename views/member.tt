@@ -61,11 +61,10 @@
       <tr>
         <td><strong>Payment details</strong></td>
         <td>
-          [% SET profile_url = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?serviceVersion=1.0&merchantId=" _ settings.merchant_id _ "&trnReturnURL=" _ payment_return_url %]
           [% IF member.payment_hash %]
-            <a href="[% profile_url %]&operationType=M&customerCode=[% member.payment_hash %]">Update payment details</a>
+          <a href="[% member.payment_profile_url %]">Update payment details</a>
           [% ELSE %]
-            <a href="[% profile_url %]&operationType=N">Add payment details</a>
+          <a href="[% member.payment_profile_url %]">Add payment details</a>
           [% END %]
         </td>
       </tr>

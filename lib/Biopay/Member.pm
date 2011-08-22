@@ -9,7 +9,7 @@ use DateTime;
 use DateTime::Duration;
 use Try::Tiny;
 use Biopay::Command;
-use Biopay::Util qw/now_dt host email_admin email_board/;
+use Biopay::Util qw/now_dt host email_admin email_board beanstream_url/;
 use Data::UUID;
 use LWP::UserAgent;
 use methods;
@@ -139,6 +139,20 @@ sub NextMemberID {
         }
         die "Failed to load 'MemberIDs' doc: $_";
     };
+}
+
+method payment_profile_url {
+    my $return_path = session('is_admin') ? '/members/' . $self->id . '/payment'
+                                          : '/member/view');
+    my $query = 'serviceVersion=1.0&merchantId=' . config->{merchant_id}
+              . "&trnReturnURL=" . host() . $return_path;
+    if (my $h = $self->payment_hash) {
+        $query .= "&operationType=M&customerCode=$h";
+    }
+    else {
+        $query .= "&operationType=N";
+    }
+    return beanstream_url($query);
 }
 
 method cancel {
