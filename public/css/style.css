@@ -19,3 +19,12 @@ div.container-fluid div.sidebar {
 div.content {
     padding: 5px;
 }
+
+div.alert-message {
+    width: 560px;
+}
+
+table.common-table {
+    width: 600px;
+}
+
