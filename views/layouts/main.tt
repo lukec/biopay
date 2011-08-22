@@ -19,6 +19,7 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/bootstrap-1.0.0.css">
+    <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>

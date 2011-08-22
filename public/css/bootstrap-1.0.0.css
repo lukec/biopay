@@ -362,10 +362,6 @@ div.container-fluid:before, div.container-fluid:after {
 div.container-fluid:after {
   clear: both;
 }
-div.container-fluid div.sidebar {
-  float: right;
-  width: 200px;
-}
 div.container-fluid div.content {
   min-width: 620px;
   max-width: 620px;
