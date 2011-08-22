@@ -12,7 +12,7 @@ use Biopay::Prices;
 use AnyEvent;
 use DateTime;
 use DateTime::Duration;
-use Biopay::Util qw/email_admin host now_dt/;
+use Biopay::Util qw/email_admin host now_dt beanstream_response_is_valid/;
 use Try::Tiny;
 use Email::Valid;
 use Number::Phone;
@@ -514,7 +514,13 @@ get '/members/:member_id' => sub {
 
 get '/members/:member_id/payment' => sub {
     my $member = member();
-    forward '/members/' . $member->id, { message => update_payment_profile_message($member) };
+    unless (beanstream_response_is_valid()) {
+        return forward '/members/' . $member->id,
+            { message =>
+                "Could not validate response from the payment gateway." };
+    }
+    forward '/members/' . $member->id,
+        { message => update_payment_profile_message($member) };
 };
 
 sub update_payment_profile_message {
@@ -584,6 +590,11 @@ sub session_member {
 
 get '/member/view' => sub {
     my $member = session_member();
+    if (params->{customerCode} and beanstream_response_is_valid()) {
+        return forward '/members/' . $member->id,
+            { message =>
+                "Could not validate response from the payment gateway." };
+    }
     template 'member', {
         member => $member,
         stats => Biopay::Stats->new,
@@ -844,7 +855,11 @@ post '/new-member' => sub {
 get '/new-member/:hash' => sub {
     my $hash = params->{hash};
     my ($msg, $pm, $member);
+
     try {
+        die "Sorry, that request does not look valid."
+            unless beanstream_response_is_valid();
+
         $pm = Biopay::PotentialMember->By_hash($hash);
         unless ($pm) {
             $msg = "We could not find a member at that location.";
