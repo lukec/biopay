@@ -5,7 +5,6 @@
   });
 </script>
 
-<p>(Click the headers to change the sorting)</p>
 <table id="txn_table" class="common-table zebra-striped">
   <thead>
     <tr>
