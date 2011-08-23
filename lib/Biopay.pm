@@ -552,8 +552,10 @@ get '/members/:member_id/payment' => sub {
             { message =>
                 "Could not validate response from the payment gateway." };
     }
-    forward '/members/' . $member->id,
-        { message => update_payment_profile_message($member) };
+    my $msg = update_payment_profile_message($member);
+    forward '/members/' . $member->id, {
+        ($msg =~ m/^error/i ? (error => $msg) : (message => $msg))
+    };
 };
 
 sub update_payment_profile_message {
@@ -628,10 +630,12 @@ get '/member/view' => sub {
             { message =>
                 "Could not validate response from the payment gateway." };
     }
+    my $msg = update_payment_profile_message($member);
     template 'member', {
         member => $member,
         stats => Biopay::Stats->new,
-        message => update_payment_profile_message($member) || params->{message},
+        message => params->{message},
+        ($msg =~ m/^error/i ? (error => $msg) : (message => $msg)),
     };
 };
 
@@ -928,7 +932,7 @@ get '/new-member/:hash' => sub {
     template 'new-member-payment', {
         member => $pm,
         payment_url => $pm->payment_setup_url,
-        message => $msg,
+        ($msg =~ m/^error/i ? (error => $msg) : (message => $msg))
     };
 };
 
