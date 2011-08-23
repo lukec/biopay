@@ -62,8 +62,10 @@ sub beanstream_url {
     my $query_str = shift;
     my $base = "https://www.beanstream.com/scripts/PaymentProfile/webform.asp?";
 
-    my $hash_value = sha1_hex($query_str . config->{merchant_hash_key});
-    $query_str .= "&hashValue=$hash_value";
+    if (config->{merchant_hash_key}) {
+        my $hash_value = sha1_hex($query_str . config->{merchant_hash_key});
+        $query_str .= "&hashValue=$hash_value";
+    }
 
     unless (beanstream_response_is_valid($query_str)) {
         die "Could not decode our own hash! - $query_str";
@@ -72,6 +74,9 @@ sub beanstream_url {
 }
 
 sub beanstream_response_is_valid {
+    debug "Hash validation disabled.";
+    return 1;
+
     my $uri = shift || request->request_uri;
     $uri =~ s/.+?\?//;
     (my $query_str = $uri) =~ s#(.+?)&hashValue=(.+)$#$1#;
