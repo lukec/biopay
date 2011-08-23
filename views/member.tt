@@ -93,7 +93,7 @@
     <h3>Activity:</h3>
     <ul>
       <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
-      <li>Fuel purchased: [% stats.fuel_sold_alltime(member.member_id) %]L</li>
+      <li>Fuel purchased: [% stats.fuel_for_member(member.member_id) %]L</li>
       <li>
         <a href="[% muri %]/txns">Recent Transactions</a>
       </li>
