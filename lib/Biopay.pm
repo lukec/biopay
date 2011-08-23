@@ -27,6 +27,12 @@ my %public_paths = (
     '/new-member', '/stats-widget.js',
 );
 
+sub is_public_path {
+    my $path = request->path_info;
+    return 1 if $public_paths{$path} or $path =~ m{^/(login|set-password|new-member)};
+    return 0;
+}
+
 before sub {
     # XXX hack to try to work around the 596 bug from AE::HTTP
     # If this issue persists using other couch instances
@@ -41,14 +47,13 @@ before sub {
     }
 
     my $path = request->path_info;
-    return if $public_paths{$path}
-               or $path =~ m{^/(login|set-password|new-member)};
+    return if is_public_path();
 
     if (my $m = session 'member') {
         unless ($path =~ m{^/member/}) {
             debug "Member cannot access '$path'";
             session error => "Sorry, that is not available to you.";
-            redirect '/';
+            redirect '/login';
         };
         return;
     }
@@ -57,13 +62,13 @@ before sub {
             debug "Admin cannot access '$path'";
             session warning => "You are logged in as an admin. Please login with your member ID to see that page.";
             session path => $path;
-            return redirect '/login';
+            return redirect '/admin-login';
         };
         return;
     }
 
     debug "no bio session, redirecting to login (from $path)";
-    forward '/login', {
+    forward ($path =~ m{^/member/} ? '/login' : '/admin-login'), {
         message => "Please log-in first.",
         path => request->path_info,
     };
