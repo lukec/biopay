@@ -17,23 +17,58 @@ my $csv = Text::CSV_XS->new;
 open my $fh, "<:encoding(utf8)", "members.csv" or die "members.csv: $!";
 while (my $row = $csv->getline ($fh)) {
     my ($mid, $expiry, $name, $phone, $email, $joined, $address) = @$row;
+
+    unless (($mid||='') and $name) {
+        print "Skipping empty member id $mid\n";
+        next;
+    }
+    unless ($mid =~ m/^\d+$/) {
+        die "Sorry, member ID '$mid' does not look good.\n";
+    }
+    next if $mid < 249;
+
+    # Intentionally ignore all existing expiry times - they are a mess.
+    # VBC hasn't charged membership in years.
+    $expiry = 0;
+    if ($joined ||= 0) {
+        if ($joined =~ m(^(\d+)[/-](\d+)[/-](\d+)$)) {
+            $joined = dmy_to_epoch($1, $2, $3);
+        }
+        else {
+            die "Couldn't parse date format for $mid: '$joined'";
+        }
+
+        $expiry = $joined + (60*60*24*365);
+    }
+
     my $data = {
         id => $mid,
-        expiry => $expiry,
+        dues_paid_until => $expiry,
         name => $name,
         phone_num => $phone,
         email => $email,
-        joined => $joined,
+        start_epoch => $joined,
         address => $address,
     };
-
+    
     next unless $mid;
     my $m = Biopay::Member->By_id($mid);
     if ($m and $name) {
-        update_member($m, $data);
+        if ($m->email or $m->start_epoch) {
+            print "Skipping #" . $m->id . " - " . $m->name . "\n";
+        }
+        else {
+            update_member($m, $data);
+        }
     }
     else {
-        print "Member $mid not found\n";
+        print "Creating $mid - $name ...\n";
+        my $m = Biopay::Member->Create(
+            member_id => $mid,
+            (map { $_ => $data->{$_} }
+              grep { defined $data->{$_} }
+                qw/name phone_num address email start_epoch dues_paid_until/)
+        );
     }
 }
 
@@ -44,7 +79,6 @@ sub update_member {
     my $data = shift;
     my $changed = 0;
 
-    # my ($mid, $expiry, $name, $phone, $email, $joined, $address) = @$row;
     print "Checking member #$data->{id} ($data->{name})\n";
 
     for my $attr (qw/name phone_num email address/) {
@@ -55,17 +89,11 @@ sub update_member {
         }
     }
 
-    my $joined = $data->{joined};
-    if ($joined =~ m(^(\d+)/(\d+)/(\d+)$)) {
-        my $new_epoch = dmy_to_epoch($1, $2, $3);
-        if (($m->start_epoch||0) != $new_epoch) {
-            print "  ... updating join date to $1/$2/$3\n";
-            $m->start_epoch($new_epoch);
+    if (my $joined = $data->{start_epoch}) {
+        if (($m->start_epoch||0) != $joined) {
+            $m->start_epoch($joined);
             $changed++;
         }
-    }
-    else {
-        die "Couldn't parse date format for $data->{id}: '$joined'";
     }
 
     if ($changed) {
