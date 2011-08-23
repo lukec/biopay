@@ -1,8 +1,5 @@
-<h3>Co-op Stats</h3>
-<i>Since July, 2011</i>
-<p>
-<ul>
-  <li><strong>Fuel Sold:</strong> [% stats.fuel_sold_alltime %] Litres</li>
-  <li><strong>CO2 Reducition:</strong> [% stats.co2_reduction %] kg (<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</li>
-</ul>
-</p>
+$(function() {
+    $("#vbc_stats").append(                                                   
+        '<ul><li><strong>Fuel Sold:</strong> [% stats.fuel_sold_alltime %] Litres</li><li><strong>CO2 Offset:</strong> [% stats.co2_reduction %]kg (<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</li></ul>' 
+    ); 
+});
