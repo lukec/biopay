@@ -70,8 +70,8 @@ before sub {
     debug "no bio session, redirecting to login (from $path)";
     forward ($path =~ m{^/member/} ? '/login' : '/admin-login'), {
         message => "Please log-in first.",
-        path => request->path_info,
-    };
+        path => $path,
+    }, { method => 'GET' };
 };
 
 get '/' => sub {
