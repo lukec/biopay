@@ -25,7 +25,6 @@ while (my $row = $csv->getline ($fh)) {
     unless ($mid =~ m/^\d+$/) {
         die "Sorry, member ID '$mid' does not look good.\n";
     }
-    next if $mid < 249;
 
     # Intentionally ignore all existing expiry times - they are a mess.
     # VBC hasn't charged membership in years.
