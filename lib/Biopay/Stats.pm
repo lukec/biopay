@@ -4,9 +4,16 @@ use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
 use methods;
 
-method fuel_sold_alltime { view('txns/litres_by_member', @_) }
-method active_members    { view('members/active_count', @_) }
-method fuel_sales        { view('txns/fuel_sales', @_) }
+has 'fuel_sold_alltime' => (is => 'ro', isa => 'Num', lazy_build => 1);
+has 'fuel_sales'        => (is => 'ro', isa => 'Num', lazy_build => 1);
+has 'active_members'    => (is => 'ro', isa => 'Num', lazy_build => 1);
+
+method _build_fuel_sold_alltime { view('txns/litres_by_member', @_) }
+method _build_active_members    { view('members/active_count', @_) }
+method _build_fuel_sales        { view('txns/fuel_sales', @_) }
+
+method taxes_paid { sprintf '%.02f', $self->fuel_sold_alltime * 0.29 }
+method co2_reduction { int( $self->fuel_sold_alltime * 1.94 ) }
 
 sub view {
     my ($view, @args) = @_;
