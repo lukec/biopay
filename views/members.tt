@@ -30,10 +30,11 @@
   </thead>
   [% FOREACH member IN members %]
     <tr>
-        <td align="right"><a href="/members/[% member.member_id %]">[% member.member_id %]</a></td>
-        <td>[% member.name %]</td>
-        <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
-        <td>[% member.start_pretty_date %]</td>
+      
+      <td align="right"><a href="/members/[% member.member_id %]">[% member.member_id %]</a></td>
+      <td><a href="/members/[% member.member_id %]">[% member.name %]</a></td>
+      <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
+      <td>[% member.start_pretty_date %]</td>
     </tr>
   [% END %]
 </table>
