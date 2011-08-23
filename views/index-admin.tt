@@ -6,12 +6,11 @@
   (since July 8th, 2011)<br />
   <div id="homepage-data">
   <ul>
-  [% SET litres = stats.fuel_sold_alltime() %]
-    <li>Members in this system: [% stats.active_members() %]</li>
-    <li>Fuel sales:  [% stats.fuel_sales() %]</li>
-    <li>Fuel sold: [% litres %] Litres</li>
-    <li>Taxes paid (29¢/L): $[% litres * 0.29 %]</li>
-    <li>Approx CO2 reduction: [% (litres * 1.94) div 1 %]kg (<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</li>
+    <li>Members in this system: [% stats.active_members %]</li>
+    <li>Fuel sales:  [% stats.fuel_sales %]</li>
+    <li>Fuel sold: [% stats.fuel_sold_alltime %] Litres</li>
+    <li>Taxes paid (29¢/L): $[% stats.taxes_paid %]</li>
+    <li>Approx CO2 reduction: [% stats.co2_reduction %]kg (<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</li>
   </ul>
   </div>
 </p>

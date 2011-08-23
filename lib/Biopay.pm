@@ -24,7 +24,7 @@ my %public_paths = (
     map { $_ => 1 }
     qw( / /login /logout /terms /refunds /privacy),
     '/forgot-password', '/admin-login', '/biodiesel-faq',
-    '/new-member', '/stats.json',
+    '/new-member', '/stats-widget',
 );
 
 before sub {
@@ -122,8 +122,10 @@ EOT
     }
 };
 
-get '/stats.json' => sub {
-    return Biopay::Stats->new->as_hash;
+get '/stats-widget' => sub {
+    template 'stats-widget', {
+        stats => Biopay::Stats->new,
+    }, { layout => undef };
 };
 
 get '/login' => sub {
