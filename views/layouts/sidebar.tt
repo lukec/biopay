@@ -16,6 +16,7 @@
     <h3>Admin Actions</h3>
     <dl>
     <li><a href="/">Admin Home</a></li>
+    <li><a href="/mass-email">Email all members</a></li>
     <li><a href="/fuel-price">Change Fuel Price</a></li>
     <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
     <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>

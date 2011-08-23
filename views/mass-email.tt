@@ -1,0 +1,8 @@
+<h1>Send all members a message</h1>
+[% INCLUDE message.tt %]
+<div class="alert-message block-message warning">
+  <b>Note:</b> This will be sent to <b>all active co-op members</b>!  Use with caution!
+</div>
+<form action="/mass-email" method="POST">
+  [% INCLUDE 'send-email-fieldset.tt' cancel='/' %]
+</form>

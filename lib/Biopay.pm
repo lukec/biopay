@@ -932,4 +932,36 @@ get '/new-member/:hash' => sub {
     };
 };
 
+get '/mass-email' => sub {
+    template 'mass-email', { };
+};
+
+post '/mass-email' => sub {
+    my $subj = params->{email_subject};
+    my $body = params->{email_body};
+    unless ($subj and $body) {
+        session error => "You must enter a subject and body for the message.";
+        return redirect '/mass-email';
+    }
+
+    try {
+        my $html = template "email/custom", {
+            body => $body,
+        }, { layout => 'email' };
+        Biopay::Command->Create(
+            command => 'email-all-members',
+            subj => $subj,
+            body => $html,
+        );
+        session success => "The message has been queued for delivery.";
+        redirect '/';
+    }
+    catch {
+        session error => "Failed to queue the message for delivery!";
+        email_admin("Failed to queue email!",
+            "I tried to queue a mass email, but failed: $_");
+        redirect '/mass-email';
+    }
+};
+
 true;

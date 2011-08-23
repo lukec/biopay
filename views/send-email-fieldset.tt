@@ -1,0 +1,22 @@
+  <fieldset>
+    <legend>Enter your message:</legend>
+    <label for="">Subject:</label>
+    <div class="input">
+      <input type="text" id="email_subject" class="xlarge" name="email_subject" />
+    </div>
+    <script> jQuery( function () { $("#email_subject").focus(); }); </script>
+
+    <label for="">Body:</label>
+    <div class="input">
+      <textarea class="xlarge" name="email_body" rows="16"></textarea>
+      <span class="help-block">
+        You may include HTML in the message body.
+      </span>
+    </div>
+    
+    <div class="actions">
+      <input type="submit" class="btn large primary" value="Send Email" />
+      <a href="/members/[% member.id %]" class="btn large">Cancel</a>
+    </div>
+  </fieldset>
+

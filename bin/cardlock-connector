@@ -381,7 +381,7 @@ sub handle_job {
 
     my $job_runner = sub {
         my $member = shift;
-        my $mid = $member->id;
+        my $mid = $member ? $member->id : 0;
         print " ($job->{command}$mid) ";
         try {
             given ($job->{command}) {
@@ -400,6 +400,10 @@ sub handle_job {
                 when ('register-member') {
                     debug "Request to register member $mid";
                     register_member($member, $job->args->{PIN});
+                }
+                when ('email-all-members') {
+                    debug "Request to send email";
+                    email_all_members($job->args);
                 }
                 default {
                     debug "Skipping unknown command: '$job->{command}'\n";
@@ -430,10 +434,37 @@ sub handle_job {
         Biopay::Member->By_id($member_id, $job_runner);
     }
     else {
-        email_admin("Error running job $job->{command} - no member?",
-            "Neither a member_id or a member_email was specified in "
-            . "job " . $job->_id);
+        $job_runner->();
     }
+}
+
+sub email_all_members {
+    my $args = shift;
+    my $subj = $args->{subj} || die "send_email: subj is not defined!";
+    my $body = $args->{body} || die "send_email: body is not defined!";
+
+    Biopay::Member->All(
+        sub {
+            my $members = shift;
+            my %emails = map { $_ => 1 } 
+                            grep { defined }
+                                map { $_->email }
+                                    grep { $_->active }
+                                        @$members;
+            print " (Sending '$subj' to: ";
+            for my $email (keys %emails) {
+                email {
+                    to => $email,
+                    from => config->{email_from},
+                    subject => $subj . " - $email",
+                    type => 'html',
+                    message => $body,
+                };
+                print "$email ";
+            }
+            print ") ";
+        }
+    );
 }
 
 sub register_member {
