@@ -1,0 +1,6 @@
+The cardlock-connector script runs out of the git checkout at ~bio/src/biopay.
+
+You can stop/start the connector using these commands:
+
+  sudo service biopay stop
+  sudo service biopay start
