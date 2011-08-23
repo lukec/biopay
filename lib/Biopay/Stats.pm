@@ -19,3 +19,6 @@ sub view {
     return int $result->{rows}[0]{value};
 }
 
+method as_hash {
+    return { map { $_ => $self->$_ } qw/fuel_sold_alltime active_members/ };
+}
