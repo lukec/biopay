@@ -339,9 +339,18 @@ get '/members' => sub {
     if (my $mid = params->{jump_to}) {
         redirect "/members/$mid" if $mid =~ m/^\d+$/;
     }
-    my $members = Biopay::Member->All;
-    $members = [ sort { $a->id <=> $b->id } @$members ];
-    template 'members', { members => $members };
+    my %p = (members => Biopay::Member->All);
+    $p{members} = [ sort { $a->id <=> $b->id } @{$p{members}} ];
+
+    if (params->{show_inactive}) {
+        $p{showing_inactive}++;
+        $p{members} = [ grep { !$_->active } @{ $p{members} } ];
+    }
+    else {
+        $p{members} = [ grep { $_->active } @{ $p{members} } ];
+    }
+
+    template 'members', \%p;
 };
 
 sub new_member_dates {

@@ -1,5 +1,17 @@
 <h1>Biodiesel Co-op Membership</h1>
 [% IF members.size %]
+<p>
+  <strong>Show:</strong>
+  [% IF showing_inactive %]
+    <a class="btn small" href="/members">Active Members</a>
+    or
+    <a class="btn small disabled" href="/members?show_inactive=1">Inactive Members</a>
+  [% ELSE %]
+    <a class="btn small disabled" href="/members">Active Members</a>
+    or
+    <a class="btn small" href="/members?show_inactive=1">Inactive Members</a>
+  [% END %]
+</p>
 <script src="http://autobahn.tablesorter.com/jquery.tablesorter.min.js"></script> 
 <script >
   $(function() {
