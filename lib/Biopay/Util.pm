@@ -74,9 +74,6 @@ sub beanstream_url {
 }
 
 sub beanstream_response_is_valid {
-    debug "Hash validation disabled.";
-    return 1;
-
     my $uri = shift || request->request_uri;
     $uri =~ s/.+?\?//;
     (my $query_str = $uri) =~ s#(.+?)&hashValue=(.+)$#$1#;
