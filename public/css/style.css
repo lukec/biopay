@@ -24,6 +24,7 @@ div.container-fluid div.sidebar {
 
 div.content {
     padding: 5px;
+    width: 600px;
 }
 
 div.alert-message {
