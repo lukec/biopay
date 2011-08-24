@@ -5,6 +5,7 @@
 # Your application's name
 appname: "biopay"
 merchant_id: "****____MERCHANT_ID____****"
+merchant_hash_key: "****____MERCHANT_HASH_KEY____****"
 email_from: 'Biodiesel Co-op <billing@vancouverbiodiesel.org>'
 
 
