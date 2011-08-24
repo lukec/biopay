@@ -1,4 +1,4 @@
-<script src="http://autobahn.tablesorter.com/jquery.tablesorter.min.js"></script> 
+<script src="/javascripts/libs/jquery.tablesorter.min.js"></script> 
 <script >
   $(function() {
     $("table#txn_table").tablesorter();
