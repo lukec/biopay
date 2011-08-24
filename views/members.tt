@@ -12,7 +12,7 @@
     <a class="btn small" href="/members?show_inactive=1">Inactive Members</a>
   [% END %]
 </p>
-<script src="http://autobahn.tablesorter.com/jquery.tablesorter.min.js"></script> 
+<script src="/javascripts/libs/jquery.tablesorter.min.js"></script> 
 <script >
   $(function() {
     $("table#member_table").tablesorter();
