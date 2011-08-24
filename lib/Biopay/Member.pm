@@ -159,10 +159,9 @@ method cancel {
     $self->active(0);
     if (my $ph = $self->payment_hash) {
         try {
-            my $url = "https://www.beanstream.com/scripts/PaymentProfile/"
-                . "webform.asp?serviceVersion=1.0&merchantId=" 
-                . config->{merchant_id}
+            my $query = "serviceVersion=1.0&merchantId=" . config->{merchant_id}
                 . "&operationType=M&status=C&customerCode=$ph";
+            my $url = beanstream_url($query);
             my $ua = LWP::UserAgent->new;
             my $res = $ua->get($url);
             die $res->status_line unless $res->is_success;

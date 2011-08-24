@@ -4,7 +4,7 @@ use Dancer::Plugin::CouchDB;
 use Moose;
 use Data::UUID;
 use Carp qw/croak/;
-use Biopay::Util qw/host now_dt/;
+use Biopay::Util qw/host now_dt beanstream_url/;
 use Biopay::Member;
 use methods;
 
@@ -60,11 +60,10 @@ sub By_email { shift->By_view('by_email', @_) }
 sub By_hash  { shift->By_view('by_hash', @_) }
 
 method payment_setup_url {
-    return "https://www.beanstream.com/scripts/PaymentProfile/"
-        . "webform.asp?serviceVersion=1.0&merchantId=" 
-        . config->{merchant_id}
+    my $query = "serviceVersion=1.0&merchantId=" . config->{merchant_id}
         . "&trnReturnURL=" . host() . '/new-member/' . $self->hash
         . "&operationType=N";
+    return beanstream_url($query);
 }
 
 method make_real {
