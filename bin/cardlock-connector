@@ -15,7 +15,7 @@ use Biopay::Command;
 use Biopay::Prices;
 use Biopay::EmailReceipt;
 use Biopay::Receipt;
-use Biopay::Util qw/email_admin email_board random_pin/;
+use Biopay::Util qw/email_admin email_board random_pin host/;
 use AnyEvent;
 use List::Util qw/sum/;
 use Try::Tiny;
@@ -506,7 +506,8 @@ sub register_member {
 
         email_board("New member - " . $member->id,
             "Hello Board, we just had a new member join the co-op: "
-            . $member->name . ".\n");
+            . $member->name . ".\n\n"
+            . "Details: " . host() . "/members/" . $member->id . "\n");
     };
     catch {
         my $err = "Failed to register new member: $_";
