@@ -166,7 +166,7 @@ method parse_line {
     # B Power Fail while dispensing is in progress 
     # C Entering manual mode 
     # D Leaving manual Mode
-    return unless $fields[5] > 0;
+    return unless $fields[5] == 1;
 
     my $dt = to_datetime($fields[3], $fields[4]);
     # Lazy load the latest fuel price
