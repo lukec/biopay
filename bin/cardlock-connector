@@ -54,7 +54,7 @@ my $cardlock_timer = AnyEvent->timer(
     cb    => \&check_cardlock,
 );
 my $job_timer = AnyEvent->timer(
-    after => 1.0, interval => 60,
+    after => 1.0, interval => 30,
     cb    => \&check_for_jobs,
 );
 my $price_timer = AnyEvent->timer(
