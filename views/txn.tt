@@ -3,7 +3,7 @@
 
 [% INCLUDE message.tt %]
 
-<table class="transaction">
+<table class="common-table zebra-striped">
   <tr>
     <td><strong>ID</strong></td>
     <td>[% txn.txn_id %]</td>
