@@ -463,7 +463,7 @@ get '/members/:member_id/send-update-payment-email' => sub {
         return redirect '/members/' . $member->id;
     }
     $member->send_payment_update_email;
-    session success => "An email has been sent to the user requesting "
+    session success => "An email has been queued for the user requesting "
         . "that they update their payment methods.";
     return redirect '/members/' . $member->id;
 };
@@ -496,7 +496,7 @@ post '/members/:member_id/send-email' => sub {
 
     $member->send_custom_email($subj, $body);
 
-    session success => "Email has been sent.";
+    session success => "Email has been queued for delivery.";
     redirect '/members/' . $member->id;
 };
 
