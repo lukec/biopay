@@ -31,10 +31,19 @@ sub email_board {
 sub queue_email {
     my $msg = shift;
 
-    Biopay::Command->Create(
-        command => 'send-email',
-        msg => $msg,
-    );
+    if (config->{biopay_backend}) {
+        print " (Sending '$msg->{subject}' email to $msg->{to}) ";
+        email {
+            from => config->{email_from},
+            %$msg,
+        };
+    }
+    else {
+        Biopay::Command->Create(
+            command => 'send-email',
+            msg => $msg,
+        );
+    }
 }
 
 my %bad_pins = map { $_ => 1 }
