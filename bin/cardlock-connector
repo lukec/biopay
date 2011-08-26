@@ -391,19 +391,20 @@ sub handle_job {
                     $cardlock->set_PIN($mid, $job->args->{new_PIN});
                 }
                 when ('send-receipt') {
-                    debug "Sending receipt to $mid (" . $member->name . ")";
+                    print " (Receipt to $mid - " . $member->name . ") ";
                     # Shell out so we can avoid AE-style programming of the
                     # receipt code
                     system($^X, "$FindBin::Bin/send-receipt", $job->_id)
                         and die "Could not send receipt for job " . $job->_id;
                 }
                 when ('register-member') {
-                    debug "Request to register member $mid";
                     register_member($member, $job->args->{PIN});
                 }
                 when ('email-all-members') {
-                    debug "Request to send email";
                     email_all_members($job->args);
+                }
+                when ('send-email') {
+                    send_email($job->args->{msg});
                 }
                 default {
                     debug "Skipping unknown command: '$job->{command}'\n";
@@ -467,12 +468,22 @@ sub email_all_members {
     );
 }
 
+sub send_email {
+    my $args = shift;
+    print " (Sending '$args->{subject}' email to $args->{to}) ";
+    email {
+        from => config->{email_from},
+        %$args,
+    };
+}
+
 sub register_member {
     my $member = shift;
     my $PIN    = shift;
     my $email = $member->email;
 
     try {
+        print " (Register: $email) ";
         # Process sign-up fee
         my $order_num = 'signup:' . $member->id;
         $processor->process(
