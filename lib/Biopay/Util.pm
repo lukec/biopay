@@ -6,14 +6,13 @@ use Digest::SHA1 qw/sha1_hex/;
 use base 'Exporter';
 
 our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host
-                    beanstream_url beanstream_response_is_valid/;
+                    beanstream_url beanstream_response_is_valid queue_email/;
 
 sub email_admin {
     my ($subj, $body) = @_;
     debug "Cardlock error: $subj";
-    email {
+    queue_email {
         to => config->{sysadmin_email},
-        from => config->{email_from},
         subject => "Cardlock error: $subj",
         message => $body || 'Sorry!',
     };
@@ -22,13 +21,21 @@ sub email_admin {
 sub email_board {
     my ($subj, $body) = @_;
     debug "Emailing board: $subj";
-    email {
+    queue_email {
         to => config->{board_email},
-        from => config->{email_from},
         subject => "Biopay: $subj",
         message => $body,
     };
 };
+
+sub queue_email {
+    my $msg = shift;
+
+    Biopay::Command->Create(
+        command => 'send-email',
+        msg => $msg,
+    );
+}
 
 my %bad_pins = map { $_ => 1 }
     qw/0000 1111 2222 3333 4444 5555 6666 7777 8888 9999

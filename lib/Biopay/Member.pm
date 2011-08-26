@@ -3,13 +3,13 @@ use strict;
 use warnings;
 use Dancer ':syntax';
 use Dancer::Plugin::CouchDB;
-use Dancer::Plugin::Email;
 use Moose;
 use DateTime;
 use DateTime::Duration;
 use Try::Tiny;
 use Biopay::Command;
-use Biopay::Util qw/now_dt host email_admin email_board beanstream_url/;
+use Biopay::Util
+    qw/now_dt host email_admin email_board beanstream_url queue_email/;
 use Data::UUID;
 use LWP::UserAgent;
 use methods;
@@ -294,15 +294,14 @@ method _send_email {
             member => $self,
             %{ $p{args} || {} },
         }, { layout => 'email' };
-        email {
+        queue_email( {
             to => $self->email,
             bcc => 'lukecloss@gmail.com',
-            from => config->{email_from},
             subject => "Biodiesel Co-op - $p{subject}",
             type => 'html',
             message => $html,
-        };
-        debug "Just sent $p{template} email to " . $self->email;
+        });
+        debug "Just queued $p{template} email to " . $self->email;
     }
     catch {
         debug "Failed to send $p{template} email to " . $self->email . ": $_";
