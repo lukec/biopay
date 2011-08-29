@@ -20,7 +20,8 @@ sub email_admin {
 
 sub email_board {
     my ($subj, $body) = @_;
-    debug "Emailing board: $subj";
+    my $to = config->{board_email} || die "No board_email configured!";
+    debug "Emailing board at $to: $subj";
     queue_email({
         to => config->{board_email},
         subject => "Biopay: $subj",
