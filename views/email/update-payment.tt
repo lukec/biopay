@@ -1,4 +1,11 @@
 <p>Please update the payment details for your Vancouver Biodiesel Co-op membership.</p>
+<p>We have moved all of our co-op billing to be online, so you can update your credit card, change your pin, and view your past transactions on our website.</p>
+
+[% IF member.unpaid_transactions.size > 0 %]
+  <p>You currently have un-paid fuel transactions. When you update your payment details, these transactions will be charged and you will receive an email receipt.</p>
+[% END %]
+
+<p>If you have any questions, reply to this email and we can help!</p>
 
 [% SET pay_url=host _ '/member/update-payment' %]
 [% IF member.password %]
