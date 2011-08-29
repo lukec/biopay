@@ -264,9 +264,9 @@ post '/admin-login' => sub {
     }
     if ($auth->asa('admin')) {
         debug "Allowing access to admin user $user";
+        destroy_session();
         session username => $user;
         session is_admin => 1;
-        session member   => undef;
         return redirect host() . param('path') || "/";
     }
     debug "Found the $user user, but they are not an admin.";
