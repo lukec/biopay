@@ -182,7 +182,7 @@ method cancel {
         "Sorry to report that " . $self->name . ", Co-op member #"
         . $self->id . " has cancelled their membership.\n\n"
         . (@$unpaid ? "The member has " . @$unpaid . " unpaid transactions!\n\n"
-                    : '')
+                    : 'The member has no unpaid transactions.\n\n')
         . "They have been a member since " . $self->start_datetime->ymd . ".\n"
         . "\nDetails here: " . host() . '/members/' . $self->id . "\n\n"
     );
