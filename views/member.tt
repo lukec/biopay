@@ -55,9 +55,9 @@
         <td><strong>Payment details</strong></td>
         <td>
           [% IF member.payment_hash %]
-          <a href="[% member.payment_profile_url %]">Update payment details</a>
+          <a href="[% member.payment_profile_url(1) %]">Update payment details</a>
           [% ELSE %]
-          <a href="[% member.payment_profile_url %]">Add payment details</a>
+          <a href="[% member.payment_profile_url(1) %]">Add payment details</a>
           [% END %]
         </td>
       </tr>

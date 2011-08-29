@@ -142,8 +142,9 @@ sub NextMemberID {
 }
 
 method payment_profile_url {
-    my $return_path = session('is_admin') ? '/members/' . $self->id . '/payment'
-                                          : '/member/view';
+    my $is_admin = shift;
+    my $return_path = $is_admin ? '/members/' . $self->id . '/payment'
+                                : '/member/view';
     my $query = 'serviceVersion=1.0&merchantId=' . config->{merchant_id}
               . "&trnReturnURL=" . host() . $return_path;
     if (my $h = $self->payment_hash) {
