@@ -23,6 +23,7 @@ WriteMakefile(
         'DateTime'   => 0,
         'Email::Date::Format' => 0,
         'Email::Valid' => 0,
+        'LWP::Protocol::https' => 0,
         'Number::Phone' => 0,
         'URI::Query' => 0,
         'Plack'      => 0,
