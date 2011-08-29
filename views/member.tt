@@ -110,9 +110,8 @@
     [% IF is_admin %]
       <div class="alert-message warning">This person has cancelled their co-op membership.</div>
     [% END %]
-    <div id="details">
     <p>
-    <table id="common-table zebra-striped">
+    <table class="common-table zebra-striped">
       <tr>
         <td><strong>ID</strong></td>
         <td>[% member.member_id %]</td>
@@ -135,7 +134,6 @@
       </tr>
     </table>
     </p>
-    </div>
   [% END %]
 [% END %]
 
