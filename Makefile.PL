@@ -30,6 +30,7 @@ WriteMakefile(
         'Template'   => 0,
         'AnyEvent::CouchDB' => 0,
         'Try::Tiny' => 0,
+        'Time::HiRes' => 0,
         'Moose' => 0,
         'methods' => 0,
         'Digest::SHA1' => 0,

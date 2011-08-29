@@ -1,8 +1,9 @@
 package Biopay::Command;
 use Moose;
-use methods;
 use Dancer::Plugin::CouchDB;
 use Dancer ':syntax';
+use Time::HiRes qw/time/;
+use methods;
 
 extends 'Biopay::Resource';
 
