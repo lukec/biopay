@@ -11,21 +11,21 @@ our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host
 sub email_admin {
     my ($subj, $body) = @_;
     debug "Cardlock error: $subj";
-    queue_email {
+    queue_email({
         to => config->{sysadmin_email},
         subject => "Cardlock error: $subj",
         message => $body || 'Sorry!',
-    };
+    });
 };
 
 sub email_board {
     my ($subj, $body) = @_;
     debug "Emailing board: $subj";
-    queue_email {
+    queue_email({
         to => config->{board_email},
         subject => "Biopay: $subj",
         message => $body,
-    };
+    });
 };
 
 sub queue_email {
