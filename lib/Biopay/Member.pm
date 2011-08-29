@@ -168,7 +168,7 @@ method cancel {
             $self->payment_hash(undef);
         }
         catch {
-            email_admin("Failed to cancel payment profile",
+            email_admin("Failed to cancel payment profile: $_",
                 "I attempted to cancel payment profile for member #"
                 . $self->id . " with payment hash $ph, but failed: $_");
         }
