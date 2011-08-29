@@ -9,6 +9,7 @@
   </div>
   <p>Next up, we need to collect your payment details for the initial sign-up fee and to charge your future biodiesel purchases to.</p>
   <p>Your credit card data will be stored in a secure, <a href="http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard">PCI compliant</a> system hosted by <a href="http://beanstream.com">BeanStream</a>.</p>
+  <div class="alert-message info"><p><strong>Note:</strong> When you enter your payment details, we will charge you the non-refundable $25 membership fee.  When you fill up with biodiesel, this card will be charged.</p></div>
 [% END %]
 
 <a class="btn large primary" href="[% payment_url %]">Enter your payment details</a>
