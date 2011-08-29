@@ -8,7 +8,7 @@ merchant_id: "****____MERCHANT_ID____****"
 merchant_hash_key: "****____MERCHANT_HASH_KEY____****"
 email_from: 'Biodiesel Co-op <billing@vancouverbiodiesel.org>'
 sysadmin_email: 'info@vancouverbiodiesel.org'
-board_email: 'lukecloss@gmail.com'
+board_email: 'vancouver-biodiesel-board@googlegroups.com'
 
 
 # The default layout to use for your application (located in
