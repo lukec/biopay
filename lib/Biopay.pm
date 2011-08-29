@@ -662,19 +662,7 @@ get '/member/view' => sub {
 
 get '/member/update-payment' => sub {
     my $member = session_member();
-    if ($member) {
-        my $url = "https://www.beanstream.com/scripts/PaymentProfile/"
-            . "webform.asp?serviceVersion=1.0&merchantId=" 
-            . config->{merchant_id}
-            . "&trnReturnURL=" . host() . '/member/view';
-        if (my $h = $member->payment_hash) {
-            $url .= "&operationType=M&customerCode=$h";
-        }
-        else {
-            $url .= "&operationType=N";
-        }
-        return redirect $url;
-    }
+    return redirect $member->payment_profile_url if $member;
     debug "No member found, could not satisfy /update-payment";
     return redirect "/";
 };
