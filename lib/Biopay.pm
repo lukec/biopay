@@ -196,13 +196,17 @@ get '/set-password' => sub {
 
 get '/set-password/:hash' => sub {
     my $hash = param('hash');
-    my $member = Biopay::Member->By_hash($hash);
-
-    template 'set-password' => { 
-        member => $member,
-        confirmed => 1,
-        path => param('path'),
-    };
+    try {
+        my $member = Biopay::Member->By_hash($hash);
+        template 'set-password' => { 
+            member => $member,
+            confirmed => 1,
+            path => param('path'),
+        };
+    }
+    catch {
+        redirect '/';
+    }
 };
 
 post '/set-password' => sub {
@@ -210,7 +214,7 @@ post '/set-password' => sub {
     my $password1 = param('password1');
     my $password2 = param('password2');
 
-    my $member = Biopay::Member->By_hash($hash);
+    my $member = try { Biopay::Member->By_hash($hash) };
     unless ($member) {
         my $msg = "Sorry, we could not find that member.";
         return forward "/login", {error => $msg}, { method => 'GET' };
@@ -646,8 +650,8 @@ sub session_member {
 
 get '/member/view' => sub {
     my $member = session_member();
-    if (params->{customerCode} and beanstream_response_is_valid()) {
-        return forward '/members/' . $member->id,
+    if (params->{customerCode} and not beanstream_response_is_valid()) {
+        return forward '/members/view',
             { message =>
                 "Could not validate response from the payment gateway." };
     }
