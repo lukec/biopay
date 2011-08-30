@@ -38,7 +38,7 @@ unless ($couch) {
 # * Check the pump every 10s
 # * Check the couch for cardlock jobs every 1 minute
 # * Check for updated prices every 10 minutes
-# * Check for unpaid transactions to be run once per hour
+# * Check for unpaid transactions every 30 seconds
 # * Send the admin stats once per day
 
 my $prices = Biopay::Prices->new;
@@ -69,7 +69,7 @@ my $price_timer = AnyEvent->timer(
     },
 );
 my $txn_timer = AnyEvent->timer(
-    after => 2.0, interval => 3600,
+    after => 2.0, interval => 30,
     cb => \&check_for_unpaid_txns,
 );
 my $sigint = AnyEvent->signal(
