@@ -500,7 +500,7 @@ sub cardlock_freeze {
     my $mid = $member->id;
     my $pin = $cardlock->fetch_PIN($mid);
     $cardlock->set_PIN($mid, 0);
-    unless ($job->args->{forget_pin}) {
+    unless ($job and $job->args->{forget_pin}) {
         $member->PIN($pin);
         $member->save( error_cb => sub {
                 email_admin("Failed to save member PIN after freeze",
