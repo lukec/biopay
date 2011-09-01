@@ -2,9 +2,7 @@
 use 5.14.1;
 use Dancer qw/:syntax/;
 use FindBin;
-use Cwd qw/realpath/;
 use lib "$FindBin::Bin/../lib";
-use Dancer::Plugin::CouchDB;
 use Dancer::Plugin::Email;
 use Biopay::Cardlock;
 use Biopay::Member;
@@ -16,23 +14,11 @@ use Biopay::Prices;
 use Biopay::EmailReceipt;
 use Biopay::Receipt;
 use Biopay::Util qw/email_admin email_board random_pin host/;
+use Biopay::Daemon;
 use AnyEvent;
 use List::Util qw/sum/;
 use Try::Tiny;
 use Data::Dumper;
-
-$| = 1; # auto-flush STDOUT
-
-# Load appdir and templates
-Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
-Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
-Dancer::Config::load();
-
-my $couch = couchdb();
-unless ($couch) {
-    email_admin("Couldn't connect to the couch!");
-    exit -1;
-}
 
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
@@ -40,6 +26,7 @@ unless ($couch) {
 # * Check for updated prices every 10 minutes
 # * Check for unpaid transactions every 10 minutes
 
+my $daemon = Biopay::Daemon->new(name => 'cardlock-connector');
 my $prices = Biopay::Prices->new;
 my $fuel_price = $prices->fuel_price;
 my $membership_price = $prices->annual_membership_price;
@@ -47,7 +34,6 @@ my $signup_price     = $prices->signup_price;
 my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $fuel_price } );
 my $processor = Biopay::PaymentProcessor->new;
 
-my $main_loop = AnyEvent->condvar;
 my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,
     cb    => \&check_cardlock,
@@ -71,14 +57,6 @@ my $txn_timer = AnyEvent->timer(
     after => 2.0, interval => 600,
     cb => \&check_for_unpaid_txns,
 );
-my $sigint = AnyEvent->signal(
-    signal => "INT",
-    cb => sub { $main_loop->send },
-);
-my $sigterm = AnyEvent->signal(
-    signal => "TERM",
-    cb => sub { print "$0 shutting down.\n"; $main_loop->send },
-);
 my $stdin; $stdin = AnyEvent->io(
     fh => *STDIN,
     poll => 'r',
@@ -98,17 +76,7 @@ my $stdin; $stdin = AnyEvent->io(
 );
 
 
-try {
-    $main_loop->recv; # Main event loop
-}
-catch {
-    (my $first_line = $_) =~ s/\n.+//s;
-    email_admin(
-        "Un-caught cardlock error: $first_line",
-        "Not sure what happened: $_",
-    );
-};
-print "Exiting Connector.\n";
+$daemon->run;
 exit;
 
 my %txn_start;
@@ -121,7 +89,7 @@ sub check_cardlock {
         autovivify_member($txn_hash->{member_id});
 
         # It may exist already, so we should expect this to fail
-        $couch->save_doc($txn_hash)->cb(
+        $daemon->couch->save_doc($txn_hash)->cb(
             sub {
                 my $cv = shift;
                 try { $cv->recv }
@@ -141,7 +109,7 @@ sub double_check_transaction {
     return if $double_checked_out{$id};
     print " (DoubleCheck $id) ";
 
-    $couch->open_doc($id)->cb( sub {
+    $daemon->couch->open_doc($id)->cb( sub {
             my $cv = shift;
             try {
                 my $doc = $cv->recv;
@@ -159,7 +127,7 @@ EOT
                     print " (!!Fixing $id: $doc->{litres} => "
                         . "$txn->{litres}!!) ";
                     $txn->{_rev} = $doc->{_rev};
-                    $couch->save_doc($txn)->cb( sub {
+                    $daemon->couch->save_doc($txn)->cb( sub {
                             my $cv = shift;
                             try { $cv->recv }
                             catch {
@@ -410,7 +378,7 @@ sub handle_job {
                     return;
                 }
             }
-            $couch->remove_doc($job)->cb(
+            $daemon->couch->remove_doc($job)->cb(
                 sub {
                     my $cv = shift;
                     try { $cv->recv }
