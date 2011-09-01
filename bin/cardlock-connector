@@ -324,7 +324,8 @@ sub process_transactions {
         email_admin("Error processing payment $order_num",
             "Had a problem during payment processing: $error\n\n$err\n\n"
             . "This payment was for member ID " . $member->id
-            . " for transactions: " . join(', ', map { $_->id } @$txns)
+            . " (" . host() . '/members/' . $member->id . ') '
+            . " for transactions: " . join(', ', map { host() . '/txns/' . $_->id } @$txns)
         );
     }
 }
