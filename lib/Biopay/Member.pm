@@ -358,6 +358,6 @@ method _build_set_password_link {
         $hash = $self->{login_hash} = $self->_build_login_hash;
         $self->save;
     }
-    host() . '/set-password/' . $self->login_hash;
+    host() . "/set-password/$hash";
 }
 
