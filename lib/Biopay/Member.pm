@@ -243,6 +243,7 @@ method send_billing_error_email {
         args => {
             error => $error,
             amount => $amount,
+            host => host(),
         },
     );
 }
