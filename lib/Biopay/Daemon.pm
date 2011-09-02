@@ -8,6 +8,7 @@ use Try::Tiny;
 use AnyEvent;
 use Dancer::Plugin::CouchDB;
 use AnyEvent::CouchDB::Stream;
+use Biopay::PaymentProcessor;
 use Biopay::Util qw/email_admin/;
 use Moose;
 use methods;
@@ -24,6 +25,8 @@ has 'main_loop' => (is => 'ro', default => sub { AnyEvent->condvar });
 has 'handlers'  => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
+has 'processor'  => (is => 'ro', isa => 'Object', lazy_build => 1);
+
 has 'stream' => (is => 'rw', isa => 'Maybe[Object]');
 has '_last_seq' => (is => 'rw', isa => 'Num', default => 0);
 
@@ -97,3 +100,4 @@ method _build_couch {
     return $couch;
 }
 
+method _build_processor { Biopay::PaymentProcessor->new }

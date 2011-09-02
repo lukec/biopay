@@ -8,7 +8,6 @@ use Biopay::Cardlock;
 use Biopay::Member;
 use Biopay::PotentialMember;
 use Biopay::Transaction;
-use Biopay::PaymentProcessor;
 use Biopay::Command;
 use Biopay::Prices;
 use Biopay::EmailReceipt;
@@ -31,7 +30,6 @@ my $prices = Biopay::Prices->new;
 my $membership_price = $prices->annual_membership_price;
 my $signup_price     = $prices->signup_price;
 my $cardlock = Biopay::Cardlock->new;
-my $processor = Biopay::PaymentProcessor->new;
 
 $daemon->setup_couch_stream(
     on_change => sub {
@@ -227,7 +225,7 @@ sub process_transactions {
     my $error = "Order '$order_num' not yet processed.";
     try {
         try {
-            $processor->process(
+            $daemon->processor->process(
                 order_num => $order_num,
                 amount => $total,
                 hash => $member->payment_hash,
@@ -459,7 +457,7 @@ sub register_member {
         print " (Register: $email) ";
         # Process sign-up fee
         my $order_num = 'signup:' . $member->id;
-        $processor->process(
+        $daemon->processor->process(
             order_num => $order_num,
             amount => $signup_price,
             hash => $member->payment_hash,
