@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use warnings;
+
+my $arg = shift;
+unless ($arg =~ m/^(start|stop)$/) {
+    die "USAGE: $0 <start|stop|restart>";
+}
+
+for my $n (qw/cardlock jobs/) {
+    system("sudo service biopay-$n $arg");
+}
