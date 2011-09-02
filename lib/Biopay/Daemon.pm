@@ -10,7 +10,9 @@ use Dancer::Plugin::CouchDB;
 use AnyEvent::CouchDB::Stream;
 use Biopay::PaymentProcessor;
 use Biopay::Util qw/email_admin/;
+use Biopay::Command;
 use Moose;
+use Data::Dumper;
 use methods;
 
 $| = 1; # auto-flush STDOUT
@@ -22,7 +24,8 @@ Dancer::Config::load();
 
 has 'name'      => (is => 'ro', isa => 'Str', required => 1);
 has 'main_loop' => (is => 'ro', default => sub { AnyEvent->condvar });
-has 'handlers'  => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
+has 'sig_handlers' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
+has 'job_handlers' => (is => 'rw', isa => 'HashRef',  default => sub { {} });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'processor'  => (is => 'ro', isa => 'Object', lazy_build => 1);
@@ -32,12 +35,28 @@ has '_last_seq' => (is => 'rw', isa => 'Num', default => 0);
 
 method BUILD {
     my $exitsub = sub { $self->main_loop->send };
-    push $self->handlers, AnyEvent->signal( signal => 'INT',  cb => $exitsub );
-    push $self->handlers, AnyEvent->signal( signal => 'TERM', cb => $exitsub );
+    push $self->sig_handlers,
+        AnyEvent->signal(signal => 'INT', cb => $exitsub);
+    push $self->sig_handlers,
+        AnyEvent->signal(signal => 'TERM', cb => $exitsub);
 }
 
 method run {
     try {
+        my $t;
+        if (%{ $self->job_handlers }) {
+            $t = AnyEvent->timer(
+                after => 0.1, interval => 3600,
+                cb => sub {
+                    print 'J';
+                    Biopay::Command->Run_jobs( sub {
+                        my $job = shift;
+                        my $cb = $self->job_handler($job->command);
+                        $job->run($cb) if $cb;
+                    });
+                }
+            );
+        }
         $self->main_loop->recv;
     }
     catch {
@@ -70,6 +89,31 @@ method setup_couch_stream {
         my $change = shift;
         $self->_last_seq($change->{seq});
         try {
+            if ($change->{id} =~ m/^command:/) {
+                # Always load commands, to see if we should do them.
+                my $cv; $cv = $self->couch->open_doc($change->{id}, {
+                    success => sub {
+                        my $doc = shift;
+                        try {
+                            my $job = Biopay::Command->new($doc);
+                            my $cb = $self->job_handler($job->command);
+                            $job->run($cb) if $cb;
+                            print 'j' unless $cb;
+                        }
+                        catch {
+                            email_admin(
+                                "Error running command: $change->{id}",
+                                "Error: $_\n\n" . Dumper($doc)
+                            );
+                        }
+                        finally {
+                            undef $cv;
+                        }
+                    },
+                    error => sub { undef $cv },
+                });
+                return;
+            }
             $orig_on_change->($change);
         }
         catch {
@@ -92,6 +136,32 @@ method setup_couch_stream {
         %p,
     );
     $self->stream($couch_listener);
+}
+
+method job_handler {
+    my $type = shift;
+    my $cb = $self->job_handlers->{$type} || return;
+    return sub {
+        my $job = shift;
+        print " (Running: $job->{_id}) ";
+        $cb->($job, @_);
+        $self->remove_job($job);
+    };
+}
+
+method remove_job {
+    my $job = shift;
+    my $cv;
+    $cv = $self->couch->remove_doc($job,  {
+        success => sub {
+            print " (Removed $job->{_id}) ";
+        },
+        error => sub {
+            email_admin("Error removing a $job->{command} job",
+                "Failed to remove $job->{_id}\n\n$_");
+            $cv = undef;
+        },
+    });
 }
 
 method _build_couch {
