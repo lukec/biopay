@@ -9,7 +9,6 @@ use DateTime;
 use Try::Tiny;
 
 has 'cli' => (is => 'ro', isa => 'Control::CLI', lazy_build => 1);
-has 'fetch_price_cb' => (is => 'ro', isa => 'CodeRef', required => 1);
 has 'device' => (is => 'ro', isa => 'Str', default => '/dev/ttyS0');
 
 method exists { -r $self->device }
@@ -169,8 +168,6 @@ method parse_line {
     return unless $fields[5] == 1;
 
     my $dt = to_datetime($fields[3], $fields[4]);
-    # Lazy load the latest fuel price
-    my $price = $self->fetch_price_cb->();
     my $id = $dt->ymd('-') . '-' . to_num($fields[1]);
     my $txn = {
         Type => 'txn',
@@ -183,19 +180,12 @@ method parse_line {
         litres => to_num($fields[9]),
         pump => "RA",
         date => "$dt",
-        paid => 0,
-        price_per_litre => $price,
         ($fields[5] > 1 ? (error_code => $fields[5]) : ()),
     };
     unless ($txn->{member_id} and $txn->{member_id} =~ m/^\d+$/) {
         debug "No member_id on txn_id:$txn->{txn_id} - skipping.";
         return;
     }
-    $txn->{price} = sprintf "%01.2f", 
-                    round($txn->{litres} * $price * 100) / 100;
-    $txn->{paid} = 1 if $txn->{price} eq "0.00";
-    $txn->{as_string} = "txn:$txn->{txn_id} "
-        . "member:$txn->{member_id} litres:$txn->{litres} $dt";
     return $txn;
 }
 

@@ -28,11 +28,25 @@ use Data::Dumper;
 
 my $daemon = Biopay::Daemon->new(name => 'cardlock-connector');
 my $prices = Biopay::Prices->new;
-my $fuel_price = $prices->fuel_price;
 my $membership_price = $prices->annual_membership_price;
 my $signup_price     = $prices->signup_price;
-my $cardlock = Biopay::Cardlock->new( fetch_price_cb => sub { $fuel_price } );
+my $cardlock = Biopay::Cardlock->new;
 my $processor = Biopay::PaymentProcessor->new;
+
+$daemon->setup_couch_stream(
+    on_change => sub {
+        my $change = shift;
+        try {
+            given ($change->{id}) {
+                when ('prices') { $prices->async_update }
+                default { print " (Skipping $change->{id}) " }
+            }
+        }
+        catch {
+            debug "Error processing a change from the couch: $_";
+        }
+    },
+);
 
 my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,
@@ -41,17 +55,6 @@ my $cardlock_timer = AnyEvent->timer(
 my $job_timer = AnyEvent->timer(
     after => 1.0, interval => 30,
     cb    => \&check_for_jobs,
-);
-my $price_timer = AnyEvent->timer(
-    after => 0.001, interval => 600,
-    cb    => sub {
-        Biopay::Prices->new->fuel_price(
-            sub {
-                $fuel_price = shift;
-                print " (F${fuel_price}) ";
-            },
-        );
-    },
 );
 my $txn_timer = AnyEvent->timer(
     after => 2.0, interval => 600,
@@ -81,12 +84,19 @@ exit;
 
 my %txn_start;
 sub check_cardlock {
-    return unless $cardlock->exists;
     print 'C';
+    return unless $cardlock->exists;
     my $records = $cardlock->recent_transactions;
     for my $txn_hash (@$records) {
         my $id = $txn_hash->{_id};
         autovivify_member($txn_hash->{member_id});
+
+        # Add pricing info to the txn object
+        my $p = $prices->fuel_price;
+        $txn_hash->{price_per_litre} = $p;
+        $txn_hash->{price} = sprintf '%01.2f',
+                                round($txn_hash->{litres} * $p * 100) / 100;
+        $txn_hash->{paid} = $txn_hash->{price} eq '0.00' ? 1 : 0;
 
         # It may exist already, so we should expect this to fail
         $daemon->couch->save_doc($txn_hash)->cb(

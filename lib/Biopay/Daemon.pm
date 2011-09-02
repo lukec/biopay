@@ -35,7 +35,6 @@ method BUILD {
 
 method run {
     try {
-        print $self->name, " starting up.\n";
         $self->main_loop->recv;
     }
     catch {
@@ -53,13 +52,13 @@ method run {
 
 method setup_couch_stream {
     my %p; %p = (
-        on_change => sub { ... },
+        on_change => sub {},
         on_error  => sub {
-            warn "There was some error - \$\@=$@ \$!=$! \@_=@_";
+            my $error = shift;
+            unless ($error eq 'timeout') {
+                warn "There was some error - \$\@=$@ \$!=$! \@_=@_";
+            }
             $self->setup_couch_stream(%p);
-        },
-        on_eof    => sub {
-            warn "Received EOF from the Couch";
         },
         @_,
     );
@@ -76,7 +75,7 @@ method setup_couch_stream {
     (my $couch_uri = couch_uri) =~ s/(.+)\/([^\/]+)$/$1/;
     my $couch_name = $2 || die "Couldn't load Couch name from '$couch_uri'";
 
-    debug $self->name. " connecting to $couch_uri - $couch_name (@{ [$self->_last_seq ]})\n";
+    print 'S';
     my $couch_listener = AnyEvent::CouchDB::Stream->new(
         url => $couch_uri,
         database => $couch_name,
