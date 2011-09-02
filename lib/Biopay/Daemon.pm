@@ -25,11 +25,12 @@ Dancer::Config::load();
 
 has 'name'      => (is => 'ro', isa => 'Str', required => 1);
 has 'main_loop' => (is => 'ro', default => sub { AnyEvent->condvar });
-has 'sig_handlers' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
+has 'CVs' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'job_handlers' => (is => 'rw', isa => 'HashRef',  default => sub { {} });
+has 'update_handlers' => (is => 'ro', isa => 'HashRef', default => sub { {} });
 has 'prices' =>
     (is => 'ro', isa => 'Object', default => sub { Biopay::Prices->new });
-has 'need_prices' => (is => 'ro', isa => 'Bool', default => sub { 0 });
+has 'want_stream' => (is => 'ro', isa => 'Bool', default => sub { 0 });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'processor'  => (is => 'ro', isa => 'Object', lazy_build => 1);
@@ -39,10 +40,8 @@ has '_last_seq' => (is => 'rw', isa => 'Num', default => 0);
 
 method BUILD {
     my $exitsub = sub { $self->main_loop->send };
-    push $self->sig_handlers,
-        AnyEvent->signal(signal => 'INT', cb => $exitsub);
-    push $self->sig_handlers,
-        AnyEvent->signal(signal => 'TERM', cb => $exitsub);
+    push $self->CVs, AnyEvent->signal(signal => 'INT', cb => $exitsub);
+    push $self->CVs, AnyEvent->signal(signal => 'TERM', cb => $exitsub);
 
     $self->setup_couch_stream(
         on_change => sub {
@@ -50,11 +49,16 @@ method BUILD {
             given ($change->{id}) {
                 when ('prices') { $self->prices->async_update }
                 default {
-                    # print " (Skipping $change->{id}) ";
+                    my $handlers = $self->update_handlers;
+                    for my $key (keys %$handlers) {
+                        next unless $change->{id} =~ $key;
+                        print " ($change->{id}) ";
+                        $handlers->{$key}->($change);
+                    }
                 }
             }
         },
-    ) if $self->need_prices;
+    ) if $self->want_stream;
 }
 
 method run {

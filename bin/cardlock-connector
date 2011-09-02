@@ -6,15 +6,9 @@ use lib "$FindBin::Bin/../lib";
 use Dancer::Plugin::Email;
 use Biopay::Cardlock;
 use Biopay::Member;
-use Biopay::PotentialMember;
-use Biopay::Transaction;
-use Biopay::Command;
-use Biopay::EmailReceipt;
-use Biopay::Receipt;
 use Biopay::Util qw/email_admin email_board random_pin host/;
 use Biopay::Daemon;
 use AnyEvent;
-use List::Util qw/sum/;
 use Math::Round qw/round/;
 use Try::Tiny;
 use Data::Dumper;
@@ -27,7 +21,7 @@ use Data::Dumper;
 my $cardlock = Biopay::Cardlock->new;
 my $daemon = Biopay::Daemon->new(
     name => 'cardlock-connector',
-    need_prices => 1,
+    want_stream => 1,
     job_handlers => {
         freeze => sub { 
             my ($job, $member) = @_;
@@ -48,10 +42,6 @@ my $daemon = Biopay::Daemon->new(
 my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,
     cb    => \&check_cardlock,
-);
-my $txn_timer = AnyEvent->timer(
-    after => 2.0, interval => 600,
-    cb => \&check_for_unpaid_txns,
 );
 my $stdin; $stdin = AnyEvent->io(
     fh => *STDIN,
@@ -163,182 +153,6 @@ EOT
     );
 }
 
-sub check_for_unpaid_txns {
-    print 'U';
-    Biopay::Transaction->All_unpaid(
-        sub {
-            my $txns = shift;
-            my %member;
-            for my $txn (@$txns) {
-                push @{ $member{$txn->member_id} }, $txn;
-            }
-
-            for my $mid (keys %member) {
-                my $txns = $member{$mid};
-                Biopay::Member->By_id($mid, sub {
-                        my $member = shift;
-                        unless ($member) {
-                            print " (No member $mid found) ";
-                            autovivify_member($mid);
-                            return;
-                        }
-                        if (my $hash = $member->payment_hash) {
-                            process_transactions($member, $txns)
-                                unless $member->billing_error;
-                        }
-                        else {
-                            print 'u';
-                        }
-                    },
-                );
-            }
-        }
-    );
-}
-
-sub process_transactions {
-    my $member = shift;
-    my $txns   = shift;
-    return unless @$txns;
-    my $total = sum map { $_->price } @$txns;
-    print ' (Bio-' . $member->id . ":\$$total) ";
-    my $items = [
-        map { { amount => $_->price, type => 'txn', desc => $_->txn_id } }
-            @$txns
-    ];
-
-    my $order_num = @$txns > 1 
-        ? sprintf("%d-txns-%d", @$txns+0, time)
-        : "txn-" . $txns->[0]->txn_id;
-
-    my $need_to_renew_membership = $member->membership_is_expired;
-    my $membership_price = $daemon->prices->annual_membership_price;
-    if ($need_to_renew_membership) {
-        $total += $membership_price;
-        push @$items, {
-            amount => $membership_price,
-            type   => 'dues',
-            desc   => 'Membership Dues',
-        };
-    }
-
-    my $error = "Order '$order_num' not yet processed.";
-    try {
-        try {
-            $daemon->processor->process(
-                order_num => $order_num,
-                amount => $total,
-                hash => $member->payment_hash,
-            );
-            Biopay::Receipt->Create(
-                member_id => $member->id,
-                order_num => $order_num,
-                amount    => $total,
-                items     => $items,
-            );
-
-
-            # Update the member, if necessary
-            if ($need_to_renew_membership) {
-                $member->renew_membership(
-                    success_cb => sub {
-                        print ' (Renewed membership for: ' . $member->id . ') ';
-                        unfreeze_member($member) if $member->frozen;
-                    },
-                    error_cb => sub {
-                        my $save_err = shift;
-                        email_admin("Failed to renew membership",
-                            "I tried to renew member " . $member->id
-                            . "'s dues, but the save failed: $save_err");
-                        unfreeze_member($member) if $member->frozen;
-                    },
-                );
-            }
-            else {
-                unfreeze_member($member) if $member->frozen;
-            }
-        }
-        catch {
-            my $err = $_;
-            # There was an error processing payment for this member. Set their
-            # billing_error flag, so that we don't retry until it is cleared
-            $member->billing_error($err);
-            $member->frozen(1);
-            cardlock_freeze($member, 0); # Freeze on the cardlock directly
-            $member->save(
-                success_cb => sub {
-                    print ' (Freeze:' . $member->id . ') ';
-                },
-                error_cb => sub {
-                    my $save_err = shift;
-                    email_admin("Failed to set billing_error for member",
-                        "I tried to mark member " . $member->id . " with a "
-                        . "billing error for order '$order_num' but failed."
-                        . "\nSave error was: $save_err"
-                        . "\nPayment error was: $err");
-                },
-            );
-            $member->send_billing_error_email($err, $total);
-
-            # Re-raise error so that it is reported properly.
-            die $err;
-        };
-
-        $error = "Order '$order_num' processed but txns not marked as paid.";
-        for my $txn (@$txns) {
-            print " (Marking " . $txn->id . " as paid) ";
-            $txn->paid(1);
-            $txn->save(
-                error_cb => sub {
-                    my $err = shift;
-                    email_admin("Failed to mark txn:" . $txn->id . " as paid!",
-                        "I was trying to mark it as paid after successfully "
-                        . " processing order $order_num for \$$total\n\n$err"
-                    );
-                }
-            );
-        }
-        $error = "Order '$order_num' processed, txns marked as paid, but "
-                . "receipt is not sent.";
-            
-        Biopay::EmailReceipt->new(
-            member_id => $member->id,
-            member => $member,
-            txns => $txns,
-            ($need_to_renew_membership ? (dues => $membership_price) : ())
-        )->send;
-        print " (Receipt to: " . $member->email . ") " if $member->email;
-    }
-    catch {
-        my $err = $_;
-        error $err;
-
-        email_admin("Error processing payment $order_num",
-            "Had a problem during payment processing: $error\n\n$err\n\n"
-            . "This payment was for member ID " . $member->id
-            . " (" . host() . '/members/' . $member->id . ') '
-            . " for transactions: " . join(', ', map { host() . '/txns/' . $_->id } @$txns)
-        );
-    }
-}
-
-sub unfreeze_member {
-    my $member = shift;
-    $member->frozen(0);
-    cardlock_unfreeze($member, 0); # Un-freeze on the cardlock
-    $member->save(
-        success_cb => sub {
-            print ' (Un-freeze:' . $member->id . ') ';
-        },
-        error_cb => sub {
-            my $err = shift;
-            email_admin("Failed to un-freeze member",
-                "I tried to un-freeze member " . $member->id
-                . " after a successful payment, but saving failed."
-                . "\nError was: $err");
-        },
-    );
-}
 
 sub cardlock_freeze {
     my $member = shift;
