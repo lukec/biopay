@@ -18,6 +18,7 @@ label#trnExpMonth, label#trnExpYear {
     margin-right: 5px;
 }
 
-#trnExpMonth, #trnExpYear {
+select#trnExpMonth, select#trnExpYear {
     display: block;
+    width: 160px;
 }
