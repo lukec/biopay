@@ -12,11 +12,10 @@ has 'payment_args' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
 method process {
     my %p = @_;
 
-    print " (Payment: $p{order_num} for \$$p{amount}) ";
-    if (config->{merchant_test}) {
-        debug "Merchant test in effect, no transaction sent to Beanstream!";
-        return;
-    }
+    my $msg = "Payment: $p{order_num} for \$$p{amount}";
+    $msg .= " TEST" if config->{merchant_test};
+    print " ($msg) ";
+    return if config->{merchant_test};
 
     my $resp = $self->ua->post(
         'https://www.beanstream.com/scripts/process_transaction.asp',

@@ -21,7 +21,6 @@ sub email_admin {
 sub email_board {
     my ($subj, $body) = @_;
     my $to = config->{board_email} || die "No board_email configured!";
-    debug "Emailing board at $to: $subj";
     queue_email({
         to => config->{board_email},
         subject => "Biopay: $subj",
@@ -33,6 +32,7 @@ sub queue_email {
     my $msg = shift;
 
     if (request() and request()->path_info) {
+        debug "Just queued $msg->{subject} email to $msg->{to}";
         Biopay::Command->Create(
             command => 'send-email',
             msg => $msg,

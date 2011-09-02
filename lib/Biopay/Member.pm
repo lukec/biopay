@@ -303,7 +303,6 @@ method _send_email {
             type => 'html',
             message => $html,
         });
-        debug "Just queued $p{template} email to " . $self->email;
     }
     catch {
         debug "Failed to send $p{template} email to " . $self->email . ": $_";
