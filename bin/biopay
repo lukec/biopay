@@ -3,7 +3,7 @@ use 5.14.1;
 use warnings;
 
 my $arg = shift;
-unless ($arg =~ m/^(start|stop)$/) {
+unless ($arg =~ m/^(start|stop|restart)$/) {
     die "USAGE: $0 <start|stop|restart>";
 }
 
