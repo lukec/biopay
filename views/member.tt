@@ -4,6 +4,7 @@
   [% SET message = "Sorry, that member cannot be found." %]
 [% END %]
 [% INCLUDE message.tt %]
+[% SET muri = "/members/" _ member.member_id %]
 
 [% IF member %]
   [% IF member.frozen %]
@@ -66,7 +67,6 @@
       <hr />
       <p>
         [% IF is_admin %]
-            [% SET muri = "/members/" _ member.member_id %]
             <a class="btn" href="[% muri %]/edit">Edit this member!</a> &middot;
             [% If member.frozen %]
               <a class="btn" href="[% muri %]/freeze">Un-Freeze</a> &middot;
@@ -133,6 +133,10 @@
         <td>[% member.start_pretty_date %]</td>
       </tr>
     </table>
+    </p>
+
+    <p>
+      <a class="btn" href="[% muri %]/send-email">Email this member</a>
     </p>
   [% END %]
 [% END %]

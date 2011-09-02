@@ -66,7 +66,12 @@ method setup_couch_stream {
     my $on_change = sub {
         my $change = shift;
         $self->_last_seq($change->{seq});
-        $orig_on_change->($change);
+        try {
+            $orig_on_change->($change);
+        }
+        catch {
+            debug "Error processing a change from the couch: $_";
+        }
     };
 
     $self->_last_seq($self->couch->info->recv->{update_seq})

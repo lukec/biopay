@@ -36,14 +36,9 @@ my $processor = Biopay::PaymentProcessor->new;
 $daemon->setup_couch_stream(
     on_change => sub {
         my $change = shift;
-        try {
-            given ($change->{id}) {
-                when ('prices') { $prices->async_update }
-                default { print " (Skipping $change->{id}) " }
-            }
-        }
-        catch {
-            debug "Error processing a change from the couch: $_";
+        given ($change->{id}) {
+            when ('prices') { $prices->async_update }
+            default { print " (Skipping $change->{id}) " }
         }
     },
 );
