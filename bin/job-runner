@@ -6,9 +6,13 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Biopay::Daemon;
 use Biopay::Member;
+use Biopay::Receipt;
+use Biopay::Util qw/email_admin email_board host/;
+use Try::Tiny;
 
 my $daemon = Biopay::Daemon->new(
     name => 'job-runner',
+    need_prices => 1,
     job_handlers => {
         'send-email' => sub {
             my $args = shift->args->{msg};
@@ -30,16 +34,12 @@ my $daemon = Biopay::Daemon->new(
             system($^X, "$FindBin::Bin/send-receipt", $job->_id)
                 and die "Could not send receipt for job " . $job->_id;
         },
+        'register-member' => sub {
+            my ($job, $member) = @_;
+            register_member($member, $job->args->{PIN});
+        },
     },
 );
-
-$daemon->setup_couch_stream(
-    on_change => sub {
-        my $change = shift;
-        print " (Changed: $change->{id}) ";
-    },
-);
-
 
 $daemon->run;
 exit;
@@ -71,5 +71,56 @@ sub email_all_members {
             print ") ";
         }
     );
+}
+
+sub register_member {
+    my $member = shift;
+    my $PIN    = shift;
+    my $email = $member->email;
+
+    my $signup_price = $daemon->prices->signup_price;
+    try {
+        print " (Register: $email) ";
+        # Process sign-up fee
+        my $order_num = 'signup:' . $member->id;
+        $daemon->processor->process(
+            order_num => $order_num,
+            amount => $signup_price,
+            hash => $member->payment_hash,
+        );
+        Biopay::Receipt->Create(
+            member_id => $member->id,
+            order_num => $order_num,
+            amount    => $signup_price,
+            items     => [
+                {
+                    amount => $signup_price, type => 'signup',
+                    desc => 'Signup'
+                }
+            ]
+        );
+        
+        # Activate Cardlock
+        Biopay::Command->Create(
+            command => 'change_PIN',
+            member_id => $member->id,
+            new_PIN => $PIN,
+            on_error => sub {
+                email_admin("Failed to create change_PIN job",
+                    "Member_id: @{[$member->id]} PIN:$PIN\n\nError: $_");
+            }
+        );
+        $member->send_welcome_email($PIN);
+
+        email_board("New member - " . $member->id,
+            "Hello Board, we just had a new member join the co-op: "
+            . $member->name . ".\n\n"
+            . "Details: " . host() . "/members/" . $member->id . "\n");
+    };
+    catch {
+        my $err = "Failed to register new member: $_";
+        debug $err;
+        email_admin("Error registering new member $email", "Error: $err");
+    };
 }
 

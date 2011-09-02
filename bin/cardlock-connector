@@ -9,7 +9,6 @@ use Biopay::Member;
 use Biopay::PotentialMember;
 use Biopay::Transaction;
 use Biopay::Command;
-use Biopay::Prices;
 use Biopay::EmailReceipt;
 use Biopay::Receipt;
 use Biopay::Util qw/email_admin email_board random_pin host/;
@@ -23,13 +22,12 @@ use Data::Dumper;
 # Desired behaviour for the cardlock connector
 # * Check the pump every 10s
 # * Check the couch for cardlock jobs continuously + every hour
-# * Check for updated prices continuously
 # * Check for unpaid transactions every 10 minutes
 
-my $prices = Biopay::Prices->new;
 my $cardlock = Biopay::Cardlock->new;
 my $daemon = Biopay::Daemon->new(
     name => 'cardlock-connector',
+    need_prices => 1,
     job_handlers => {
         freeze => sub { 
             my ($job, $member) = @_;
@@ -41,22 +39,9 @@ my $daemon = Biopay::Daemon->new(
         },
         change_PIN => sub {
             my ($job, $member) = @_;
-            $cardlock->set_PIN($member->id, $job->args->{new_PIN});
+            my $mid = $job->args->{member_id} || $member->id;
+            $cardlock->set_PIN($mid, $job->args->{new_PIN});
         },
-        'register-member' => sub {
-            my ($job, $member) = @_;
-            register_member($member, $job->args->{PIN});
-        },
-    },
-);
-
-$daemon->setup_couch_stream(
-    on_change => sub {
-        my $change = shift;
-        given ($change->{id}) {
-            when ('prices') { $prices->async_update }
-            default { print " (Skipping $change->{id}) " }
-        }
     },
 );
 
@@ -99,7 +84,7 @@ sub check_cardlock {
         autovivify_member($txn_hash->{member_id});
 
         # Add pricing info to the txn object
-        my $p = $prices->fuel_price;
+        my $p = $daemon->prices->fuel_price;
         $txn_hash->{price_per_litre} = $p;
         $txn_hash->{price} = sprintf '%01.2f',
                                 round($txn_hash->{litres} * $p * 100) / 100;
@@ -227,10 +212,11 @@ sub process_transactions {
         : "txn-" . $txns->[0]->txn_id;
 
     my $need_to_renew_membership = $member->membership_is_expired;
+    my $membership_price = $daemon->prices->annual_membership_price;
     if ($need_to_renew_membership) {
-        $total += $prices->annual_membership_price;
+        $total += $membership_price;
         push @$items, {
-            amount => $prices->annual_membership_price,
+            amount => $membership_price,
             type   => 'dues',
             desc   => 'Membership Dues',
         };
@@ -319,8 +305,7 @@ sub process_transactions {
             member_id => $member->id,
             member => $member,
             txns => $txns,
-            ($need_to_renew_membership 
-                ? (dues => $prices->annual_membership_price) : ())
+            ($need_to_renew_membership ? (dues => $membership_price) : ())
         )->send;
         print " (Receipt to: " . $member->email . ") " if $member->email;
     }
@@ -353,48 +338,6 @@ sub unfreeze_member {
                 . "\nError was: $err");
         },
     );
-}
-
-sub register_member {
-    my $member = shift;
-    my $PIN    = shift;
-    my $email = $member->email;
-
-    try {
-        print " (Register: $email) ";
-        # Process sign-up fee
-        my $order_num = 'signup:' . $member->id;
-        $daemon->processor->process(
-            order_num => $order_num,
-            amount => $prices->signup_price,
-            hash => $member->payment_hash,
-        );
-        Biopay::Receipt->Create(
-            member_id => $member->id,
-            order_num => $order_num,
-            amount    => $prices->signup_price,
-            items     => [
-                {
-                    amount => $prices->signup_price, type => 'signup',
-                    desc => 'Signup'
-                }
-            ]
-        );
-        
-        # Activate Cardlock
-        $cardlock->set_PIN($member->id, $PIN);
-        $member->send_welcome_email($PIN);
-
-        email_board("New member - " . $member->id,
-            "Hello Board, we just had a new member join the co-op: "
-            . $member->name . ".\n\n"
-            . "Details: " . host() . "/members/" . $member->id . "\n");
-    };
-    catch {
-        my $err = "Failed to register new member: $_";
-        debug $err;
-        email_admin("Error registering new member $email", "Error: $err");
-    };
 }
 
 sub cardlock_freeze {

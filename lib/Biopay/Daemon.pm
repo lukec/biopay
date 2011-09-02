@@ -11,6 +11,7 @@ use AnyEvent::CouchDB::Stream;
 use Biopay::PaymentProcessor;
 use Biopay::Util qw/email_admin/;
 use Biopay::Command;
+use Biopay::Prices;
 use Moose;
 use Data::Dumper;
 use methods;
@@ -26,6 +27,9 @@ has 'name'      => (is => 'ro', isa => 'Str', required => 1);
 has 'main_loop' => (is => 'ro', default => sub { AnyEvent->condvar });
 has 'sig_handlers' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'job_handlers' => (is => 'rw', isa => 'HashRef',  default => sub { {} });
+has 'prices' =>
+    (is => 'ro', isa => 'Object', default => sub { Biopay::Prices->new });
+has 'need_prices' => (is => 'ro', isa => 'Bool', default => sub { 0 });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'processor'  => (is => 'ro', isa => 'Object', lazy_build => 1);
@@ -39,6 +43,18 @@ method BUILD {
         AnyEvent->signal(signal => 'INT', cb => $exitsub);
     push $self->sig_handlers,
         AnyEvent->signal(signal => 'TERM', cb => $exitsub);
+
+    $self->setup_couch_stream(
+        on_change => sub {
+            my $change = shift;
+            given ($change->{id}) {
+                when ('prices') { $self->prices->async_update }
+                default {
+                    # print " (Skipping $change->{id}) ";
+                }
+            }
+        },
+    ) if $self->need_prices;
 }
 
 method run {
@@ -143,7 +159,7 @@ method job_handler {
     my $cb = $self->job_handlers->{$type} || return;
     return sub {
         my $job = shift;
-        print " (Running: $job->{_id}) ";
+        print " (Running: $job->{command}) ";
         $cb->($job, @_);
         $self->remove_job($job);
     };

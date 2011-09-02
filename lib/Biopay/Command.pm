@@ -18,14 +18,19 @@ method view_base { 'jobs' }
 sub Create {
     my $class = shift;
     my %args  = @_;
+    my $err_cb = delete $args{on_error};
 
-    couchdb->save_doc( {
+    my $cmd = delete $args{command};
+    my $cv = couchdb->save_doc( {
             _id => "command:" . time(),
             Type => 'command',
-            command => delete $args{command},
+            command => $cmd,
             args => \%args,
-        },
-    )->recv;
+    },
+    ($err_cb ? {
+            error => $err_cb,
+        } : () ));
+    $err_cb ? $cv : $cv->recv;
 }
 
 sub Run_jobs {
@@ -47,8 +52,9 @@ sub Run_jobs {
 method run {
     my $job_cb = shift;
     my $runner = sub {
+        my $member = shift;
         try {
-            $job_cb->($self, @_);
+            $job_cb->($self, $member);
         }
         catch {
             email_admin("Error running job $self->{command}",
