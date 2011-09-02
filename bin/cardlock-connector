@@ -16,6 +16,7 @@ use Biopay::Util qw/email_admin email_board random_pin host/;
 use Biopay::Daemon;
 use AnyEvent;
 use List::Util qw/sum/;
+use Math::Round qw/round/;
 use Try::Tiny;
 use Data::Dumper;
 
