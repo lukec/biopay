@@ -5,7 +5,7 @@ use FindBin;
 use Cwd qw/realpath/;
 use lib "$FindBin::Bin/../lib";
 use Biopay::Command;
-use Biopay::Receipt;
+use Biopay::EmailReceipt;
 
 BEGIN {
     Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
@@ -19,4 +19,4 @@ my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id"
 die "Command is of the wrong type: " . $job->{command}
     unless $job->{command} eq 'send-receipt';
 
-Biopay::Receipt->new($job->args)->send;
+Biopay::EmailReceipt->new($job->args)->send;
