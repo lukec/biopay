@@ -32,18 +32,18 @@ sub email_board {
 sub queue_email {
     my $msg = shift;
 
-    if (config->{biopay_backend}) {
+    if (request() and request()->path_info) {
+        Biopay::Command->Create(
+            command => 'send-email',
+            msg => $msg,
+        );
+    }
+    else {
         print " (Sending '$msg->{subject}' email to $msg->{to}) ";
         email {
             from => config->{email_from},
             %$msg,
         };
-    }
-    else {
-        Biopay::Command->Create(
-            command => 'send-email',
-            msg => $msg,
-        );
     }
 }
 
