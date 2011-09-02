@@ -5,6 +5,7 @@ use Dancer::Plugin::Email;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Biopay::Daemon;
+use Biopay::Member;
 
 my $daemon = Biopay::Daemon->new(
     name => 'job-runner',
@@ -16,6 +17,18 @@ my $daemon = Biopay::Daemon->new(
                 from => config->{email_from},
                 %$args,
             };
+        },
+        'email-all-members' => sub {
+            my ($job, $member) = @_;
+            email_all_members($job->args);
+        },
+        'send-receipt' => sub {
+            my ($job, $member) = @_;
+            print " (Receipt to @{[$member->id]} - @{[$member->name]}) ";
+            # Shell out so we can avoid AE-style programming of the
+            # receipt code
+            system($^X, "$FindBin::Bin/send-receipt", $job->_id)
+                and die "Could not send receipt for job " . $job->_id;
         },
     },
 );
@@ -30,4 +43,33 @@ $daemon->setup_couch_stream(
 
 $daemon->run;
 exit;
+
+sub email_all_members {
+    my $args = shift;
+    my $subj = $args->{subj} || die "send_email: subj is not defined!";
+    my $body = $args->{body} || die "send_email: body is not defined!";
+
+    Biopay::Member->All(
+        sub {
+            my $members = shift;
+            my %emails = map { $_ => 1 } 
+                            grep { defined }
+                                map { $_->email }
+                                    grep { $_->active }
+                                        @$members;
+            print " (Sending '$subj' to: ";
+            for my $email (keys %emails) {
+                email {
+                    to => $email,
+                    from => config->{email_from},
+                    subject => $subj . " - $email",
+                    type => 'html',
+                    message => $body,
+                };
+                print "$email ";
+            }
+            print ") ";
+        }
+    );
+}
 
