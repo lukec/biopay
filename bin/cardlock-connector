@@ -25,10 +25,10 @@ use Data::Dumper;
 # * Check for updated prices every 10 minutes
 # * Check for unpaid transactions every 10 minutes
 
-my $daemon = Biopay::Daemon->new(name => 'cardlock-connector');
+my $daemon = Biopay::Daemon->new(
+    name => 'cardlock-connector',
+);
 my $prices = Biopay::Prices->new;
-my $membership_price = $prices->annual_membership_price;
-my $signup_price     = $prices->signup_price;
 my $cardlock = Biopay::Cardlock->new;
 
 $daemon->setup_couch_stream(
@@ -214,9 +214,9 @@ sub process_transactions {
 
     my $need_to_renew_membership = $member->membership_is_expired;
     if ($need_to_renew_membership) {
-        $total += $membership_price;
+        $total += $prices->annual_membership_price;
         push @$items, {
-            amount => $membership_price,
+            amount => $prices->annual_membership_price,
             type   => 'dues',
             desc   => 'Membership Dues',
         };
@@ -306,7 +306,7 @@ sub process_transactions {
             member => $member,
             txns => $txns,
             ($need_to_renew_membership 
-                ? (dues => $membership_price) : ())
+                ? (dues => $prices->annual_membership_price) : ())
         )->send;
         print " (Receipt to: " . $member->email . ") " if $member->email;
     }
@@ -459,15 +459,18 @@ sub register_member {
         my $order_num = 'signup:' . $member->id;
         $daemon->processor->process(
             order_num => $order_num,
-            amount => $signup_price,
+            amount => $prices->signup_price,
             hash => $member->payment_hash,
         );
         Biopay::Receipt->Create(
             member_id => $member->id,
             order_num => $order_num,
-            amount    => $signup_price,
+            amount    => $prices->signup_price,
             items     => [
-                { amount => $signup_price, type => 'signup', desc => 'Signup' }
+                {
+                    amount => $prices->signup_price, type => 'signup',
+                    desc => 'Signup'
+                }
             ]
         );
         
