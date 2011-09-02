@@ -313,15 +313,14 @@ method _send_email {
 }
 
 method membership_is_expired {
-    # Assume dues are not expired if we do not have any date
-    return 0 unless $self->dues_paid_until;
-
     return $self->dues_paid_until_datetime < now_dt();
 }
 
 method renew_membership {
     my $new_expiry = now_dt() + DateTime::Duration->new(years => 1);
     $self->dues_paid_until($new_expiry->epoch);
+    delete $self->{dues_paid_until_datetime};
+    delete $self->{dues_paid_until_pretty_date};
     $self->save(@_);
 }
 
@@ -345,7 +344,10 @@ method _build_start_datetime {
 }
 
 method _build_dues_paid_until_datetime {
-    return undef unless $self->dues_paid_until;
+    if (!$self->dues_paid_until) {
+        my $start = $self->start_datetime;
+        return $start + DateTime::Duration->new(years => 1);
+    }
     my $dt = DateTime->from_epoch(epoch => $self->dues_paid_until);
     $dt->set_time_zone('America/Vancouver');
     return $dt;
