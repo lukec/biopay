@@ -131,6 +131,7 @@ get '/stats-widget.js' => sub {
     content_type 'application/javascript';
     template 'stats-widget', {
         stats => Biopay::Stats->new,
+        prices => Biopay::Prices->new,
     }, { layout => undef };
 };
 
