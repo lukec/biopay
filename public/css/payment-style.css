@@ -1,2 +1,3 @@
-.payment tr {
+.payment td {
+    border-bottom: 0px;
 }
