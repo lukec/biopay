@@ -72,6 +72,8 @@ sub new_from_hash {
 
 method save {
     my %p = @_;
+    # TODO Make this use the 'success' and 'error' options to save_doc
+    # Also look for other places.
     my $cv = couchdb->save_doc($self->as_hash);
     if ($p{success_cb} or $p{error_cb}) {
         $cv->cb(
