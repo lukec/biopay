@@ -9,6 +9,13 @@ table td {
     padding: 3px 10px 3px;
 }
 
+.field_lable label {
+
+}
+
+label#txnExpMonth, label#txnExpYear {
+    width: 40px;
+}
 
 #trnExpMonth, #trnExpYear {
     display: block;
