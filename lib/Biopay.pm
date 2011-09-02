@@ -287,7 +287,7 @@ get '/unpaid' => sub {
     }
     template 'unpaid', {
         txns => [ map { $by_member{$_} } sort { $a <=> $b } keys %by_member ],
-        now => scalar(localtime),
+        now => now_dt(),
     };
 };
 
