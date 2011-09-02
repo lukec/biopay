@@ -56,7 +56,7 @@ method setup_couch_stream {
         on_error  => sub {
             my $error = shift;
             unless ($error eq 'timeout' or $error eq 'Broken pipe') {
-                warn "There was some error - \$\@=$@ \$!=$! \@_=@_";
+                warn "Couch stream error: $error";
             }
             $self->setup_couch_stream(%p);
         },
