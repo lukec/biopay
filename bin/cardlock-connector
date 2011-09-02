@@ -59,10 +59,6 @@ my $daemon = Biopay::Daemon->new(
             my ($job, $member) = @_;
             email_all_members($job->args);
         },
-        'send-email' => sub {
-            my ($job, $member) = @_;
-            send_email($job->args->{msg});
-        },
     },
 );
 
