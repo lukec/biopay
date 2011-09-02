@@ -31,7 +31,7 @@ sub Create {
     die "items is mandatory!"     unless $p{items};
     $p{at} ||= time();
 
-    my $key = "receipt:$p{order_num}";
+    my $key = "receipt:$p{order_num}-$p{at}";
     my $new_doc = { _id => $key, Type => 'receipt', %p };
 
     my $cv = couchdb->save_doc($new_doc);
