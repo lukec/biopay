@@ -239,7 +239,7 @@ sub process_transactions {
     ];
 
     my $order_num = @$txns > 1 
-        ? sprintf("%d-txns-%d", length(@$txns), time)
+        ? sprintf("%d-txns-%d", @$txns+0, time)
         : "txn-" . $txns->[0]->txn_id;
 
     my $need_to_renew_membership = $member->membership_is_expired;
