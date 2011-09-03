@@ -2,8 +2,8 @@ package Biopay::EmailReceipt;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
 use Moose;
-use Biopay::Transaction;
 use Biopay::Stats;
+use Biopay::Transaction;
 use methods;
 
 has 'member_id' => (is => 'ro', isa => 'Str',      required => 1);

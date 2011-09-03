@@ -1,6 +1,6 @@
 package Biopay::Stats;
-use Moose;
 use Dancer ':syntax';
+use Moose;
 use Dancer::Plugin::CouchDB;
 use methods;
 
