@@ -2,7 +2,6 @@ package Biopay::EmailReceipt;
 use Dancer ':syntax';
 use Dancer::Plugin::Email;
 use Moose;
-use Biopay::Stats;
 use Biopay::Transaction;
 use methods;
 
@@ -43,7 +42,6 @@ method send {
         total_litres => $total_litres,
         total_taxes  => $total_tax,
         total_HST    => $total_HST,
-        stats        => Biopay::Stats->new,
     }, { layout => 'email' };
     email {
         to => $self->member->email,
