@@ -63,6 +63,7 @@ method BUILD {
 
 method run {
     try {
+        print "\nStarting @{[$self->name]} at " . localtime . "\n";
         my $t;
         if (%{ $self->job_handlers }) {
             $t = AnyEvent->timer(
