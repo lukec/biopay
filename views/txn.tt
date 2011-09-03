@@ -17,12 +17,12 @@
     <td><a href="/members/[% txn.member_id %]">[% txn.member_id %] - [% txn.member.name %]</a></td>
   </tr>
   <tr>
-    <td><strong>Litres</strong></td>
-    <td>[% txn.litres %]</td>
+    <td><strong>Purchased</strong></td>
+    <td>[% txn.litres %] Litres at $[% txn.price_per_litre %]</td>
   </tr>
   <tr>
-    <td><strong>Fuel Price</strong></td>
-    <td>$[% txn.price_per_litre %]</td>
+    <td><strong>Taxes</strong></td>
+    <td>HST: $[% txn.HST %] &middot; Total: $[% txn.total_taxes %] - [% txn.tax_rate %]%</td>
   </tr>
   <tr>
     <td><strong>Price</strong></td>

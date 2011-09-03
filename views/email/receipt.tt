@@ -7,6 +7,7 @@
         <th align="right">Price</th>
         <th align="right">Litres</th>
         <th align="right">HST</th>
+        <th align="right">Total Tax</th>
         <th align="right">Amount</th>
       </tr>
     [% FOREACH txn IN txns %]
@@ -14,7 +15,8 @@
         <td>B100 on [% txn.pretty_date %]</td>
         <td align="right">$[% txn.price_per_litre %]/L</td>
         <td align="right">[% txn.litres %]</td>
-        <td align="right">$[% txn.taxes %]</td>
+        <td align="right">$[% txn.HST %]</td>
+        <td align="right">$[% txn.total_taxes %]</td>
         <td align="right">$[% txn.price %]</td>
       </tr>
     [% END %]
@@ -31,7 +33,8 @@
         <td><strong>Total</strong></td>
         <td></td>
         <td></td>
-        <td align="right"><strong>$[% total_tax %]</strong></td>
+        <td align="right"><strong>$[% total_HST %]</strong></td>
+        <td align="right"><strong>$[% total_taxes %]</strong></td>
         <td align="right"><strong>$[% total_price %]</strong></td>
       </tr>
 </table>
@@ -39,6 +42,8 @@
 
 <p>
 This B100 fuel reduces your CO2 contribution by approximately [% (total_litres * 1.94) div 1 %]kg.
-<span style="font-size:8pt">(<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</span>
+<span style="font-size:8pt">(<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</span><br />
+Together, we have reduced our carbon footprint by [% stats.co2_reduction %]kg! (And that's only since July 2011!)
 </p>
+<p>The 'Total Tax' column includes the HST (12%), the Road Fuels Tax (24¢/L) and the Carbon Tax (6.39¢/L).  VBC is working with other Biodiesel co-ops in BC to reduce these taxes.</p>
 <br />

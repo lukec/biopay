@@ -21,7 +21,9 @@ has 'paid_date'       => (isa => 'Num',  is => 'rw');
 
 with 'Biopay::Roles::HasMember';
 
-has 'taxes'       => (is => 'ro', isa => 'Num',    lazy_build => 1);
+has 'HST'         => (is => 'ro', isa => 'Num',    lazy_build => 1);
+has 'total_taxes' => (is => 'ro', isa => 'Num',    lazy_build => 1);
+has 'tax_rate'    => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'pretty_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
 has 'pretty_paid_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
@@ -69,5 +71,16 @@ method _build_datetime {
     return $dt;
 }
 
-method _build_taxes { sprintf '%0.02f', $self->price * 0.12 }
+method _build_HST {
+    sprintf '%0.02f', $self->price * 0.12;
+}
 
+method _build_total_taxes {
+    sprintf '%0.02f', $self->HST
+        + $self->litres * 0.24   # Road Fuels Tax
+        + $self->litres * 0.0639 # Carbon Tax
+}
+
+method _build_tax_rate {
+    sprintf '%0.01f', $self->total_taxes / $self->price * 100;
+}
