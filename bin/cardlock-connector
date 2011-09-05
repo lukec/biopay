@@ -87,7 +87,16 @@ sub check_cardlock {
                 try { $cv->recv }
                 catch {
                     return double_check_transaction($txn_hash) if $_ =~ m/^409/;
-                    email_admin( "Failed to save txn $id", $_ );
+                    # Try saving again
+                    $daemon->couch->save_doc($txn_hash, {
+                            error => sub {
+                                my ($headers, $resp) = @_;
+                                email_admin("Failed to save txn $id",
+                                    "I tried to save txn $id for $txn->{price} twice but failed.\n\n"
+                                    . "$headers->{Status} - $headers->{Reason} - $headers->{URL}\n\n"
+                                    . $response);
+                            }
+                        );
                 }
             }
         );
