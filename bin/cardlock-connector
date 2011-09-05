@@ -92,11 +92,12 @@ sub check_cardlock {
                             error => sub {
                                 my ($headers, $resp) = @_;
                                 email_admin("Failed to save txn $id",
-                                    "I tried to save txn $id for $txn->{price} twice but failed.\n\n"
+                                    "I tried to save txn $id for $txn_hash->{price} twice but failed.\n\n"
                                     . "$headers->{Status} - $headers->{Reason} - $headers->{URL}\n\n"
-                                    . $response);
+                                    . $resp);
                             }
-                        );
+                        }
+                    );
                 }
             }
         );
