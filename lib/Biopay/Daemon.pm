@@ -178,8 +178,9 @@ method remove_job {
             print " (Removed $job->{_id}) ";
         },
         error => sub {
+            my $err = shift;
             email_admin("Error removing a $job->{command} job",
-                "Failed to remove $job->{_id}\n\n$_");
+                "Failed to remove $job->{_id}\n\n$err");
             $cv = undef;
         },
     });
