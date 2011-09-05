@@ -74,7 +74,7 @@ sub email_all_members {
                 email {
                     to => $email,
                     from => config->{email_from},
-                    subject => $subj . " - $email",
+                    subject => $subj,
                     type => 'html',
                     message => $body,
                 };
