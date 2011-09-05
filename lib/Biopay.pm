@@ -432,6 +432,15 @@ get '/members/:member_id/unpaid' => sub {
     };
 };
 
+get '/members/:member_id/clear-billing-error' => sub {
+    my $m = member();
+    $m->billing_error('');
+    $m->save;
+    session message => "This billing error has been cleared. We will attempt"
+        . " to retry the outstanding transactions.";
+    redirect '/members/' . $m->id;
+};
+
 get '/members/:member_id/freeze' => sub {
     my $member = member();
     if (params->{please_freeze} and not $member->frozen) {

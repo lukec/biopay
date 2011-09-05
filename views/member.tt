@@ -49,7 +49,7 @@
       [% IF member.billing_error %]
         <tr>
           <td><strong>Billing Error</strong></td>
-          <td>[% member.billing_error %]</td>
+          <td>[% member.billing_error %] - <a href="[% muri %]/clear-billing-error" class="btn">Clear error & try again</a></td>
         </tr>
       [% END %]
       <tr>
