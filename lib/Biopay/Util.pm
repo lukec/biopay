@@ -10,7 +10,7 @@ our @EXPORT_OK = qw/email_admin email_board random_pin now_dt host
 
 sub email_admin {
     my ($subj, $body) = @_;
-    debug "Cardlock error: $subj";
+    debug "$0 error: $subj";
     queue_email({
         to => config->{sysadmin_email},
         subject => "Cardlock error: $subj",
