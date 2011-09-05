@@ -65,7 +65,7 @@ sub email_all_members {
         sub {
             my $members = shift;
             my %emails = map { $_ => 1 } 
-                            grep { defined }
+                            grep { length } grep { defined }
                                 map { $_->email }
                                     grep { $_->active }
                                         @$members;
