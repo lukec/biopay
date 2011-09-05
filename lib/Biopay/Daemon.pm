@@ -29,7 +29,7 @@ has 'CVs' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'job_handlers' => (is => 'rw', isa => 'HashRef',  default => sub { {} });
 has 'update_handlers' => (is => 'ro', isa => 'HashRef', default => sub { {} });
 has 'prices' => (is => 'ro', isa => 'Object', default => sub {
-        my $p = Biopay::Prices->new; $p->doc; $p });
+        my $p = Biopay::Prices->new; $p->_doc; $p });
 has 'want_stream' => (is => 'ro', isa => 'Bool', default => sub { 0 });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
