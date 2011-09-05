@@ -356,10 +356,7 @@ method _build_dues_paid_until_datetime {
 method _build_login_hash { Data::UUID->new->create_str }
 method _build_set_password_link {
     my $hash = $self->login_hash;
-    unless ($hash) {
-        $hash = $self->{login_hash} = $self->_build_login_hash;
-        $self->save;
-    }
+    $self->save;
     host() . "/set-password/$hash";
 }
 
