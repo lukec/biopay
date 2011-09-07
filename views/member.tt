@@ -46,7 +46,7 @@
         <td><strong>Account Frozen?</strong></td>
         <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
       </tr>
-      [% IF member.billing_error %]
+      [% IF member.billing_error && is_admin %]
         <tr>
           <td><strong>Billing Error</strong></td>
           <td>[% member.billing_error %] - <a href="[% muri %]/clear-billing-error" class="btn">Clear error & try again</a></td>
