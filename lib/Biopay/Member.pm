@@ -82,6 +82,7 @@ sub Create {
             die $_;
         };
     }
+    $p{login_hash} ||= $class->_build_login_hash;
     my $key = "member:$p{member_id}";
     my $new_doc = { _id => $key, Type => 'member', %p };
 
@@ -355,8 +356,11 @@ method _build_dues_paid_until_datetime {
 
 method _build_login_hash { Data::UUID->new->create_str }
 method _build_set_password_link {
-    my $hash = $self->login_hash;
-    $self->save;
+    my $hash = $self->{login_hash};
+    unless ($hash) {
+        $hash = $self->login_hash;
+        $self->save;
+    }
     host() . "/set-password/$hash";
 }
 
