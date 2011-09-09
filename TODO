@@ -1,0 +1,18 @@
+Some TODOs from Luke:
+
+* Make the "Email Member" & "Email All Members" features use a wyswyg
+HTML editor.
+** Right now they expect you to type in raw HTML which is put into the
+email template, but not really doable by a typical biodiesel board
+admin
+* Add a Preview button for previewing the email that goes out to a member.
+* Automated testing for Biopay. I've not written any tests, but things
+are stable enough that it would be absolutely fantastic to have some
+selenium tests (or even mechanized tests)
+* Reporting - Biopay has a lot of data, but we've not touched much of
+the reporting of that data
+** Dataviz of: fuel sold per day/week/month, Fuel sold per user
+* Importing 3 years of historical data - we have loads of data that
+shows us how how much fuel we've sold (& to whom) - this would be
+great to have loaded into our system b/c then we can show how much
+carbon we've offset. (hint: shockingly a lot).
