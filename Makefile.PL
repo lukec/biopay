@@ -35,6 +35,8 @@ WriteMakefile(
         'methods' => 0,
         'Digest::SHA1' => 0,
         'Control::CLI' => 0,
+        'Device::SerialPort' => 0,
+        'Module::Refresh' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => '[bB]iopay-*' },
