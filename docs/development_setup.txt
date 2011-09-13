@@ -1,0 +1,5 @@
+- Set up a couchDB for testing.
+    - You can use https://biopay.iriscouch.com/_utils/database.html?biopay-test or a local replica, or populate your own.
+- The dancer config (in etc/config.yml) needs to be copied to the root biopay directory
+    - some of the ***VARIABLES*** need to be changed - at the very least, fill in your couchdb URI.
+- Jobs such as sending email to members do not kick off automatically (unless you're running the daemons). Kick off ./bin/job-runner to manually run a job.
