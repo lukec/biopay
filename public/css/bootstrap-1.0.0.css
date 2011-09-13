@@ -672,6 +672,7 @@ form label {
 }
 form div.input {
   margin-left: 150px;
+  margin-bottom: 5px;
 }
 form input[type=checkbox], form input[type=radio] {
   cursor: pointer;

@@ -8,7 +8,7 @@
 
     <label for="">Body:</label>
     <div class="input">
-      <textarea class="xlarge" name="email_body" rows="16"></textarea>
+      <textarea class="xlarge tinymce" name="email_body" rows="16"></textarea>
       <span class="help-block">
         You may include HTML in the message body.
       </span>
