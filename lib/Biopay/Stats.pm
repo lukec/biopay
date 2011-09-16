@@ -2,17 +2,27 @@ package Biopay::Stats;
 use Dancer ':syntax';
 use Moose;
 use Dancer::Plugin::CouchDB;
+use JSON qw/encode_json/;
 use methods;
 
 has 'fuel_sold_alltime' => (is => 'ro', isa => 'Num', lazy_build => 1);
 has 'active_members'    => (is => 'ro', isa => 'Num', lazy_build => 1);
 
-method _build_active_members    { view('members/active_count', @_) }
-method _build_fuel_sold_alltime { view('txns/litres_by_member' ) }
+method _build_active_members    { view_single_result('members/active_count', @_) }
+method _build_fuel_sold_alltime { view_single_result('txns/litres_by_member' ) }
 
-method fuel_sales      { view('txns/fuel_sales', @_) }
+method fuel_sales      { view_single_result('txns/fuel_sales', @_) }
 method co2_reduction   { int($self->fuel_sold_alltime * 1.94) }
-method fuel_for_member { view('txns/litres_by_member', @_) }
+method fuel_for_member { view_single_result('txns/litres_by_member', @_) }
+
+method litres_count_per_txn  { 
+    my $results = view('txns/litres_count_per_txn', { group => 'true' });
+
+    # format data so flot can read it
+    my @data = map { [$_->{key}, $_->{value}] } @{$results->{rows}}; 
+    return encode_json(\@data);
+}
+
 method taxes_paid      {
     sprintf '%.02f', 
         $self->fuel_sold_alltime * 0.24     # Motor Fuels Tax
@@ -20,7 +30,10 @@ method taxes_paid      {
         + ($self->fuel_sales - $self->fuel_sales / 1.05)          # HST
 }
 
-
+sub view_single_result {
+    my $result = view(@_);
+    return int $result->{rows}[0]{value};
+}
 
 sub view {
     my ($view, @args) = @_;
@@ -29,8 +42,7 @@ sub view {
         @args = ( { key => "$args[0]" } );
     }
 
-    my $result = couchdb->view($view, @args)->recv;
-    return int $result->{rows}[0]{value};
+    return couchdb->view($view, @args)->recv;
 }
 
 method as_hash {

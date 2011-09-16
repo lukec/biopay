@@ -1,0 +1,26 @@
+<h1>Reports</h1>
+<h2>Transactions by size</h2>
+<div id="litres_histogram" style="width:400px;height:300px"></div>
+
+<script src="/javascripts/libs/jquery.flot.js"></script>
+<script type="text/javascript"> 
+$(function () {
+    $.plot($("#litres_histogram"), [
+        {
+            data: [% stats.litres_count_per_txn %],
+            bars: { show: true, barWidth: 10 },
+        },
+    ], {
+            xaxis: { tickFormatter:   
+                        function suffixFormatter (val, axis) {
+                            return val.toFixed(axis.tickDecimals) + "L";
+                        },
+            },
+            yaxis: { tickFormatter:   
+                        function suffixFormatter (val, axis) {
+                            return val.toFixed(axis.tickDecimals) + " users";
+                        },
+            }
+});
+});
+</script> 

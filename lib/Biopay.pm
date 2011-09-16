@@ -651,6 +651,12 @@ post '/fuel-price' => sub {
     };
 };
 
+get '/reports' => sub {
+    template 'reports', {
+        stats => Biopay::Stats->new,
+    };
+};
+
 sub member {
     my $id = params->{member_id} or return undef;
     return Biopay::Member->By_id($id);
