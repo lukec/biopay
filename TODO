@@ -10,7 +10,8 @@ the reporting of that data
     - fuel sold per day/week/month (histogram)
     - fuel sold per user (this is just a number - how to viz - per time frame?)
     - histogram of 0-5 litrs, 5-10, 10-15, per transaction  /month whatever
-
+        - Done, but add ability for this (and all graphs?) to change time window
+* Add _design from couchdb to git somehow
 * Importing 3 years of historical data - we have loads of data that
 shows us how how much fuel we've sold (& to whom) - this would be
 great to have loaded into our system b/c then we can show how much
