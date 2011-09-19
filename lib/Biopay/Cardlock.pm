@@ -164,7 +164,7 @@ method parse_line {
     # B Power Fail while dispensing is in progress 
     # C Entering manual mode 
     # D Leaving manual Mode
-    return unless $fields[5] == 1;
+    return unless $fields[5] eq '1';
 
     my $dt = to_datetime($fields[3], $fields[4]);
     my $id = $dt->ymd('-') . '-' . to_num($fields[1]);
