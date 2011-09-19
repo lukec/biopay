@@ -10,7 +10,7 @@ the reporting of that data
     - fuel sold per day/week/month (histogram)
     - fuel sold per user (this is just a number - how to viz - per time frame?)
 * Add _design from couchdb to git somehow
-    * fetch everything, have a postinstall post everything to COUCH_URI
+    * have a postinstall post everything to COUCH_URI
 * Importing 3 years of historical data - we have loads of data that
 shows us how how much fuel we've sold (& to whom) - this would be
 great to have loaded into our system b/c then we can show how much
