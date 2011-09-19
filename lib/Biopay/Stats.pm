@@ -3,6 +3,7 @@ use Dancer ':syntax';
 use Moose;
 use Dancer::Plugin::CouchDB;
 use JSON qw/encode_json/;
+use DateTime;
 use methods;
 
 has 'fuel_sold_alltime' => (is => 'ro', isa => 'Num', lazy_build => 1);
@@ -15,11 +16,35 @@ method fuel_sales      { view_single_result('txns/fuel_sales', @_) }
 method co2_reduction   { int($self->fuel_sold_alltime * 1.94) }
 method fuel_for_member { view_single_result('txns/litres_by_member', @_) }
 
-method litres_count_per_txn  { 
-    my $results = view('txns/litres_count_per_txn', { group => 'true' });
+method litres_per_txn  { 
+    my $period = shift; 
+
+    my $opts = {};
+
+    # DateTime::Duration expects plurals
+    my %valid_periods = map { $_ => $_ . "s" } qw(day week month year);
+    
+    if (exists $valid_periods{$period}) {
+        my $dt = DateTime->now();
+# Uncomment to test, since we have no txns from recently 
+# $dt = DateTime->from_epoch(epoch => 1310846160);
+        if ($period eq 'week') {
+            $dt->subtract( days => 7 );
+        } else {
+            $dt->subtract( $valid_periods{$period} => 1); 
+        }
+        $opts->{startkey} = [$dt->epoch()];
+    }
+
+    my $results = view('txns/litres_per_txn', $opts);
 
     # format data so flot can read it
-    my @data = map { [$_->{key}, $_->{value}] } @{$results->{rows}}; 
+
+    my $val_hash = $results->{rows}[0]{value}; 
+    my @data;
+    while (my ($key, $value) = each %$val_hash) {
+        push @data, [$key, $value];
+    }
     return encode_json(\@data);
 }
 

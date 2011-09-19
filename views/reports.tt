@@ -1,26 +1,84 @@
 <h1>Reports</h1>
 <h2>Transactions by size</h2>
-<div id="litres_histogram" style="width:400px;height:300px"></div>
+<div id="litres_histogram" style="width:450px;height:300px"></div>
+<div>
+  <input type="button" class="btn" id="txn_today" value="Today">
+  <input type="button" class="btn" id="txn_week" value="Last Week" />
+  <input type="button" class="btn" id="txn_month" value="Last Month" />
+  <input type="button" class="btn" id="txn_year" value="Last Year" />
+  <input type="button" class="btn" id="txn_alltime" value="All Time" />
+</div>
 
 <script src="/javascripts/libs/jquery.flot.js"></script>
 <script type="text/javascript"> 
 $(function () {
-    $.plot($("#litres_histogram"), [
-        {
-            data: [% stats.litres_count_per_txn %],
-            bars: { show: true, barWidth: 10 },
-        },
-    ], {
+
+    var bars = { show: true, barWidth: 10 };
+    var options = {
             xaxis: { tickFormatter:   
                         function suffixFormatter (val, axis) {
                             return val.toFixed(axis.tickDecimals) + "L";
                         },
+                    tickSize: 10 
             },
             yaxis: { tickFormatter:   
                         function suffixFormatter (val, axis) {
                             return val.toFixed(axis.tickDecimals) + " users";
                         },
+                    tickDecimals: 0
             }
-});
+    };
+
+    $.plot($("#litres_histogram"), [ {
+            data: [% stats.litres_per_txn %],
+            bars: bars
+        }],
+        options
+    );
+    function onDataReceived(series) {
+        $.plot($("#litres_histogram"), [{data:series, bars:bars}], options);
+     }
+
+    $("#txn_today").click(function () {
+        $.ajax({
+            url: "reports/litres_per_txn/day",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+    $("#txn_week").click(function () {
+        $.ajax({
+            url: "reports/litres_per_txn/week",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+    $("#txn_month").click(function () {
+        $.ajax({
+            url: "reports/litres_per_txn/month",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+    $("#txn_year").click(function () {
+        $.ajax({
+            url: "reports/litres_per_txn/year",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+    $("#txn_alltime").click(function () {
+        $.ajax({
+            url: "reports/litres_per_txn/alltime",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+
 });
 </script> 

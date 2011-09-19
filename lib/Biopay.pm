@@ -657,6 +657,10 @@ get '/reports' => sub {
     };
 };
 
+get '/reports/litres_per_txn/:period' => sub {
+    return Biopay::Stats->new()->litres_per_txn(params->{period});
+};
+
 sub member {
     my $id = params->{member_id} or return undef;
     return Biopay::Member->By_id($id);
