@@ -9,7 +9,7 @@
 <ul>
   [% FOREACH i IN txns %]
     <li>
-      <strong>Member #[% i.member.id %] - [% i.member.name %] - owes $[% i.amount %] from [% i.count %] purchases.</strong>
+      <strong>Member #[% i.member.id %] - [% i.member.name %] [% IF i.member.frozen %](FROZEN) [% END %]- owes $[% i.amount %] from [% i.count %] purchases.</strong>
       <ul>
         [% FOREACH txn IN i.txns %]
           <li>Transaction [% txn.id %] - $[% txn.price %] on [% txn.pretty_date %]</li>
