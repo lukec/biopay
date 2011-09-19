@@ -19,6 +19,7 @@ Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
 Dancer::Config::load();
 
 my $membership_price = Biopay::Prices->new->annual_membership_price;
+my $to = shift || config->{board_email};
 
 my $txns = Biopay::Transaction->All_unpaid();
 my %by_member;
@@ -48,7 +49,7 @@ my $html = template "email/weekly-unpaid-summary", {
     total_count  => $total_count,
 }, { layout => 'email' };
 email {
-    to => config->{board_email},
+    to => $to,
     from => config->{email_from},
     subject => "Weekly un-paid biodiesel summary",
     message => $html,
