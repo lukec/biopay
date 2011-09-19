@@ -17,7 +17,7 @@ method taxes_paid      {
     sprintf '%.02f', 
         $self->fuel_sold_alltime * 0.24     # Motor Fuels Tax
         + $self->fuel_sold_alltime * 0.0639 # Carbon Tax
-        + $self->fuel_sales * 0.12          # HST
+        + $self->fuel_sales / 1.05          # HST
 }
 
 
