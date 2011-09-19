@@ -2,6 +2,7 @@
 [% IF txns.size %]
 [% IF !params.printable %]<p><a href="/unpaid?printable=1">Printable version of this page.</a></p>[% END %]
 <p>Biodiesel transactions that are currently unpaid as of [% now %]:</p>
+<p><strong>Grand Total Un-paid: $[% grand_total %]</strong></p>
 
 <form action="/unpaid/mark-as-paid" method="POST">
 <table class="common-table zebra-striped">

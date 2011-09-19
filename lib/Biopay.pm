@@ -283,12 +283,15 @@ get '/logout' => sub {
 get '/unpaid' => sub {
     my $txns = Biopay::Transaction->All_unpaid;
     my %by_member;
+    my $total = 0;
     for my $t (@$txns) {
         push @{ $by_member{ $t->member_id } }, $t;
+        $total += $t->price;
     }
     template 'unpaid', {
         txns => [ map { $by_member{$_} } sort { $a <=> $b } keys %by_member ],
         now => now_dt(),
+        grand_total => sprintf('%0.02f', $total),
     };
 };
 
