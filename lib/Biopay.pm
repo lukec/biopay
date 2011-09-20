@@ -495,6 +495,7 @@ get '/members/:member_id/send-email' => sub {
 
     template 'send-member-email', {
         member => $member,
+        load_tinymce => 1,
     };
 };
 
@@ -964,7 +965,7 @@ get '/new-member/:hash' => sub {
 };
 
 get '/mass-email' => sub {
-    template 'mass-email', { };
+    template 'mass-email', { load_tinymce => 1 };
 };
 
 post '/mass-email' => sub {

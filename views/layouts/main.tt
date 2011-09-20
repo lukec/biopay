@@ -24,6 +24,7 @@
   <body>
     <script src="/javascripts/jquery.js"></script>
     <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
+    [% IF load_tinymce %]
     <script src="/javascripts/libs/tiny_mce/jquery.tinymce.js"></script>
     <script type="text/javascript">
         $(function() {
@@ -46,6 +47,7 @@
             });
         });
     </script>
+    [% END %]
     <div class="container">
       <div class="container-fluid">
         [% IF !params.printable %]
