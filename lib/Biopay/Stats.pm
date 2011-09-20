@@ -4,6 +4,7 @@ use Moose;
 use Dancer::Plugin::CouchDB;
 use JSON qw/encode_json/;
 use DateTime;
+use Biopay::Util qw/now_dt/;
 use methods;
 
 has 'fuel_sold_alltime' => (is => 'ro', isa => 'Num', lazy_build => 1);
@@ -25,7 +26,7 @@ method litres_per_txn  {
     my %valid_periods = map { $_ => $_ . "s" } qw(day week month year);
     
     if (exists $valid_periods{$period}) {
-        my $dt = DateTime->now();
+        my $dt = now_dt();
 # Uncomment to test, since we have no txns from recently 
 # $dt = DateTime->from_epoch(epoch => 1310846160);
         if ($period eq 'week') {

@@ -23,7 +23,7 @@ $(function () {
             },
             yaxis: { tickFormatter:   
                         function suffixFormatter (val, axis) {
-                            return val.toFixed(axis.tickDecimals) + " users";
+                            return val.toFixed(axis.tickDecimals) + " Txns";
                         },
                     tickDecimals: 0
             }
