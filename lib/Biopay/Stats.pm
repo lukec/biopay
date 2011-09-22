@@ -29,6 +29,7 @@ method litres_per_txn  {
         my $dt = now_dt();
 # Uncomment to test, since we have no txns from recently 
 # $dt = DateTime->from_epoch(epoch => 1310846160);
+# $opts->{endkey} = [$dt->epoch()];
         if ($period eq 'week') {
             $dt->subtract( days => 7 );
         } else {
@@ -38,6 +39,39 @@ method litres_per_txn  {
     }
 
     my $results = view('txns/litres_per_txn', $opts);
+
+    # format data so flot can read it
+
+    my $val_hash = $results->{rows}[0]{value}; 
+    my @data;
+    while (my ($key, $value) = each %$val_hash) {
+        push @data, [$key, $value];
+    }
+    return encode_json(\@data);
+}
+
+method litres_per_day  { 
+    my $period = shift; 
+
+    my $opts = {};
+
+    # DateTime::Duration expects plurals
+    my %valid_periods = map { $_ => $_ . "s" } qw(day week month year);
+    
+    my $dt = now_dt();
+# Uncomment to test, since we have no txns from recently 
+# $dt = DateTime->from_epoch(epoch => 1310846160);
+# $opts->{endkey} = [$dt->epoch()];
+    if (exists $valid_periods{$period}) {
+        if ($period eq 'week') {
+            $dt->subtract( days => 7 );
+        } else {
+            $dt->subtract( $valid_periods{$period} => 1); 
+        }
+        $opts->{startkey} = [$dt->epoch()];
+    }
+
+    my $results = view('txns/litres_per_day', $opts);
 
     # format data so flot can read it
 
