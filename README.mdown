@@ -1,0 +1,9 @@
+# Biopay
+
+Biopay is a software system to operate a biodiesel cardlock for a group of
+people.
+
+It interfaces with a CardMaster™ Cardlock over a really long serial cable. It
+stores everything in a CouchDB.  The web interface is hosted on dotCloud.  The
+payments are processed by BeanStream.
+
