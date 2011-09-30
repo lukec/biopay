@@ -164,9 +164,11 @@ method job_handler {
     my $cb = $self->job_handlers->{$type} || return;
     return sub {
         my $job = shift;
-        print " (Running: $job->{command}) ";
-        $cb->($job, @_);
+        print " (Took: $job->{command}) ";
+        # TODO: mark job as taken, delete it upon success.
+        # Better: use a real job queue and a real database.
         $self->remove_job($job);
+        $cb->($job, @_);
     };
 }
 
