@@ -451,18 +451,18 @@ get '/members/:member_id/freeze' => sub {
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
         $member->send_account_frozen_email if params->{email};
-        email_board(
-            "Member @{[$member->name]} (# @{[$member->id]}) has been frozen",
-            (session('username') || 'Unknown') . ' froze them.');
+#         email_board(
+#             "Member @{[$member->name]} (# @{[$member->id]}) has been frozen",
+#             (session('username') || 'Unknown') . ' froze them.');
         session message => "A freeze request was sent to the cardlock.";
         redirect '/members/' . $member->id;
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
         $member->unfreeze;
-        email_board(
-            "Member @{[$member->name]} (# @{[$member->id]}) has been un-frozen",
-            'Admin user: ' . (session('username') || 'Unknown')
-            . ' unfroze them.');
+#         email_board(
+#             "Member @{[$member->name]} (# @{[$member->id]}) has been un-frozen",
+#             'Admin user: ' . (session('username') || 'Unknown')
+#             . ' unfroze them.');
         session message => "An un-freeze request was sent to the cardlock.";
         redirect '/members/' . $member->id;
     }
