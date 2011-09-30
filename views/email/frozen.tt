@@ -1,0 +1,22 @@
+<h2>Update your Vancouver Biodiesel Co-op billing information to restore your cardlock access.</h2>
+
+[% IF member.password %]
+  [% SET pay_url=host _ '/member/update-payment' %]
+[% ELSE %]
+  [% SET pay_url=member.set_password_link _ '?payment=1' %]
+  <p>Once you have created a password, you can update your payment method and other details.</p>
+[% END %]
+<p>Click here: <a href="[% pay_url %]">[% pay_url %]</a></p>
+
+<p>Please update the payment details for your Vancouver Biodiesel Co-op membership.</p>
+<p>Our co-op now has a secure, automated online membership system so you can update your credit card, change your pin, and view your past transactions on our website.</p>
+
+[% IF member.unpaid_transactions.size > 0 %]
+  <p>You currently have un-paid fuel transactions. When you update your payment details these transactions will be charged and you will receive an email receipt.</p>
+[% END %]
+
+<p>Reply to this email if you have any questions.</p>
+
+
+<p>Thank you very much!</p>
+<p>The Vancouver Biodiesel Co-op Board of Directors.</p>
