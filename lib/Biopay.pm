@@ -12,7 +12,8 @@ use Biopay::Prices;
 use AnyEvent;
 use DateTime;
 use DateTime::Duration;
-use Biopay::Util qw/email_admin host now_dt beanstream_response_is_valid/;
+use Biopay::Util
+    qw/email_admin host now_dt beanstream_response_is_valid email_board/;
 use Try::Tiny;
 use Email::Valid;
 use Number::Phone;
@@ -197,12 +198,13 @@ get '/set-password' => sub {
 
 get '/set-password/:hash' => sub {
     my $hash = param('hash');
+    my $path = param('payment') ? '/member/update-payment' : param('path');
     try {
         my $member = Biopay::Member->By_hash($hash);
         template 'set-password' => { 
             member => $member,
             confirmed => 1,
-            path => param('path'),
+            path => $path,
         };
     }
     catch {
@@ -448,11 +450,18 @@ get '/members/:member_id/freeze' => sub {
     my $member = member();
     if (params->{please_freeze} and not $member->frozen) {
         $member->freeze;
+        $member->send_account_frozen_email if params->{email};
+        email_board(
+            "Member @{[$member->name]} (# @{[$member->id]}) has been frozen",
+            (session('username') || 'Unknown') . ' froze them.');
         session message => "A freeze request was sent to the cardlock.";
         redirect '/members/' . $member->id;
     }
     elsif (params->{please_unfreeze} and $member->frozen) {
         $member->unfreeze;
+        email_board(
+            "Member @{[$member->name]} (# @{[$member->id]}) has been un-frozen",
+            (session('username') || 'Unknown') . ' unfroze them.');
         session message => "An un-freeze request was sent to the cardlock.";
         redirect '/members/' . $member->id;
     }

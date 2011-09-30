@@ -275,6 +275,13 @@ method send_payment_update_email {
     );
 }
 
+method send_account_frozen_email {
+    $self->_send_email(
+        template => 'frozen',
+        subject => 'Your biodiesel account has been frozen',
+    );
+}
+
 method send_custom_email {
     my ($subj, $body) = @_;
     $self->_send_email(
