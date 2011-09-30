@@ -461,7 +461,8 @@ get '/members/:member_id/freeze' => sub {
         $member->unfreeze;
         email_board(
             "Member @{[$member->name]} (# @{[$member->id]}) has been un-frozen",
-            (session('username') || 'Unknown') . ' unfroze them.');
+            'Admin user: ' . (session('username') || 'Unknown')
+            . ' unfroze them.');
         session message => "An un-freeze request was sent to the cardlock.";
         redirect '/members/' . $member->id;
     }
