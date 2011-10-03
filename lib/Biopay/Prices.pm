@@ -28,7 +28,6 @@ method async_update {
                     unless $doc->{$pf};
                 $self->$pf($doc->{$pf});
             }
-            print " (F@{[$self->price_per_litre]}) ";
             undef $cv;
         },
     );
