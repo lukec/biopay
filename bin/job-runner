@@ -83,6 +83,14 @@ sub email_all_members {
             print ") ";
         }
     );
+    print "Emailing the board. ";
+    email {
+        to => config->{board_email},
+        from => config->{email_from},
+        subject => $subj,
+        type => 'html',
+        message => $body,
+    };
 }
 
 sub register_member {
