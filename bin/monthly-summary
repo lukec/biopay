@@ -37,6 +37,8 @@ my $end_epoch   = $end_time->epoch;
 # Amount of all TXNs
 # Litres Purchased
 # Beanstream dues incurred
+# Total (paid+unpaid) txns
+# Total (paid+unpaid) litres
 my %data = (
     signups => [],
     dues_received => 0,
@@ -44,6 +46,8 @@ my %data = (
     txn_sum => 0,
     litres_purchased => 0,
     fuel_purchases => 0,
+    total_txns => 0,
+    total_litres => 0,
 );
 
 my $receipts = Biopay::Receipt->By_date({
@@ -72,6 +76,14 @@ for my $r (@$receipts) {
     }
     $data{txn_count}++;
     $data{txn_sum} += $r->{amount};
+}
+
+my $txns = Biopay::Transaction->By_date({
+    startkey => $start_epoch, endkey => $end_epoch,
+});
+for my $t (@$txns) {
+    $data{total_txns}++;
+    $data{total_litres} += $t->litres;
 }
 
 my %costs;

@@ -2,6 +2,9 @@
 
 <p>Here's the activity from [% start_time %] to [% end_time %] in the co-op:</p>
 
+<h2>Fuel Activity</h2>
+<p>This month there were [% data.total_txns %] transactions for [% data.total_litres %] litres of Biodiesel.</p>
+
 <h2>New Members</h2>
 [% IF data.signups.size > 0 %]
 <p>[% data.signups.size %] new members signed up this month!</p>
