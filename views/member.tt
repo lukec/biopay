@@ -145,6 +145,6 @@
 [% IF is_admin %]
   <p>
   <a class="btn" href="/members">Back to members list</a><br />
-  <a class="btn" href="/admin">Back to admin section</a><br />
+  <a class="btn" href="/">Back to admin section</a><br />
   </p>
 [% END %]
