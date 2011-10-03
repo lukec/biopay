@@ -3,108 +3,113 @@ GET 'http://localhost:5984/biopay-test/_all_docs?startkey=%22_design/%22&endkey=
 ... and cleaning it up a bit. There has to be a more idiomatic way to store these things :)
 
 {"total_rows":336,
-"offset":1,
-"rows":[
-{"id":"_design/admin",
-"key":"_design/admin",
-"value":{"rev":"2-67a4e61a4a89bfa080bd6673777f078f"},
-"doc":{"_id":"_design/admin",
-"_rev":"2-67a4e61a4a89bfa080bd6673777f078f",
-"language":"javascript",
-"views":{"by_username":{"map":"function(doc) { if (doc.Type == 'user' && doc.roles == 'admin') emit(doc.username, doc) }"}}}},
+    "offset":1,
+    "rows":[
+    {"id":"_design/admin",
+        "key":"_design/admin",
+        "value":{"rev":"2-67a4e61a4a89bfa080bd6673777f078f"},
+        "doc":{"_id":"_design/admin",
+            "_rev":"2-67a4e61a4a89bfa080bd6673777f078f",
+            "language":"javascript",
+            "views":{"by_username":{"map":"function(doc) { if (doc.Type == 'user' && doc.roles == 'admin') emit(doc.username, doc) }"}}}
+    },
 
-{"id":"_design/auth",
-"key":"_design/auth",
-"value":{"rev":"12-5fd413fa6b450b90fc730306742ea7ef"},
-"doc":{"_id":"_design/auth",
-"_rev":"12-5fd413fa6b450b90fc730306742ea7ef",
-"language":"javascript",
-"views":{"by_username":{"map":"function(doc) { if (doc.Type == 'user')  emit(doc.username, doc); if (doc.Type == 'member') emit(doc.member_id, doc) }"}}}}
-{"id":"_design/jobs",
-"key":"_design/jobs",
-"value":{"rev":"5-28b8fca51ce81a86ba7bc4d6179f7f07"},
-"doc":{"_id":"_design/jobs",
-"_rev":"5-28b8fca51ce81a86ba7bc4d6179f7f07",
-"language":"javascript",
-"views":{"all":{"map":"function(doc) { if (doc.Type == 'command')  emit(doc._id, doc) }"},
-"by_id":{"map":"function(doc) { if (doc.Type == 'command')  emit(doc._id, doc) }"}},
-"filters":{"by_cardlock":"function(doc, req) { if (doc.Type == 'command' && doc.cardlock == req.query.cardlock) { return true; } else { return false; } }"}}},
+    {"id":"_design/auth",
+        "key":"_design/auth",
+        "value":{"rev":"12-5fd413fa6b450b90fc730306742ea7ef"},
+        "doc":{"_id":"_design/auth",
+            "_rev":"12-5fd413fa6b450b90fc730306742ea7ef",
+            "language":"javascript",
+            "views":{"by_username":{"map":"function(doc) { if (doc.Type == 'user')  emit(doc.username, doc); if (doc.Type == 'member') emit(doc.member_id, doc) }"}}}}
 
-{"id":"_design/members",
-"key":"_design/members",
-"value":{"rev":"7-0ee756964367ed2ff4e2ba7c0d34b95a"},
-"doc":{"_id":"_design/members",
-"_rev":"7-0ee756964367ed2ff4e2ba7c0d34b95a",
-"language":"javascript",
-"views":{"by_id":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.member_id, doc) }"},
-"by_email":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.email, doc) }"},
-"by_hash":{"map":"function(doc) { if (doc.Type == 'member' && doc.login_hash)  emit(doc.login_hash, doc) }"},
-"active_count":{"map":"function(doc) { if (doc.Type == 'member') emit(doc.member_id, 1) }",
-"reduce":"function(keys, values, rereduce) { return sum(values) }"}}}},
+    {"id":"_design/jobs",
+        "key":"_design/jobs",
+        "value":{"rev":"5-28b8fca51ce81a86ba7bc4d6179f7f07"},
+        "doc":{"_id":"_design/jobs",
+            "_rev":"5-28b8fca51ce81a86ba7bc4d6179f7f07",
+            "language":"javascript",
+            "views":{"all":{"map":"function(doc) { if (doc.Type == 'command')  emit(doc._id, doc) }"},
+                "by_id":{"map":"function(doc) { if (doc.Type == 'command')  emit(doc._id, doc) }"}},
+            "filters":{"by_cardlock":"function(doc, req) { if (doc.Type == 'command' && doc.cardlock == req.query.cardlock) { return true; } else { return false; } }"}}},
 
-{"id":"_design/potential_members",
-"key":"_design/potential_members",
-"value":{"rev":"1-c561fe1061b647ec7ffb385facceba1f"},
-"doc":{"_id":"_design/potential_members",
-"_rev":"1-c561fe1061b647ec7ffb385facceba1f",
-"language":"javascript",
-"views":{"by_email":{"map":"function(doc) { if (doc.Type == 'potential_member')  emit(doc.email, doc) }"},
-"by_hash":{"map":"function(doc) { if (doc.Type == 'potential_member' && doc.hash)  emit(doc.hash, doc) }"}}}},
-{"id":"_design/txns",
-"key":"_design/txns",
-"value":{"rev":"44-1df1738d27e07504138dac5a59ab7353"},
-"doc":{"_id":"_design/txns",
-"_rev":"44-1df1738d27e07504138dac5a59ab7353",
-"language":"javascript",
-"views":{"by_member":{"map":"function(doc) { if (doc.Type == 'txn')  emit(doc.member_id, doc) }"},
-"by_id":{"map":"function(doc) { if (doc.Type == 'txn')  emit(doc.txn_id, doc) }"},
-"unpaid":{"map":"function(doc) { if (doc.Type == 'txn' && !Number(doc.paid))  emit(doc.member_id, doc) }"},
-"recent":{"map":"function(doc) { if (doc.Type == 'txn' && doc.litres > 0)  emit(doc.epoch_time * -1, doc) }"},
-"fuel_sales":{"map":"function(doc) { if (doc.Type == 'txn' && doc.litres > 0) emit(doc.member_id, 1) }",
-"reduce":"function(keys, values, rereduce) { return sum(values) }"},
-"litres_by_date":{"map":"function(doc) { if (doc.Type == 'txn') emit(doc.epoch_time, parseFloat(doc.litres)) }",
-"reduce":"function(keys, values, rereduce) { return sum(values) }"},
-"litres_by_member":{"map":"function(doc) { if (doc.Type == 'txn') emit(doc.member_id, parseFloat(doc.litres)) }",
-"reduce":"function(keys, values, rereduce) { return sum(values) }"},"litres_per_txn":{"map":"function(doc) {
-  if (doc.Type == 'txn' && doc.litres > 0) {
-    var bucket = Math.floor(doc.litres / 10) * 10;
-    var value = {};
-    value[bucket] = 1;
-    emit([doc.epoch_time, bucket], value);
-  }
-}    ","reduce":"function (keys, values, rereduce) {
-    var combined_values = {};   
-    for (var i in values) {
-      for (var j in values[i]) {
-        if (j in combined_values) {
-          combined_values[j] += 1;
-        }
-        else {
-          combined_values[j] = 1;
-        }
-      }
-    }
-    return combined_values;
-}
-"},"litres_per_day":{"map":"function(doc) {
-  if (doc.Type == 'txn' && doc.litres > 0) {
-    var day = new Date(doc.epoch_time * 1000).getDay();
-    var val = {};
-    val[day] = Number(doc.litres);
-    emit([doc.epoch_time, day], val);
-  }
-}  ","reduce":"function (keys, values, rereduce) {
-    var combined_values = {};
-    for (var i in values) {
-      for (var j in values[i]) {
-        if (j in combined_values) {
-          combined_values[j] += values[i][j];
-        }
-        else {
-          combined_values[j] = values[i][j];
-        }
-      }
-    }
-    return combined_values;
-}"}}}}
-]}
+        {"id":"_design/members",
+            "key":"_design/members",
+            "value":{"rev":"7-0ee756964367ed2ff4e2ba7c0d34b95a"},
+            "doc":{"_id":"_design/members",
+                "_rev":"7-0ee756964367ed2ff4e2ba7c0d34b95a",
+                "language":"javascript",
+                "views":{"by_id":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.member_id, doc) }"},
+                    "by_email":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.email, doc) }"},
+                    "by_hash":{"map":"function(doc) { if (doc.Type == 'member' && doc.login_hash)  emit(doc.login_hash, doc) }"},
+                    "active_count":{"map":"function(doc) { if (doc.Type == 'member') emit(doc.member_id, 1) }",
+                        "reduce":"function(keys, values, rereduce) { return sum(values) }"}}}},
+
+        {"id":"_design/potential_members",
+            "key":"_design/potential_members",
+            "value":{"rev":"1-c561fe1061b647ec7ffb385facceba1f"},
+            "doc":{"_id":"_design/potential_members",
+                "_rev":"1-c561fe1061b647ec7ffb385facceba1f",
+                "language":"javascript",
+                "views":{"by_email":{"map":"function(doc) { if (doc.Type == 'potential_member')  emit(doc.email, doc) }"},
+                    "by_hash":{"map":"function(doc) { if (doc.Type == 'potential_member' && doc.hash)  emit(doc.hash, doc) }"}}}},
+
+        {"id":"_design/txns",
+            "key":"_design/txns",
+            "value":{"rev":"44-1df1738d27e07504138dac5a59ab7353"},
+            "doc":{"_id":"_design/txns",
+                "_rev":"44-1df1738d27e07504138dac5a59ab7353",
+                "language":"javascript",
+                "views":{
+                    "by_member":{"map":"function(doc) { if (doc.Type == 'txn')  emit(doc.member_id, doc) }"},
+                    "by_id":{"map":"function(doc) { if (doc.Type == 'txn')  emit(doc.txn_id, doc) }"},
+                    "unpaid":{"map":"function(doc) { if (doc.Type == 'txn' && !Number(doc.paid))  emit(doc.member_id, doc) }"},
+                    "recent":{"map":"function(doc) { if (doc.Type == 'txn' && doc.litres > 0)  emit(doc.epoch_time * -1, doc) }"},
+                    "fuel_sales":{"map":"function(doc) { if (doc.Type == 'txn' && doc.litres > 0) emit(doc.member_id, 1) }",
+                        "reduce":"function(keys, values, rereduce) { return sum(values) }"},
+                    "litres_by_date":{"map":"function(doc) { if (doc.Type == 'txn') emit(doc.epoch_time, parseFloat(doc.litres)) }",
+                        "reduce":"function(keys, values, rereduce) { return sum(values) }"},
+                    "litres_by_member":{"map":"function(doc) { if (doc.Type == 'txn') emit(doc.member_id, parseFloat(doc.litres)) }",
+                        "reduce":"function(keys, values, rereduce) { return sum(values) }"},
+                    "litres_per_txn":{"map":"function(doc) {
+                            if (doc.Type == 'txn' && doc.litres > 0) {
+                                var bucket = Math.floor(doc.litres / 10) * 10;
+                                var value = {};
+                                value[bucket] = 1;
+                                emit([doc.epoch_time, bucket], value);
+                            }
+                        }    ","reduce":"function (keys, values, rereduce) {
+                            var combined_values = {};   
+                            for (var i in values) {
+                                for (var j in values[i]) {
+                                    if (j in combined_values) {
+                                        combined_values[j] += 1;
+                                    }
+                                    else {
+                                        combined_values[j] = 1;
+                                    }
+                                }
+                            }
+                            return combined_values;
+                        }
+                        "},"litres_per_day":{"map":"function(doc) {
+                            if (doc.Type == 'txn' && doc.litres > 0) {
+                                var day = new Date(doc.epoch_time * 1000).getDay();
+                                var val = {};
+                                val[day] = Number(doc.litres);
+                                emit([doc.epoch_time, day], val);
+                            }
+                        }  ","reduce":"function (keys, values, rereduce) {
+                            var combined_values = {};
+                            for (var i in values) {
+                                for (var j in values[i]) {
+                                    if (j in combined_values) {
+                                        combined_values[j] += values[i][j];
+                                    }
+                                    else {
+                                        combined_values[j] = values[i][j];
+                                    }
+                                }
+                            }
+                            return combined_values;
+                        }"}}}}
+                        ]}
