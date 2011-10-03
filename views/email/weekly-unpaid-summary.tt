@@ -1,5 +1,5 @@
 <h1>Weekly un-paid fuel summary</h1>
-<p>This is an up-to-date list of biodiesel purchases which have not been paid for.  Please organize amongst yourselves to contact these members and have them update their billing info.</p>
+<p>This is an up-to-date list of <a href="[% host %]/txns">biodiesel purchases</a> which have <a href="[% host %]/unpaid">not been paid for</a>.  Please organize amongst yourselves to contact these members and have them update their billing info.</p>
 
 [% IF txns.size %]
 <h2>Summary</h2>
@@ -9,10 +9,10 @@
 <ul>
   [% FOREACH i IN txns %]
     <li>
-      <strong>Member #[% i.member.id %] - [% i.member.name %] [% IF i.member.frozen %](FROZEN) [% END %]- owes $[% i.amount %] from [% i.count %] purchases.</strong>
+      <strong><a href="[% host %]/members/[% i.member.id %]">Member #[% i.member.id %] - [% i.member.name %]</a> [% IF i.member.frozen %](FROZEN) [% END %]- owes $[% i.amount %] from <a href="[% host %]/members/[% i.member.id %]/unpaid">[% i.count %] purchases</a>.</strong>
       <ul>
         [% FOREACH txn IN i.txns %]
-          <li>Transaction [% txn.id %] - $[% txn.price %] on [% txn.pretty_date %]</li>
+          <li><a href="[% host %]/txns/[% txn.id %]">Transaction [% txn.id %]</a> - $[% txn.price %] on [% txn.pretty_date %]</li>
         [% END %]
       </ul>
     </li>

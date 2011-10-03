@@ -11,6 +11,7 @@ use Biopay::Receipt;
 use Biopay::Prices;
 use Biopay::Transaction;
 use Biopay::Member;
+use Biopay::Util qw/host/;
 use List::Util qw/sum/;
 
 # Load appdir and templates
@@ -47,6 +48,7 @@ my $html = template "email/weekly-unpaid-summary", {
     txns => \@txns_by_member,
     total_amount => sprintf('%.02f', $total_amount),
     total_count  => $total_count,
+    host => host(),
 }, { layout => 'email' };
 email {
     to => $to,
