@@ -67,7 +67,7 @@ sub email_all_members {
             my %emails = map { $_ => 1 } 
                             grep { length } grep { defined }
                                 map { $_->email }
-                                    grep { $_->active }
+                                    grep { $_->active and !$_->email_optout }
                                         @$members;
             print " (Sending '$subj' to: ";
             for my $email (keys %emails) {
