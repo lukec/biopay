@@ -50,7 +50,7 @@
     <div class="input">
       <input type="text" class="xlarge" name="address" width="15" value="[% address || member.address %]" />
     </div>
-  [% IF is_admin %]
+      [% IF is_admin %]
       <label for="">Joined</label>
       <div class="input">
         <input type="text" class="xlarge" id="datepicker1" name="start_date" value="[% start_date || member.start_pretty_date %]"></td>
@@ -60,6 +60,11 @@
         <input type="text"  class="xlarge"id="datepicker2" name="dues_paid_until_date" value="[% dues_paid_until_date || member.dues_paid_until_pretty_date %]">
       </div>
     [% END %]
+    <div class="input">
+        Opt out of mass emails: 
+        <input type="checkbox" name="email_optout" [% IF member.email_optout
+        %]checked="checked"[% END %] value="1" />
+    </div>
     <div class="actions">
       <input type="submit" class="btn large primary" value="Save" />
       [% IF is_admin %]

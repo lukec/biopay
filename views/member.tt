@@ -43,6 +43,10 @@
         <td>[% member.dues_paid_until_pretty_date %]</td>
       </tr>
       <tr>
+        <td><strong>Opted out of email?</strong></td>
+        <td>[% IF member.email_optout %]Yes[% ELSE %]No[% END %]</td>
+      </tr>
+      <tr>
         <td><strong>Account Frozen?</strong></td>
         <td>[% IF member.frozen %]Yes[% ELSE %]No[% END %]</td>
       </tr>

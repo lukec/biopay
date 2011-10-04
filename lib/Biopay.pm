@@ -568,7 +568,7 @@ get '/members/:member_id/edit' => sub {
 
 post '/members/:member_id/edit' => sub {
     my $member = member();
-    for my $key (qw/name phone_num email address/) {
+    for my $key (qw/name phone_num email address email_optout/) {
         $member->$key(params->{$key});
     }
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
@@ -721,7 +721,7 @@ get '/member/edit' => sub {
 
 post '/member/edit' => sub {
     my $member = session_member();
-    for my $key (qw/name phone_num email address/) {
+    for my $key (qw/name phone_num email address email_optout/) {
         $member->$key(params->{$key});
     }
     $member->save;
