@@ -18,6 +18,12 @@
   <input type="button" class="btn" id="litres_per_day_alltime" value="All Time" />
 </div>
 
+<h2>Cumulative membership</h2>
+<div id="cumulative_members" style="width:452px;height:300px"></div>
+
+<h2>Cumulative litres sold</h2>
+<div id="cumulative_litres" style="width:452px;height:300px"></div>
+
 <script src="/javascripts/libs/jquery.flot.js"></script>
 <script type="text/javascript"> 
 $(function () {
@@ -69,6 +75,16 @@ $(function () {
             bars: litres_per_day_config.bars
         }],
         litres_per_day_config.options
+    );
+    $.plot($("#cumulative_members"), [ {
+            data: [% stats.cumulative_members %],
+        }],
+        { xaxis: { mode: "time" }}
+    );
+    $.plot($("#cumulative_litres"), [ {
+            data: [% stats.cumulative_litres %],
+        }],
+        { xaxis: { mode: "time" }}
     );
 
     function litres_per_txn_onDataReceived(series) {

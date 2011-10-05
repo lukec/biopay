@@ -41,6 +41,7 @@ GET 'http://localhost:5984/biopay-test/_all_docs?startkey=%22_design/%22&endkey=
                 "views":{"by_id":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.member_id, doc) }"},
                     "by_email":{"map":"function(doc) { if (doc.Type == 'member')  emit(doc.email, doc) }"},
                     "by_hash":{"map":"function(doc) { if (doc.Type == 'member' && doc.login_hash)  emit(doc.login_hash, doc) }"},
+                    "by_epoch":{"map":"function(doc) { if (doc.Type == 'member' && doc.start_epoch) emit(doc.start_epoch) }"},
                     "active_count":{"map":"function(doc) { if (doc.Type == 'member') emit(doc.member_id, 1) }",
                         "reduce":"function(keys, values, rereduce) { return sum(values) }"}}}},
 

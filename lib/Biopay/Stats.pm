@@ -83,6 +83,22 @@ method litres_per_day  {
     return encode_json(\@data);
 }
 
+method cumulative_members {
+    my $results = view('members/by_epoch');
+    
+    my $total = 0;
+    my @data = map { [$_->{key} * 1000, $total++]} @{$results->{rows}};
+    return encode_json(\@data);
+}
+
+method cumulative_litres {
+    my $results = view('txns/litres_by_date', {group => 1});
+
+    my $total = 0;
+    my @data = map { [$_->{key} * 1000, $total += $_->{value}]} @{$results->{rows}};
+    return encode_json(\@data);
+}
+
 method taxes_paid      {
     sprintf '%.02f', 
         $self->fuel_sold_alltime * 0.24     # Motor Fuels Tax
