@@ -22,6 +22,12 @@
         <td><strong>Name</strong></td>
         <td>[% member.name %]</td>
       </tr>
+      [% IF is_admin %]
+      <tr>
+        <td><strong>Private Notes:</strong></td>
+        <td>[% member.notes | html %]</td>
+      </tr>
+      [% END %]
       <tr>
         <td><strong>Phone Number</strong></td>
         <td><a href="tel:[% member.phone_num %]">[% member.phone_num %]</a></td>

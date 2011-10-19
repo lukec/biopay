@@ -19,7 +19,11 @@
   <form action="/member/edit" method="POST">
 [% END %]
   <fieldset>
-    <legend>Editing details for member [% member.member_id %]:</legend>
+    [% IF is_admin %]
+      <legend>Editing details for member [% member.member_id %]:</legend>
+    [% ELSE %]
+      <legend>Please update your info.</legend>
+    [% END %]
     <label for="">Member ID:</label>
     <div class="input">
       <input type="text" name="member_id" width="4" 
@@ -38,6 +42,12 @@
     <div class="input">
       <input type="text" class="xlarge" name="name" width="15" value="[% name || member.name %]" />
     </div>
+    [% IF is_admin %]
+      <label for="">Private Notes</label>
+      <div class="input">
+        <input type="text" class="xlarge" name="notes" width="15" value="[% notes || member.notes %]" />
+      </div>
+    [% END %]
     <label for="">Phone</label>
     <div class="input">
       <input type="text" class="xlarge" name="phone_num" width="15" value="[% phone_num || member.phone_num %]" />

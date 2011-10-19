@@ -568,7 +568,8 @@ get '/members/:member_id/edit' => sub {
 
 post '/members/:member_id/edit' => sub {
     my $member = member();
-    for my $key (qw/name phone_num email address email_optout/) {
+    for my $key (qw/name phone_num email address email_optout notes/) {
+        # XXX Filter inputs
         $member->$key(params->{$key});
     }
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
