@@ -18,6 +18,7 @@ use Try::Tiny;
 use Email::Valid;
 use Number::Phone;
 use Data::Dumper;
+use HTML::Strip;
 
 our $VERSION = '0.1';
 
@@ -393,9 +394,14 @@ get '/members/create' => sub {
 };
 
 post '/members/create' => sub {
+    my $hs = HTML::Strip->new;
     my @member_attrs = qw/member_id name phone_num email 
                    start_date dues_paid_until_date payment_hash/;
-    my %hash = map { $_ => params->{$_} } @member_attrs;
+    my %hash;
+    for my $field (@member_attrs) {
+        $hash{$field} = $hs->parse(params->{$field});
+        $hs->eof;
+    }
 
     my $member = member();
     if ($member) {
@@ -474,7 +480,8 @@ get '/members/:member_id/freeze' => sub {
 get '/members/:member_id/cancel' => sub {
     my $member = member();
     if (params->{force} and $member->active) {
-        $member->cancel(params->{reason});
+        my $hs = HTML::Strip->new;
+        $member->cancel($hs->parse(params->{reason}));
         $member->send_cancel_email if params->{send_email};
         session success => "This membership has been cancelled.";
         return redirect '/members/' . $member->id;
@@ -568,9 +575,10 @@ get '/members/:member_id/edit' => sub {
 
 post '/members/:member_id/edit' => sub {
     my $member = member();
+    my $hs = HTML::Strip->new;
     for my $key (qw/name phone_num email address email_optout notes/) {
-        # XXX Filter inputs
-        $member->$key(params->{$key});
+        $member->$key($hs->parse(params->{$key} || ''));
+        $hs->eof;
     }
     $member->start_epoch(ymd_to_epoch(params->{start_date}));
     $member->dues_paid_until(ymd_to_epoch(params->{dues_paid_until_date}));
@@ -610,7 +618,6 @@ get '/members/:member_id/payment' => sub {
 };
 
 sub update_payment_profile_message {
-    # XXX How to verify response?
     my $member = shift;
     given (params->{responseCode}) {
         when (undef) { return undef }
@@ -722,8 +729,10 @@ get '/member/edit' => sub {
 
 post '/member/edit' => sub {
     my $member = session_member();
+    my $hs = HTML::Strip->new;
     for my $key (qw/name phone_num email address email_optout/) {
-        $member->$key(params->{$key});
+        $member->$key($hs->parse(params->{$key} || ''));
+        $hs->eof;
     }
     $member->save;
     session success => "Saved!";
@@ -750,7 +759,8 @@ post '/member/change-pin' => sub {
 get '/member/cancel' => sub {
     my $member = session_member();
     if (params->{force} and $member->active) {
-        $member->cancel(params->{reason});
+        my $hs = HTML::Strip->new;
+        $member->cancel($hs->parse(params->{reason}));
         $member->send_cancel_email;
         session warning => <<'EOT';
 This membership has been cancelled.<br />

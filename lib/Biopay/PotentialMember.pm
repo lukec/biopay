@@ -6,6 +6,7 @@ use Data::UUID;
 use Carp qw/croak/;
 use Biopay::Util qw/host now_dt beanstream_url/;
 use Biopay::Member;
+use HTML::Strip;
 use methods;
 
 extends 'Biopay::Resource';
@@ -37,6 +38,12 @@ method as_hash {
 sub Create {
     my $class = shift;
     my %p = @_;
+
+    my $hs = HTML::Strip->new;
+    for my $field (keys %p) {
+        $p{$field} = $hs->parse($p{$field});
+        $hs->eof;
+    }
 
     my $key = "potential_member:$p{email}";
     my $new_doc = {
