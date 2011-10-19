@@ -156,11 +156,17 @@ sub check_for_unpaid_txns {
         sub {
             my $txns = shift;
             my %member;
+            my %member_total;
             for my $txn (@$txns) {
                 push @{ $member{$txn->member_id} }, $txn;
+                $member_total{$txn->member_id} += $txn->price;
             }
 
             for my $mid (keys %member) {
+                if ($member_total{$mid} < 5) {
+                    print " (Member $mid has < \$5, skipping) ";
+                    next;
+                }
                 my $txns = $member{$mid};
                 Biopay::Member->By_id($mid, sub {
                         my $member = shift;
