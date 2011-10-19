@@ -474,7 +474,7 @@ get '/members/:member_id/freeze' => sub {
 get '/members/:member_id/cancel' => sub {
     my $member = member();
     if (params->{force} and $member->active) {
-        $member->cancel;
+        $member->cancel(params->{reason});
         $member->send_cancel_email if params->{send_email};
         session success => "This membership has been cancelled.";
         return redirect '/members/' . $member->id;
@@ -750,7 +750,7 @@ post '/member/change-pin' => sub {
 get '/member/cancel' => sub {
     my $member = session_member();
     if (params->{force} and $member->active) {
-        $member->cancel;
+        $member->cancel(params->{reason});
         $member->send_cancel_email;
         session warning => <<'EOT';
 This membership has been cancelled.<br />

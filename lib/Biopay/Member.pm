@@ -29,6 +29,7 @@ has 'active' => (isa => 'Bool', is => 'rw', default => 1);
 has 'password' => (isa => 'Maybe[Str]', is => 'rw');
 has 'email_optout' => (isa => 'Bool', is => 'rw', default => 0);
 has 'notes' => (isa => 'Maybe[Str]', is => 'rw');
+has 'cancel_reason' => (isa => 'Maybe[Str]', is => 'rw');
 
 # Frozen: if the member is _allowed_ to withdraw fuel. Sets cardlock PIN
 has 'frozen' => (isa => 'Bool', is => 'rw');
@@ -64,7 +65,8 @@ method as_hash {
 
     map { $hash->{$_} = $self->$_ }
         qw/_id _rev address phone_num start_epoch dues_paid_until payment_hash
-           frozen PIN billing_error login_hash password email_optout notes/;
+           frozen PIN billing_error login_hash password email_optout notes
+           cancel_reason/;
     return $hash;
 }
 
@@ -160,6 +162,8 @@ method payment_profile_url {
 }
 
 method cancel {
+    my $reason = shift || "No reason given.";
+    $self->cancel_reason($reason);
     $self->active(0);
     if (my $ph = $self->payment_hash) {
         try {

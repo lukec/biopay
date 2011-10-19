@@ -8,28 +8,37 @@
         This will remove your cardlock access and delete your billing data!
       [% END %]
   </div>
-  <p>
-    <div class="actions">
-    [% IF is_admin %]
-      [% IF member.email %]
-        <ul class="unstyled">
-          <li><a class="btn large primary" href="/members/[% member.member_id %]/cancel?force=1&send_email=1">Cancel and send an email confirmation</a></li>
-          <li><a class="btn large" href="/members/[% member.member_id %]/cancel?force=1&send_email=0">Cancel but do not send any email</a></li>
-        </ul>
+  [% SET uri = "/member/cancel" %]
+  [% IF is_admin %]
+    [% SET uri = "/members/" _ member.member_id _ "/cancel" %]
+  [% END %]
+  <form action="[% uri %]" method="GET">
+    <input type="hidden" name="force" value="1" />
+    <div class="input">
+      [% IF is_admin %]
+        <p><strong>Please record why you're cancelling their account.</strong></p>
       [% ELSE %]
-        <a class="btn large" href="/members/[% member.member_id %]/cancel?force=1">Yes, cancel [% member.name %]'s membership</a>
+        <p><strong>Please tell us why you're leaving the co-op. Be honest. :)</strong></p>
       [% END %]
-    [% ELSE %]
-      <a class="btn large" href="/member/cancel?force=1">Yes, cancel my membership.</a>
-    [% END %]
+      <textarea class="xlarge" name="reason" rows="3"></textarea>
     </div>
-  </p>
-  <p>
-    [% IF is_admin %]
-      <a class="btn" href="/members/[% member.member_id %]">No, go back.</a>
-    [% ELSE %]
-      <a class="btn" href="/member/view">No, go back.</a>
+    [% IF is_admin AND member.email %]
+      <div class="input">
+          Send email to the member?
+          <input type="checkbox" name="send_email" checked="checked" value="1" />
+      </div>
     [% END %]
+    <div class="actions">
+        [% IF is_admin %]
+          <input type="submit" class="btn large primary" value="Cancel their account" />
+          <a class="btn" href="/members/[% member.member_id %]">No, go back.</a>
+        [% ELSE %]
+          <input type="submit" class="btn large primary" value="Cancel my account" />
+          <a class="btn" href="/member/view">No, go back.</a>
+        [% END %]
+    </div>
+  </form>
+  <p>
   </p>
 [% ELSE %]
   <h1>[% member.name %]'s membership is already cancelled.</h1>

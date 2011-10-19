@@ -119,6 +119,9 @@
   [% ELSE %]
     [% IF is_admin %]
       <div class="alert-message warning">This person has cancelled their co-op membership.</div>
+      [% IF member.cancel_reason %]
+        <p><strong>Their reason for leaving:</strong> [% member.cancel_reason %]</p>
+      [% END %]
     [% END %]
     <p>
     <table class="common-table zebra-striped">
