@@ -319,8 +319,7 @@
                                                                 [% content %]
 <hr />
 <p>
-For billing related questions, please contact <a href="mailto:biodiesel@recyclingalternative.com">biodiesel@recyclingalternative.com</a><br />
-For all other co-op related questions, contact <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.
+For all co-op related questions, contact <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.
 </p>
 <hr />
                                                             </div>
