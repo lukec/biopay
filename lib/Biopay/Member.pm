@@ -189,6 +189,7 @@ method cancel {
     email_board("VBC - Cancelled membership - " . $self->name,
         "Sorry to report that " . $self->name . ", Co-op member #"
         . $self->id . " has cancelled their membership.\n\n"
+        . "Reason: $reason\n\n"
         . (@$unpaid ? "The member has " . @$unpaid . " unpaid transactions!\n\n"
                     : "The member has no unpaid transactions.\n\n")
         . "They have been a member since " . $self->start_datetime->ymd . ".\n"
