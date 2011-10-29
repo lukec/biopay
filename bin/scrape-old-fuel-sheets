@@ -1,0 +1,143 @@
+#!/usr/bin/env perl
+use 5.12.1;
+use IO::All qw/io/;
+
+$| = 1;
+my $basedir = "$ENV{HOME}/Desktop/VBC";
+my $outfile = "txns.csv";
+open(my $wfh, ">>$outfile") or die "Can't open $outfile: $!";
+for my $dir (sort glob("$basedir/*")) {
+    next unless -d $dir;
+    my $file = "$dir/Sheet2-Table\ 1.csv";
+    $file = "$dir/Sheet\ 1-Table\ 1.csv" unless -e $file;
+    $file = "$dir/Imported-Table\ 1.csv" unless -e $file;
+    $file = "$dir/Transactions-Table\ 1.csv" unless -e $file;
+    $file = "$dir/Sheet1-Table\ 1.csv" unless -e $file;
+    unless (-e $file) {
+        warn "Couldn't find $file\n";
+        next;
+    }
+    if (-e "$dir/DONE") {
+        say "Skipping $dir";
+        next;
+    }
+    say $dir;
+    my @lines = io($file)->slurp;
+    my @data;
+    for my $l (@lines) {
+        chomp $l;
+        next if $l =~ m/total/i;
+        # Old style:
+        # ,1,140,239,09/07/2010,10:03,1,2,2,XXXXX0,4652.0,XXXXXX,XXXXXX,XXXXXX,
+        # New style:
+        # TRAN NUM,CARD NUM,DATE,TIME,TRAN STAT CODE,ODOMETER,QUANTITY
+        # 569,1,11/16/10,7:36,1,165162,91.8
+        # 582,1,11/19/10,14:38,1,XXXXX0,31.8,
+        # Newest style:
+        # 1,5/30/11,40.6
+        my ($txn, $member_id, $date_str, $time_str, $code, $quantity);
+        my @fields = split ',', $l;
+        if (scalar(@fields) == 7 or scalar(@fields) == 8) {
+            ($txn, $member_id, $date_str, $time_str, $code, undef, $quantity)
+                = @fields;
+        }
+        elsif (scalar(@fields) == 3) {
+            say "newest";
+            ($member_id, $date_str, $quantity) = @fields;
+            $code = 1;
+        }
+        else {
+            (undef, undef, $txn, $member_id, $date_str, $time_str, $code,     
+                            undef, undef, undef, $quantity) = @fields;
+        }
+
+        unless ($code == 1 and $quantity > 0) {
+            say "SKIP: $l";
+            next;
+        }
+
+        my ($day, $mon, $year) = split '/', $date_str;
+        $year += 2000 if $year =~ m/^\d\d$/;
+        push @data, {
+            date => { y => $year, m => $mon, d => $day, t => $time_str },
+            member_id => $member_id,
+            quantity => $quantity,
+        };
+    }
+
+    while (1) {
+        for my $d (@data) {
+            say format_txn($d);
+        }
+        print "Fix data? q = quantity, m = month: ";
+        my $ans = <STDIN>;
+        chomp $ans;
+        if ($ans eq 's') {
+            say "Skipping...";
+            last;
+        }
+        elsif ($ans =~ m/^q(\d*)$/) {
+            say "Fixing quantity values";
+            for (@data) {
+                next if $1 and $_->{quantity} < $1;
+                $_->{quantity} /= 100;
+            }
+        }
+        elsif ($ans eq 'Q') {
+            say "Reverting quantity values";
+            for (@data) { $_->{quantity} *= 100; }
+        }
+        elsif ($ans =~ m/^m(\d*)$/) {
+            say "Fixing month/day";
+            for (@data) { 
+                my $m = $_->{date}{d};
+                my $d = $_->{date}{m};
+                if ($1) {
+                    next unless $m eq $1;
+                }
+                $_->{date}{d} = $d;
+                $_->{date}{m} = $m;
+            }
+        }
+        elsif ($ans eq 'e') {
+            my $f = "/tmp/txn.$$";
+            open(my $tempfh, ">$f") or die "Can't write to $f: $!";
+            save_to($tempfh, \@data);
+            close($tempfh);
+            system("vim $f");
+            say "Saving to disk.";
+            my @lines = io($f)->slurp;
+            print $wfh "# $dir\n";
+            print $wfh @lines;
+            system("touch '$dir/DONE'");
+            last;
+        }
+        elsif ($ans eq '') {
+            say "Data looks good. writing to disk.\n";
+            print $wfh "# $dir\n";
+            save_to($wfh, \@data);
+            system("touch '$dir/DONE'");
+            last;
+        }
+        else {
+            say "Unknown command.";
+        }
+    }
+
+}
+
+say "Saving the output file.";
+close $wfh or die "Can't write to txns.csv: $!";
+
+exit;
+
+sub save_to {
+    my ($fh, $data) = @_;
+    print $fh join "\n", map { format_txn($_) } @$data;
+    print $fh "\n";
+}
+
+sub format_txn {
+    my $d = shift;
+    return "$d->{member_id}, $d->{date}{y}-$d->{date}{m}-$d->{date}{d} $d->{date}{t}, $d->{quantity}";
+}
