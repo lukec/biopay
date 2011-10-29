@@ -28,7 +28,6 @@ while (my $line = <$fh>) {
     chomp $line;
     next if $line =~ m/^\s*$/ or $line =~ m/^\#/;
     $count++;
-    next if $count < 308;
 
     my ($member_id, $date_str, $litres, $price) = split m/\s*,\s*/, $line;
     die "Invalid line: $line\n"
