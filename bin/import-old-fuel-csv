@@ -1,0 +1,86 @@
+#!/usr/bin/env perl
+use 5.12.1;
+use IO::All qw/io/;
+use Dancer qw/:syntax/;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use Cwd qw/realpath/;
+use Biopay::Transaction;
+use Math::Round qw/round/;
+use Dancer::Plugin::CouchDB;
+use Try::Tiny;
+
+$| = 1;
+
+BEGIN {
+    Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+    Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+    Dancer::Config::load();
+}
+
+my $couch = couchdb();
+
+my $count = 0;
+my %time_rev;
+my $filename = shift || die "USAGE: $0 <filename.csv>\n";
+open(my $fh, $filename) or die "Can't open $filename: $!";
+while (my $line = <$fh>) {
+    chomp $line;
+    next if $line =~ m/^\s*$/ or $line =~ m/^\#/;
+    $count++;
+    next if $count < 308;
+
+    my ($member_id, $date_str, $litres, $price) = split m/\s*,\s*/, $line;
+    die "Invalid line: $line\n"
+        unless $member_id and $date_str and $litres and $price; 
+
+    $price =~ s/^\$//;
+
+    my ($date, $time) = split m/\s+/, $date_str;
+    my ($y,$m,$d) = split '-', $date;
+    my $dt = DateTime->new(
+        year => $y,
+        month => $m,
+        day => $d,
+    );
+    my $id = $dt->ymd('-');
+
+    if ($time) {
+        my ($h, $min) = split ':', $time;
+        $dt->set_hour($h);
+        $dt->set_minute($min);
+        $id .= "-$h-$min";
+    }
+    else {
+        my $rev = ++$time_rev{$dt->ymd};
+        $id .= "-$rev";
+    }
+
+    my $txn_hash = {
+        Type => 'txn',
+        _id => "txn:$id",
+        txn_id => $id,
+        cardlock_txn_id => '?',
+        member_id => $member_id,
+        epoch_time => $dt->epoch,
+        litres => $litres,
+        pump => "RA",
+        date => "$dt",
+        price_per_litre => $price,
+        price => sprintf('%01.2f', round($litres * $price * 100) / 100),
+        paid => 1,
+    };
+    use Data::Dumper;
+    print Dumper $txn_hash;
+
+    try {
+        $couch->save_doc($txn_hash)->recv;
+    }
+    catch {
+        print "Failed to save $id\n";
+    };
+
+    print "Imported $count records.\n";
+    sleep 2;
+}
+
