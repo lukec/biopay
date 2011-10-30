@@ -8,23 +8,21 @@
 <table id="txn_table" class="common-table zebra-striped">
   <thead>
     <tr>
-      <th>Txn ID</th>
+      <th>Date</th>
       [% IF is_admin %]<th>Member</th>[% END %]
       <th>Litres</th>
       <th>Price</th>
-      <th>Time</th>
       <th>Paid?</th>
     </tr>
   </thead>
   [% FOREACH txn IN txns %]
     <tr>
-        <td align="right"><a href="[% IF !is_admin %]/member[% END %]/txns/[% txn.txn_id %]">[% txn.txn_id %]</a></td>
+        <td align="right"><a href="[% IF !is_admin %]/member[% END %]/txns/[% txn.txn_id %]">[% txn.pretty_date %]</a></td>
         [% IF is_admin %]
           <td align="right"><a href="/members/[% txn.member_id %]">[% txn.member_id %]</a></td>
         [% END %]
         <td>[% txn.litres %]</td>
         <td>$[% txn.price %]</td>
-        <td>[% txn.pretty_date %]</td>
         <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
     </tr>
   [% END %]
