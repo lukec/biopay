@@ -11,7 +11,7 @@ has 'epoch_time'      => (isa => 'Num',  is => 'ro', required => 1);
 has 'date'            => (isa => 'Str',  is => 'ro', required => 1);
 has 'price_per_litre' => (isa => 'Num',  is => 'ro', required => 1);
 has 'txn_id'          => (isa => 'Str',  is => 'ro', required => 1);
-has 'cardlock_txn_id' => (isa => 'Num',  is => 'ro');
+has 'cardlock_txn_id' => (isa => 'Str',  is => 'ro');
 has 'litres'          => (isa => 'Num',  is => 'ro', required => 1);
 has 'member_id'       => (isa => 'Num',  is => 'ro', required => 1);
 has 'price'           => (isa => 'Num',  is => 'ro', required => 1);
@@ -33,8 +33,15 @@ method id { $self->txn_id }
 
 sub All_unpaid { shift->All_for_view('/unpaid', @_) }
 sub All_most_recent { shift->All_for_view('/recent') }
-sub All_for_member { shift->All_for_view('/by_member', {key => shift, @_}) }
 sub By_date { shift->All_for_view('/by_date', @_) }
+sub All_for_member {
+    my ($class, $key, @args) = @_;
+    my $opts = {
+        startkey => [$key],
+        endkey => [$key, {}],
+    };
+    $class->All_for_view('/by_member', $opts );
+}
 method age_in_seconds { time() - $self->epoch_time }
 
 after 'paid' => sub {
