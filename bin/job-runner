@@ -164,7 +164,7 @@ sub check_for_unpaid_txns {
 
             for my $mid (keys %member) {
                 if ($member_total{$mid} < 5) {
-                    print " (Member $mid has < \$5, skipping) ";
+                    # print " (Member $mid has < \$5, skipping) ";
                     next;
                 }
                 my $txns = $member{$mid};
