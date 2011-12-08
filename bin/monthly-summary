@@ -95,6 +95,7 @@ $data{txn_rate_fee} = sprintf '%.02f',
     int($costs{rate} / 100 * $data{txn_sum} * 100) / 100;
 $data{billing_cost} = sprintf '%.02f',
     $costs{monthly} + $data{per_txn_fee} + $data{txn_rate_fee};
+$data{fuel_sum} = sprintf '%.02f', $data{fuel_sum};
 
 my $html = template "email/monthly-report", {
     start_time => $start->ymd,

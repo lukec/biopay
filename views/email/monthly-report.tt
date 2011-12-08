@@ -19,7 +19,7 @@
 
 <h2>Revenue</h2>
 <p>This month there were [% data.fuel_purchases %] fuel purchases buying a total of [% data.litres_purchased %] litres for $[% data.fuel_sum %].</p>
-<p>In addition, we received $[% data.dues_received %] in membership dues.</p>
+<p>In addition, we received $[% data.dues_received %] in membership dues. (New + renewals)</p>
 
 <h2>Costs</h2>
 <p>In total we processed $[% data.txn_sum %] over [% data.txn_count %] transactions.</p>
