@@ -33,6 +33,7 @@ my ($total_amount, $total_count) = (0,0);
 for my $mid (keys %by_member) {
     my $mtxns = $by_member{$mid};
     my $sum   = sum map { $_->price } @$mtxns;
+    next if $sum < 5;
     my $m = Biopay::Member->By_id($mid);
     push @txns_by_member, {
         member => $m,
