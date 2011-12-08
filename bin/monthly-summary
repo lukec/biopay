@@ -25,7 +25,7 @@ $start->set_day(1);
 $start->set_hour(0);
 $start->set_minute(0);
 $start->set_second(0);
-my $end_time = $start + DateTime::Duration->new(months => 1);
+my $end_time = $start + DateTime::Duration->new(months => 1) - DateTime::Duration->new(seconds => 1);
 my $start_epoch = $start->epoch;
 my $end_epoch   = $end_time->epoch;
 
@@ -95,6 +95,8 @@ $data{txn_rate_fee} = sprintf '%.02f',
     int($costs{rate} / 100 * $data{txn_sum} * 100) / 100;
 $data{billing_cost} = sprintf '%.02f',
     $costs{monthly} + $data{per_txn_fee} + $data{txn_rate_fee};
+$data{billing_rate} = sprintf '%0.2f',
+    $data{billing_cost} / $data{txn_sum} * 100;
 $data{fuel_sum} = sprintf '%.02f', $data{fuel_sum};
 
 my $html = template "email/monthly-report", {
@@ -105,7 +107,7 @@ my $html = template "email/monthly-report", {
 email {
     to => config->{board_email},
     from => config->{email_from},
-    subject => "This month in the Bio Co-op",
+    subject => "Bio Co-op monthly summary for " . $start->month_name . " " . $start->year,
     message => $html,
     type => 'html',
 }

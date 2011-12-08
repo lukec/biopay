@@ -31,6 +31,7 @@
         $[% data.per_txn_fee %]</li>
   <li>Per-transaction rate: %[% data.costs.rate %] * $[% data.txn_sum %] =
         $[% data.txn_rate_fee %]</li>
+  <li>Billing overhead: [% data.billing_rate %]%</li>
 </ul>
 
 <hr />
