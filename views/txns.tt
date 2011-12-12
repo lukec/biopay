@@ -1,10 +1,18 @@
+[% BLOCK next_page %]
+  [% IF next_startkey %]
+    <p><a href="/txns?next_startkey=[% next_startkey %]">See older transactions …</a></p>
+  [% END %]
+[% END %]
+
 <h1>Recent Biodiesel Transactions</h1>
 [% INCLUDE message.tt %]
 [% IF txns.size %]
   <div class="alert-message info">
     <p>[% IF txns.size == 1 %]One transaction[% ELSE %][% txns.size %] transactions[% END %] found.</p>
   </div>
+  [% PROCESS next_page %]
   [% INCLUDE txn_table.tt %]
+  [% PROCESS next_page %]
 [% ELSE %]
   <div class="alert-message warning">
     <p>There are no transactions since July 8th, 2011.</p>

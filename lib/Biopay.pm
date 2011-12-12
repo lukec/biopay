@@ -332,9 +332,14 @@ post '/unpaid/mark-as-paid' => sub {
 };
 
 get '/txns' => sub {
-    template 'txns', {
-        txns => Biopay::Transaction->All_most_recent,
-    };
+    my $next = params->{next_startkey};
+    if ($next) {
+        $next = undef unless $next =~ m/^\d+$/;
+    }
+    my $data = Biopay::Transaction->All_most_recent(
+        next_startkey => $next,
+    );
+    template 'txns', $data;
 };
 
 get '/txns/:txn_id' => sub {

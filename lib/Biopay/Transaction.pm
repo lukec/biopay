@@ -28,12 +28,32 @@ has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'pretty_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
 has 'pretty_paid_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
 
-sub view_base { 'txns' }
+sub view_base {'txns'}
 method id { $self->txn_id }
+method age_in_seconds { time() - $self->epoch_time }
 
-sub All_unpaid { shift->All_for_view('/unpaid', @_) }
-sub All_most_recent { shift->All_for_view('/recent') }
-sub By_date { shift->All_for_view('/by_date', @_) }
+sub All_unpaid { shift->All_for_view('/unpaid',  @_) }
+sub By_date    { shift->All_for_view('/by_date', @_) }
+
+method All_most_recent {
+    my %p = @_;
+    my $nsk = $p{next_startkey};
+    my $page_size = 200;
+    my $txns = $self->All_for_view('/recent', 
+        {
+            ($nsk ? (startkey => $nsk) : ()),
+            limit => $page_size + 1,
+        }
+    );
+    if (@$txns == $page_size + 1) {
+        $nsk = pop(@$txns)->epoch_time;
+    }
+    return {
+        next_startkey => $nsk,
+        txns => $txns,
+    };
+}
+
 sub All_for_member {
     my ($class, $key, @args) = @_;
     my $opts = {
@@ -42,7 +62,6 @@ sub All_for_member {
     };
     $class->All_for_view('/by_member', $opts );
 }
-method age_in_seconds { time() - $self->epoch_time }
 
 after 'paid' => sub {
     my $self = shift;
