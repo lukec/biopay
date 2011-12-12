@@ -38,7 +38,7 @@
 <p><strong>What makes up bio-diesel?</strong></p>
 <p>Bio-diesel is made through a chemical reaction between natural oils and alcohol, followed by purification.  Bio-diesel can be made from nearly any naturally occurring vegetable oil or fat.  The most frequently used oils are used cooking oil, cottonseed oil, and soybean oil.</p>
 <p><strong>Do I need to do any modifications to my diesel vehicle to use bio-diesel?</strong></p>
-<p>If your car was made after 1993, the answer is no.  If your car was made prior to 1993, the rubber fuel lines will probably have to be replaced.  One of the major advantages of using bio-diesel is the fact that it can be used in existing diesel engines without negative impacts to operating performance.  Bio-diesel is the only alternative fuel for heavyweight vehicles that does not require any special injection or storage modifications.</p>
+<p>If your car was made after 1993, the answer is no.  If your car was made prior to 1993, the rubber fuel lines will probably have to be replaced.  One of the major advantages of using bio-diesel is the fact that it can be used in existing diesel engines without negative impacts to operating performance.  Bio-diesel is the only alternative fuel for heavyweight vehicles that does not require any special injection or storage modifications. Certain modern vehicles have issues with Biodiesel, such as newer VW's.  See below for more details on VW vehicles.</p>
 </p>
 
 <h2>Bio-diesel handling and use guidelines</h2>
@@ -56,6 +56,22 @@
 <p>Using bio-diesel instead of petro-diesel will significantly reduce unburned hydrocarbons, carbon monoxide, and particulate matter from tail pipe emissions.  It will also virtually eliminate sulfur oxides and sulfates which are major contributors to acid rain.  Nitrogen oxide emissions may slightly increase, but can be remedied with newer low-emission diesel engines.</p>
 <p><strong>Does bio-diesel contain diesel fuel?</strong></p>
 <p>Pure bio-diesel, B100 (100% biodiesel) does not contain petro-diesel.  Biodiesel can be blended with petro-diesel and is frequently sold as B20 (20% biodiesel, 80% petro-diesel blend) or B5 (5% biodiesel, 95% petro-diesel blend)</p>
+<p><strong>I want to buy a newish VW vehicle - will it work with Biodiesel?</strong></p>
+<p>The newer VW's are extremely sensitive to fuel quality.  Make the mistake of putting even a couple liters of gas or water into the tank, or pick up some contaminated fuel, and you can expect the High Pressure Fuel Pump  in the tank to grenade, taking out the rest of the fuel system downstream. Google "HPFP failure and you'll find out more than you ever wanted to know about the problem.  VW, as per their usual policy with an engineering problem, denies that there's any problem at all.<br />
+
+As well, higher blends of biodiesel are NOT recommended for the newer Common Rail (2009+) VW's in any circumstance for a number of reasons.<br />
+
+First: While acceptable at B5 (5% biodiesel) blends, any higher than that and VW will void your warranty.<br />
+
+Second: The fuel gets pressurized up to 26,000 PSI in these engines, which will change the chemical composition of biodiesel, enough that it can start causing serious (and expen$ive) damage after a while.<br />
+
+Third: Many of the VW common rail engines use a Diesel Particulate Filter, which traps soot within it, which the engine then burns off by injecting extra fuel into the exhaust cycle (which spontaneously combusts inside the DPF).  Biodiesel won't cause the soot to burn as easily, or as often, as petro diesel does, meaning that it clogs up much faster.  DPF's are also extremely expensive parts to replace, and they won't be done under warranty either.<br />
+
+Fourth: during the extra fuel injection cycle described above, biodiesel will "wash" the cylinders of your engine clean of lubricating oils, then make its way down to the crankcases, where it will "polymerize", or in other words turn into plastickly sludge, which can harm your engine.<br />
+
+So, in short, while the engine can handle lower concentrations of bio (5-20% with no problems, depending on who you talk to and if you believe them or not) there have been lots of anecdotes of higher blends causing serious problems on these VW's, and other modern engines with the same fuel and emissions systems.<br />
+
+If you want to run higher blends, you need to do it in an older vehicle.  Please also bear in mind that often fuel at the pumps now contains between 0-5% biodiesel.</p>
 <p><strong>Where can I find biodiesel in Vancouver, BC?</strong></p>
 <p>The <strong>Vancouver Biodiesel Co-op</strong> (VBC) is the ONLY source of B100 (100% biodiesel) available to the public.  If you own a diesel vehicle or are purchasing one to replace your "Dirty Dinosaur Fuel" vehicle, please join VBC today!</p>
 <p>The co-op pump is located at <a href="http://maps.google.ca/maps?q=360+Industrial+Ave,+Vancouver,+BC+V6A+2P3&hl=en&sll=49.287735,-123.045285&sspn=0.010931,0.028903&vpsrc=0&t=h&z=16">360 Industrial Ave</a>, near Science World.</p>
