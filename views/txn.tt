@@ -32,6 +32,13 @@
     <td><strong>Paid?</strong></td>
     <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
   </tr>
+  [% IF txn.payment_notes %]
+    <tr>
+      <td><strong>Payment Notes:</strong></td>
+      <td>[% txn.payment_notes %]</td>
+    </tr>
+  [% END %]
+        [% IF txn.payment_notes %]<strong>Notes:</strong> [% txn.payment_notes %][% END %]
   [% IF txn.paid %]
   <tr>
     <td><strong>Paid On</strong></td>

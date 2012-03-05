@@ -13,6 +13,7 @@
       <th>Litres</th>
       <th>Price</th>
       <th>Paid?</th>
+      <th>Notes</th>
     </tr>
   </thead>
   [% FOREACH txn IN txns %]
@@ -24,6 +25,7 @@
         <td>[% txn.litres %]</td>
         <td>$[% txn.price %]</td>
         <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
+        <td>[% txn.payment_notes %]</td>
     </tr>
   [% END %]
 </table>

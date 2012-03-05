@@ -8,10 +8,11 @@
 <table class="common-table zebra-striped">
   <thead>
     <tr>
-      <th>Member ID</th>
+      <th>Member</th>
       <th>Time</th>
       <th>Price</th>
       <th>Paid?</th>
+      <th>Notes</th>
     </tr>
   </thead>
   [% FOREACH member_txns IN txns %]
@@ -22,6 +23,7 @@
         <td>[% txn.pretty_date %]</td>
         <td>$[% txn.price %]</td>
         <td><input type="checkbox" name="txns" value="[% txn.txn_id %]" /></td>
+        <td><input type="text" name="notes-[% txn.txn_id %]" value="[% txn.payment_notes %]" /></td>
         [% SET total = total + txn.price %]
     </tr>
     [% END %]

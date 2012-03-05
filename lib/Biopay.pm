@@ -309,6 +309,9 @@ post '/unpaid/mark-as-paid' => sub {
         next if $txn->paid;
 
         $txn->paid(1);
+        if (my $n = params->{"notes-$txn_id"}) {
+            $txn->payment_notes($n);
+        }
         $txn->save;
         push @txns, $txn;
         push @{ $paid{ $txn->{member_id} } }, $txn->id;

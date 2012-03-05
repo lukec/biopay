@@ -6,7 +6,9 @@
       <p>The following transactions have been marked as paid:</p>
       <ul>
       [% FOREACH txn IN txns %]
-        <li><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a> - <a href="/members/[% txn.member_id %]">[% txn.member.name %]</a> for $[% txn.price %]</li>
+        <li><a href="/txns/[% txn.txn_id %]">[% txn.txn_id %]</a> - <a href="/members/[% txn.member_id %]">[% txn.member.name %]</a> for $[% txn.price %].
+        [% IF txn.payment_notes %]<strong>Notes:</strong> [% txn.payment_notes %][% END %]
+        </li>
       [% END %]
       </ul>
   [% END %]

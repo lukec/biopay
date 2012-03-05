@@ -18,6 +18,7 @@ has 'price'           => (isa => 'Num',  is => 'ro', required => 1);
 has 'pump'            => (isa => 'Str',  is => 'ro', required => 1);
 has 'paid'            => (isa => 'Bool', is => 'rw', default => 0);
 has 'paid_date'       => (isa => 'Num',  is => 'rw');
+has 'payment_notes'   => (isa => 'Maybe[Str]',  is => 'rw');
 
 with 'Biopay::Roles::HasMember';
 
@@ -73,7 +74,7 @@ after 'paid' => sub {
 method as_hash {
     my $hash = {};
     for my $key (qw/_id _rev epoch_time date price_per_litre txn_id paid Type
-                    litres member_id price pump paid_date/) {
+                    litres member_id price pump paid_date payment_notes/) {
         $hash->{$key} = $self->$key;
     }
     return $hash;
