@@ -353,16 +353,25 @@ get '/txns/:txn_id' => sub {
     }
 
     if (params->{mark_as_unpaid} and $txn->paid) {
+        return redirect '/' unless session 'is_admin';
         $txn->paid(0);
         $txn->save;
         session success =>
             "This transaction is now marked as <strong>not paid</strong>."
     }
     if (params->{mark_as_paid} and !$txn->paid) {
+        return redirect '/' unless session 'is_admin';
         $txn->paid(1);
         $txn->save;
         session success =>
             "This transaction is now marked as <strong>paid</strong>."
+    }
+    if (params->{notes}) {
+        return redirect '/' unless session 'is_admin';
+        $txn->payment_notes(params->{notes});
+        $txn->save;
+        session success => "Notes updated.";
+        return redirect '/txns/' . $txn->id;
     }
     template 'txn', { txn => $txn };
 };

@@ -3,6 +3,7 @@
 
 [% INCLUDE message.tt %]
 
+<form action="/txns/[% txn.txn_id %]" method="GET">
 <table class="common-table zebra-striped">
   <tr>
     <td><strong>ID</strong></td>
@@ -32,13 +33,6 @@
     <td><strong>Paid?</strong></td>
     <td>[% IF txn.paid %]Yes[% ELSE %]No[% END %]</td>
   </tr>
-  [% IF txn.payment_notes %]
-    <tr>
-      <td><strong>Payment Notes:</strong></td>
-      <td>[% txn.payment_notes %]</td>
-    </tr>
-  [% END %]
-        [% IF txn.payment_notes %]<strong>Notes:</strong> [% txn.payment_notes %][% END %]
   [% IF txn.paid %]
   <tr>
     <td><strong>Paid On</strong></td>
@@ -49,13 +43,20 @@
     <td><strong>Pump</strong></td>
     <td>[% txn.pump %]</td>
   </tr>
+  [% IF is_admin %]
+  <tr>
+    <td><strong>Payment Notes:</strong></td>
+    <td><input type="text" class="large" name="notes" value="[% txn.payment_notes %]" /></td>
+  </tr>
+  [% END %]
 </table>
 
 [% IF is_admin %]
+  <input type="submit" class="btn large primary" value="Update Notes" />
   [% IF txn.paid %]
-  <p><a href="/txns/[% txn.txn_id %]?mark_as_unpaid=1">Mark this as un-paid.</a></p>
+  <a class="btn" href="/txns/[% txn.txn_id %]?mark_as_unpaid=1">Mark this as un-paid.</a>
   [% ELSE %]
-  <p><a href="/txns/[% txn.txn_id %]?mark_as_paid=1">Mark this as paid.</a></p>
+  <a class="btn" href="/txns/[% txn.txn_id %]?mark_as_paid=1">Mark this as paid.</a>
   [% END %]
   <p>
   <a href="/unpaid">Back to unpaid transactions</a><br />
@@ -67,4 +68,5 @@
   <a href="/">Back to home</a><br />
   </p>
 [% END %]
+</form>
 
