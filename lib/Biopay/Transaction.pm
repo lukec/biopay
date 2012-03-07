@@ -111,5 +111,6 @@ method _build_total_taxes {
 }
 
 method _build_tax_rate {
+    return 0 if $self->price == 0;
     sprintf '%0.01f', $self->total_taxes / $self->price * 100;
 }
