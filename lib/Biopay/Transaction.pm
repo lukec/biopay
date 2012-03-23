@@ -101,7 +101,8 @@ method _build_datetime {
 
 method _build_HST {
     # Calculate the HST from the total
-    sprintf '%0.02f', $self->price - ($self->price / 1.05);
+    # 2012-03-23 - changing HST from 1.05% to 1.12% as per Louise @ RA
+    sprintf '%0.02f', $self->price - ($self->price / 1.12);
 }
 
 method _build_total_taxes {
