@@ -7,6 +7,9 @@
 [% SET muri = "/members/" _ member.member_id %]
 
 [% IF member %]
+  [% IF member.unpaid_transactions.size > 0 %]
+    <div class="alert-message error">This member has <a href="[% muri %]/unpaid">un-paid transactions!</a></div>
+  [% END %]
   [% IF member.frozen %]
     <div class="alert-message warning">This member's account is <strong>frozen</strong>!</div>
   [% END %]
