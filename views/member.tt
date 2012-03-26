@@ -100,22 +100,6 @@
       <hr />
     </div>
 
-    <h3>Activity:</h3>
-    <ul>
-      <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
-      <li>Fuel purchased: [% stats.fuel_for_member(member.member_id) %]L</li>
-      <li>
-        <a href="[% muri %]/txns">Recent Transactions</a>
-      </li>
-        
-      <li>
-        [% IF member.unpaid_transactions.size > 0 %]
-          <a href="[% muri %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
-        [% ELSE %]
-          [% IF is_admin %]This member has[% ELSE %]You have[% END %] no unpaid transactions.
-        [% END %]
-      </li>
-    </ul>
   [% ELSE %]
     [% IF is_admin %]
       <div class="alert-message warning">This person has cancelled their co-op membership.</div>
@@ -152,6 +136,23 @@
       <a class="btn" href="[% muri %]/send-email">Email this member</a>
     </p>
   [% END %]
+
+  <h3>Activity:</h3>
+  <ul>
+    <li>Fuel purchases: [% stats.fuel_sales(member.member_id) %]</li>
+    <li>Fuel purchased: [% stats.fuel_for_member(member.member_id) %]L</li>
+    <li>
+      <a href="[% muri %]/txns">Recent Transactions</a>
+    </li>
+      
+    <li>
+      [% IF member.unpaid_transactions.size > 0 %]
+        <a href="[% muri %]/unpaid">Unpaid Transactions ([% member.unpaid_transactions.size %])</a>
+      [% ELSE %]
+        [% IF is_admin %]This member has[% ELSE %]You have[% END %] no unpaid transactions.
+      [% END %]
+    </li>
+  </ul>
 [% END %]
 
 
