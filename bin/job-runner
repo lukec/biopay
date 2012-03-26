@@ -20,10 +20,13 @@ my $daemon = Biopay::Daemon->new(
         'send-email' => sub {
             my $args = shift->args->{msg};
             print " (Sending '$args->{subject}' email to $args->{to}) ";
-            email {
-                from => config->{email_from},
-                %$args,
-            };
+            for my $to (parse_email(delete $args->{to})) {
+                email {
+                    from => config->{email_from},
+                    to   => $to,
+                    %$args,
+                };
+            }
         },
         'email-all-members' => sub {
             my ($job, $member) = @_;
@@ -56,6 +59,14 @@ my $daemon = Biopay::Daemon->new(
 $daemon->run;
 exit;
 
+sub parse_email {
+    my $email = shift || return ();
+    $email =~ s/^\s+//;
+    $email =~ s/\s+$//;
+    my @addrs = split m/\s+/, $email;
+    return @addrs;
+}
+
 sub email_all_members {
     my $args = shift;
     my $subj = $args->{subj} || die "send_email: subj is not defined!";
@@ -66,7 +77,7 @@ sub email_all_members {
             my $members = shift;
             my %emails = map { $_ => 1 } 
                             grep { length } grep { defined }
-                                map { $_->email }
+                                map { parse_email($_->email) }
                                     grep { $_->active and !$_->email_optout }
                                         @$members;
             print " (Sending '$subj' to: ";
