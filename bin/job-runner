@@ -59,14 +59,6 @@ my $daemon = Biopay::Daemon->new(
 $daemon->run;
 exit;
 
-sub parse_email {
-    my $email = shift || return ();
-    $email =~ s/^\s+//;
-    $email =~ s/\s+$//;
-    my @addrs = split m/\s+/, $email;
-    return @addrs;
-}
-
 sub email_all_members {
     my $args = shift;
     my $subj = $args->{subj} || die "send_email: subj is not defined!";

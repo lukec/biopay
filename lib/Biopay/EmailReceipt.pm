@@ -4,6 +4,9 @@ use Dancer::Plugin::Email;
 use Moose;
 use Biopay::Transaction;
 use methods;
+use Exporter;
+
+our @EXPORT = qw/parse_email/;
 
 has 'member_id' => (is => 'ro', isa => 'Str',      required => 1);
 # Pass in one of these two:
@@ -43,14 +46,16 @@ method send {
         total_taxes  => $total_tax,
         total_HST    => $total_HST,
     }, { layout => 'email' };
-    email {
-        to => $self->member->email,
-        bcc => 'lukecloss@gmail.com',
-        from => config->{email_from},
-        subject => "Biodiesel Co-op Receipt - \$$total_price",
-        type => 'html',
-        message => $html,
-    };
+    for my $addr (parse_email($self->member->email)) {
+        email {
+            to => $addr,
+            bcc => 'lukecloss@gmail.com',
+            from => config->{email_from},
+            subject => "Biodiesel Co-op Receipt - \$$total_price",
+            type => 'html',
+            message => $html,
+        };
+    }
 }
 
 
@@ -59,3 +64,12 @@ method _build_txns {
         unless $self->txn_ids;
     return [ map { Biopay::Transaction->By_id($_) } @{ $self->txn_ids } ];
 }
+
+sub parse_email {
+    my $email = shift || return ();
+    $email =~ s/^\s+//;
+    $email =~ s/\s+$//;
+    my @addrs = split m/\s+/, $email;
+    return @addrs;
+}
+
