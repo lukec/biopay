@@ -4,7 +4,7 @@ use Dancer::Plugin::Email;
 use Moose;
 use Biopay::Transaction;
 use methods;
-use Exporter;
+use base 'Exporter';
 
 our @EXPORT = qw/parse_email/;
 
