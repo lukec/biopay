@@ -72,7 +72,7 @@ sub host {
     return 'http://' . request->host
         if request && request->host =~ m/localhost/;
     # Otherwise use the bona fide dotcloud SSL cert
-    return 'https://biopay.ssl.dotcloud.com';
+    return 'https://ssl-biopay.dotcloud.com';
 }
 
 sub beanstream_url {
