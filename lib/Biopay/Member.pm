@@ -313,7 +313,6 @@ method _send_email {
         }, { layout => 'email' };
         queue_email( {
             to => $self->email,
-            bcc => 'lukecloss@gmail.com',
             subject => "Biodiesel Co-op - $p{subject}",
             type => 'html',
             message => $html,
