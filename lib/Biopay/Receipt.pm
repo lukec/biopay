@@ -49,3 +49,27 @@ sub Create {
         },
     );
 }
+
+sub All_for_member {
+    my ($class, $key, @args) = @_;
+    my $opts = { startkey => "$key", endkey => "$key" };
+    $class->All_for_view('/by_member', $opts);
+}
+
+method txn_ids {
+    my @txns;
+    for my $item (@{ $self->items }) {
+        next unless $item->{type} eq 'txn';
+        push @txns, $item->{desc};
+    }
+    return \@txns;
+}
+
+method dues {
+    my @txns;
+    for my $item (@{ $self->items }) {
+        next if $item->{type} eq 'txn';
+        return $item->{amount};
+    }
+    return 0;
+}

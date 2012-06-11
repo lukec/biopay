@@ -6,6 +6,8 @@ use Cwd qw/realpath/;
 use lib "$FindBin::Bin/../lib";
 use Biopay::Command;
 use Biopay::EmailReceipt;
+use Biopay::Receipt;
+use Getopt::Long;
 
 BEGIN {
     Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
@@ -13,10 +15,35 @@ BEGIN {
     Dancer::Config::load();
 }
 
-my $job_id = shift || die "USAGE: $0 <job_id>\n";
+my %opts;
+GetOptions( \%opts,
+    'resend-last|r=i',
+) or usage();
+
+my $job_id = shift;
+if (my $mid = $opts{'resend-last'}) {
+    my $receipts = Biopay::Receipt->All_for_member($mid);
+    die "Couldn't find any receipts for member #$mid" if @$receipts == 0;
+    my $last = pop @$receipts;
+    Biopay::EmailReceipt->new(
+        member_id => $mid,
+        txn_ids => $last->txn_ids,
+        dues => $last->dues,
+    )->send;
+    exit;
+}
+
+usage() unless $job_id;
+
+
 my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id";
 
 die "Command is of the wrong type: " . $job->{command}
     unless $job->{command} eq 'send-receipt';
 
 Biopay::EmailReceipt->new($job->args)->send;
+
+exit;
+
+
+sub usage { die "USAGE: $0 <job_id>\n" }

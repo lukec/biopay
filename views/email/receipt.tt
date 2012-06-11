@@ -1,10 +1,13 @@
-<h1>Receipt for Member #[% member.id %]</h1>
+<h1>Receipt: $[% total_price %]</h1>
 <p>Hello [% member.name %]!</p>
+[% IF !member.participate_in_protest %]
+<p><a href="[% member.protest_link %]">Click here to help protest the bogus tax attack on our Biodiesel!</a> It'll only take a moment, and you just need to do it once.</p>
+[% END %]
 <p>
 This fuel reduces your CO2 contribution by approximately [% (total_litres * 1.94) div 1 %] kg!
 <span style="font-size:8pt">(<a href="http://www.biomaxfuels.com.au/carbon.html">source</a>)</span><br />
 </p>
-<p>The following transactions were charged to your account:</p>
+<p>The following transactions were charged to your account (Member #[% member.id %]):</p>
 <table width="100%">
       <tr>
         <th align="left"}>Description</th>

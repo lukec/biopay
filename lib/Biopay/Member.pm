@@ -42,6 +42,8 @@ has 'billing_error' => (isa => 'Maybe[Str]', is => 'rw');
 
 has 'login_hash' => (isa => 'Maybe[Str]', is  => 'rw',  lazy_build => 1);
 has 'set_password_link' => (isa => 'Maybe[Str]', is => 'ro', lazy_build => 1);
+has 'protest_hash' => (isa => 'Maybe[Str]', is  => 'rw',  lazy_build => 1);
+has 'protest_link' => (isa => 'Maybe[Str]', is => 'ro', lazy_build => 1);
 
 # Lazy Built Date helpers
 has 'start_pretty_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
@@ -65,8 +67,8 @@ method as_hash {
 
     map { $hash->{$_} = $self->$_ }
         qw/_id _rev address phone_num start_epoch dues_paid_until payment_hash
-           frozen PIN billing_error login_hash password email_optout notes
-           cancel_reason/;
+           frozen PIN billing_error login_hash protest_hash password 
+           email_optout notes cancel_reason/;
     return $hash;
 }
 
@@ -375,5 +377,15 @@ method _build_set_password_link {
         $self->save;
     }
     host() . "/set-password/$hash";
+}
+
+method _build_protest_hash { Data::UUID->new->create_str }
+method _build_protest_link {
+    my $hash = $self->{protest_hash};
+    unless ($hash) {
+        $hash = $self->protest_hash;
+        $self->save;
+    }
+    host() . "/protest/$hash";
 }
 
