@@ -31,7 +31,7 @@ my %public_paths = (
 
 sub is_public_path {
     my $path = request->path_info;
-    return 1 if $public_paths{$path} or $path =~ m{^/(login|set-password|new-member)};
+    return 1 if $public_paths{$path} or $path =~ m{^/(login|set-password|protest|new-member)};
     return 0;
 }
 
@@ -211,6 +211,16 @@ get '/set-password/:hash' => sub {
     catch {
         redirect '/';
     }
+};
+
+get '/protest/:hash' => sub {
+    my $hash = param('hash');
+    my $member = Biopay::Member->By_protest_hash($hash);
+    template 'protest' => { 
+        member => $member,
+        hash => $hash,
+        last_receipt => $member->last_receipt,
+    };
 };
 
 post '/set-password' => sub {

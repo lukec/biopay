@@ -1,0 +1,96 @@
+  <h1>Protest the Bogus Taxation of our Biofuel!</h1>
+  <p>Click a button below to help protest the unfair taxation issues affecting our wonderful fuel.  We'll send a letter for you to the appropriate government officials.</p>
+
+  <div class="well">
+    <h3>Send a protest letter every time you fill up?</h3>
+    <p>An example letter is bellow.</p>
+    <a class="btn btn-large btn-primary" href="/protest/[% hash %]/auto">Yes, send it when I buy fuel!</a>
+    <a class="btn btn-large" href="/protest/[% hash %]/once">No, Just send it this once.</a>
+  </div>
+
+  <h2>Example Letter</h2>
+  <p>Feel encouraged to copy this letter and customize it, and then send it off yourself too!</p>
+  <p>Send emails to: <code>Kevin.Falcon.MLA@leg.bc.ca, premier@gov.bc.ca</code></p>
+  <h4>Subject: Taxation of Biofuels</h4>
+  <blockquote>
+    <p>
+        I just bought [% last_receipt.total_litres %] litres of 100% biodiesel which reduced my carbon by approx [% last_receipt.total_co2_reduction %] kg.<br />
+        I'm doing MY part, as a conscientious consumer, choosing 100% biodiesel as
+        part of a sustainable solution for BC.  Why are you taxing my use of low
+        carbon, renewable biofuel as if it's part of the fossil fuel problem?
+        Please stop taxing pure biofuel sales!
+    </p>
+
+    <br />
+    <p>Under the leadership of the BC Liberals the Province has been taxing
+    producers and users of 100% biofuels as if they are part of the problem,
+    not part of the solution.  This is clearly at odds with the spirit and
+    stated purpose of the Greenhouse Gas Reduction (Renewable and Low Carbon
+    Fuel Requirements) Act and the Carbon Tax Act.
+    </p>
+
+    <br />
+    <p>
+    The BC Ministry of Finance
+    recognizes that pure biofuels, such as 100% biodiesel, are carbon neutral
+    renewable fuels as evidenced through the 5% reduction in the Carbon Tax
+    applied to all motor vehicle fuels sales in the province. This 5% tax
+    exemption is to account for the 5% biofuel component mandated under the
+    Renewable Fuel Standard (RFS). Currently, the Province has only been able
+    to achieve an average 4% renewable fuel ratio but still extends a 5% tax
+    exemption to all fuel blends that are over 95% fossil fuels.
+    </p>
+
+    <br />
+    <p>
+    On the other
+    hand, pure biofuels are considered by the Province to consist of 100%
+    carbon neutral renewable fuel content. As such, these fuels clearly exceed
+    the RFS. Why then is it that 100% pure biofuel sales are taxed as if they
+    are 95% fossil fuels? This penalizes the very renewable fuels that have
+    the greatest immediate carbon-reduction punch. It is also penalizing the
+    dedicated people who go out of their way to pay more for these renewable
+    biofuels because they are committed to doing the right thing in accord
+    with the very carbon reduction objectives the BC Liberals claimed to
+    champion when bringing in the Carbon Tax and the RFS.  
+    </p>
+
+    <br />
+    <p>
+    In past
+    communications, you and staff at the Ministry of Finance have stated that
+    exemptions could not be maintained for different blends of biofuels
+    because it would not always be possible to identify the exact proportion
+    of biofuels in any given blend and therefore, it would not be possible for
+    fuel suppliers to apply the correct taxation under the MFT and CT Acts.
+    Pure biofuels are not blends – they are 100% pure renewable fuel content
+    and are already being accounted for and reported to the Ministry.
+    Exempting these pure biofuels from Carbon Tax and Motor Fuel Tax will in
+    fact decrease the administrative burden on both the Province and 2 the
+    small-scale producers and resellers with little if any spare capacity to
+    dedicate to unnecessary administrative hurdles.   
+    </p>
+
+    <br />
+    <p>
+    Taxing pure renewable
+    fuel production and sales in the province is wrong.  It goes against the
+    Province’s own stated greenhouse gas reduction objectives and is driving
+    the largest of BC’s biofuel producers to sell almost their entire
+    production output outside of the province as explained in the September 27
+    th , 2011 Vancouver Sun article <a href="http://www2.canada.com/vancouversun/news/archives/story.html?id=a593a617-92ed-4cfeaa6d-45080aeeae04">BC should remove roadblocks to the renewable fuels sector</a>.
+    </p>
+
+    <br />
+    <p>
+    Correcting this by reinstating the Motor Fuels and Carbon Tax exempt
+    status that existed before 2010 is the right thing to do and will be a
+    positive news story leading up to the 2013 BC elections.  
+    </p>
+
+    <br />
+    <p>
+    Sincerely,<br />
+    [% member.name %]
+  </blockquote>
+

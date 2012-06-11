@@ -8,6 +8,7 @@ use DateTime;
 use DateTime::Duration;
 use Try::Tiny;
 use Biopay::Command;
+use Biopay::Receipt;
 use Biopay::Util
     qw/now_dt host email_admin email_board beanstream_url queue_email/;
 use Data::UUID;
@@ -122,6 +123,12 @@ sub Create {
 
 sub By_email { shift->By_view('by_email', @_) }
 sub By_hash  { shift->By_view('by_hash', @_) }
+sub By_protest_hash  { shift->By_view('by_protest_hash', @_) }
+
+method last_receipt {
+    my $receipts = Biopay::Receipt->All_for_member($self->id);
+    return pop @$receipts;
+}
 
 sub NextMemberID {
     my $class = shift;

@@ -22,9 +22,8 @@ GetOptions( \%opts,
 
 my $job_id = shift;
 if (my $mid = $opts{'resend-last'}) {
-    my $receipts = Biopay::Receipt->All_for_member($mid);
-    die "Couldn't find any receipts for member #$mid" if @$receipts == 0;
-    my $last = pop @$receipts;
+    my $receipt = Biopay::Member->By_id($mid)->last_receipt;
+    die "Couldn't find any receipts for member #$mid" unless $receipt;
     Biopay::EmailReceipt->new(
         member_id => $mid,
         txn_ids => $last->txn_ids,

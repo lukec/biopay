@@ -27,7 +27,8 @@ has 'total_taxes' => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'tax_rate'    => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
 has 'pretty_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
-has 'pretty_paid_date' => (is => 'ro', isa => 'Str',    lazy_build => 1);
+has 'pretty_paid_date' => (is => 'ro', isa => 'Str', lazy_build => 1);
+has 'co2_reduction'    => (is => 'ro', isa => 'Num', lazy_build => 1);
 
 sub view_base {'txns'}
 method id { $self->txn_id }
@@ -114,4 +115,8 @@ method _build_total_taxes {
 method _build_tax_rate {
     return 0 if $self->price == 0;
     sprintf '%0.01f', $self->total_taxes / $self->price * 100;
+}
+
+method _build_co2_reduction {
+    return int($self->litres * 1.94);
 }

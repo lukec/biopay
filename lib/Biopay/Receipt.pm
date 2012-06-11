@@ -17,6 +17,8 @@ has 'amount'    => (isa => 'Num', is => 'ro', required => 1);
 has 'items'     => (isa => 'ArrayRef[HashRef]', is => 'ro', required => 1);
 has 'at'        => (isa => 'Num', is => 'ro', required => 1);
 
+has 'txns'      => (isa => 'ArrayRef', is => 'ro', lazy_build => 1);
+
 sub By_date { shift->All_for_view('/by_date', @_) }
 sub view_base { 'receipts' }
 
@@ -66,10 +68,42 @@ method txn_ids {
 }
 
 method dues {
-    my @txns;
     for my $item (@{ $self->items }) {
         next if $item->{type} eq 'txn';
         return $item->{amount};
     }
     return 0;
+}
+
+method _build_txns {
+    my @txns;
+    for my $item (@{ $self->items }) {
+        next unless $item->{type} eq 'txn';
+        push @txns, Biopay::Transaction->By_id($item->{desc});
+    }
+    return \@txns;
+}
+
+method total_taxes {
+    my $total_taxes = 0;
+    for my $txn (@{$self->txns}) {
+        $total_taxes += $txn->total_taxes;
+    }
+    return sprintf('%0.02f', $total_taxes);
+}
+
+method total_litres {
+    my $total_litres = 0;
+    for my $txn (@{$self->txns}) {
+        $total_litres += $txn->litres;
+    }
+    return $total_litres;
+}
+
+method total_co2_reduction {
+    my $total_co2 = 0;
+    for my $txn (@{$self->txns}) {
+        $total_co2 += $txn->co2_reduction;
+    }
+    return $total_co2;
 }
