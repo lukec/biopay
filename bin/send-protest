@@ -17,7 +17,7 @@ BEGIN {
 
 my %opts;
 GetOptions( \%opts,
-    'cc=s',
+    'cc',
 );
 
 my $member_id = shift || die "USAGE: $0 <member_id>";;
@@ -37,6 +37,7 @@ for my $recip (@to) {
     warn "Sending mail to $recip";
     email {
         from => $member_emails[0],
+        reply_to => $member_emails[0],
         to => $recip,
         subject => "Taxation of Biofuels",
         type => 'html',
