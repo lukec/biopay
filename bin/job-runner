@@ -51,7 +51,7 @@ my $daemon = Biopay::Daemon->new(
         },
         'send-protest' => sub { # member_id, bcc_member
             my ($job, $member) = @_;
-            my $cc_member = $job->args->{cc_member};
+            my $cc_member = $job->args->{cc_member} ? 1 : 0;
             print " (Protest for @{[$member->id]}) ";
             # Shell out so we can avoid AE-style programming of the
             # receipt code
