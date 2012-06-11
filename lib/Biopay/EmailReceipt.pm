@@ -49,7 +49,6 @@ method send {
     for my $addr (parse_email($self->member->email)) {
         email {
             to => $addr,
-            bcc => 'lukecloss@gmail.com',
             from => config->{email_from},
             subject => "Biodiesel Co-op Receipt - \$$total_price",
             type => 'html',
