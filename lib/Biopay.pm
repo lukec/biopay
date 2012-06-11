@@ -223,6 +223,18 @@ get '/protest/:hash' => sub {
     };
 };
 
+get '/protest' => sub {
+    template 'protest' => { 
+        member => {
+            name => 'A concerned citizen',
+        },
+        last_receipt => {
+            total_litres => 50,
+            total_co2_reduction => 97,
+        }
+    };
+};
+
 get '/protest/:hash/:choice' => sub {
     my $hash = param('hash');
     my $choice = param('choice') || '';

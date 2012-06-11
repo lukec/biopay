@@ -6,14 +6,18 @@
   <p>Click a button below to help protest the unfair taxation issues affecting our wonderful fuel.  We'll send a letter for you to the appropriate government officials.</p>
 
   <div class="well">
+  [% IF hash %]
     <h3>Send a protest letter every time you fill up?</h3>
     <p>An example letter is bellow.</p>
     <a class="btn btn-large btn-primary" href="/protest/[% hash %]/auto">Yes, send it when I buy fuel!</a>
     <a class="btn btn-large" href="/protest/[% hash %]/once">No, Just send it this once.</a>
+  [% ELSE %]
+    <h3>Co-op members can send protest letters just by buying fuel!</h3>
+  [% END %]
   </div>
 
   <h2>Example Letter</h2>
-  <p>Feel encouraged to copy this letter and customize it, and then send it off yourself too!</p>
+  <p>Feel encouraged to copy this letter and customize it, and send it off!</p>
   <p>Send emails to: <code>Kevin.Falcon.MLA@leg.bc.ca, premier@gov.bc.ca</code></p>
   <h4>Subject: Taxation of Biofuels</h4>
   <blockquote>

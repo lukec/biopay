@@ -22,7 +22,7 @@
     <li><a href="https://docs.google.com/document/d/1LJRiLseM-dMmISrUaiCrtF5w5qrSDMYRHQGB4U5lWcM/edit?hl=en_US">System Documentation</a></li>
     <li><a href="https://docs.google.com/drawings/d/1IWXxF2EXOr7udmB8ELm885NAKKMmRGuSgupLbfakyFg/edit?hl=en_US">System Design</a></li>
     </dl>
-  [% ELSIF member %]
+  [% ELSIF member.id %]
     <p>Welcome, [% member.name %] <a href="/logout">(Logout)</a></p>
     <dl>
       <dt><a href="/member/update-payment">
