@@ -1,3 +1,11 @@
 Biopay Notes
 
 * https://beanstream-manuals.pbworks.com/w/page/36997290/PDF_UserGuidesEN
+
+
+Features:
+* Weekly report on Biopay usage
+** nice graphs
+** Reports of transactions by day
+* make current stats more stand-out
+
