@@ -1,4 +1,4 @@
-<h1>Receipt: $[% total_price %]</h1>
+<h1>Receipt: $[% total_price %] for [% total_litres %]L of clean, green Biodiesel!</h1>
 <p>Hello [% member.name %]!</p>
 [% IF !member.in_protest %]
 <p><a href="[% member.protest_link %]">Click here to help protest the bogus tax attack on our Biodiesel!</a> It'll only take a moment!</p>

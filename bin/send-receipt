@@ -26,8 +26,8 @@ if (my $mid = $opts{'resend-last'}) {
     die "Couldn't find any receipts for member #$mid" unless $receipt;
     Biopay::EmailReceipt->new(
         member_id => $mid,
-        txn_ids => $last->txn_ids,
-        dues => $last->dues,
+        txn_ids => $receipt->txn_ids,
+        dues => $receipt->dues,
     )->send;
     exit;
 }
