@@ -49,13 +49,13 @@ my $daemon = Biopay::Daemon->new(
             my ($job, $member) = @_;
             register_member($member, $job->args->{PIN});
         },
-        'send-protest' => sub { # member_id, bcc_member
+        'send-protest' => sub {
             my ($job, $member) = @_;
             my $cc_member = $job->args->{cc_member} ? 1 : 0;
             print " (Protest for @{[$member->id]}) ";
             # Shell out so we can avoid AE-style programming of the
             # receipt code
-            system($^X, "$FindBin::Bin/send-protest", $member->id, '--cc', $cc_member)
+            system($^X, "$FindBin::Bin/send-protest", $member->id, ($cc_member ? '--cc' ; ()))
                 and die "Could not send protest for member " . $member->id;
         },
     },
