@@ -52,6 +52,10 @@
         <td>[% member.dues_paid_until_pretty_date %]</td>
       </tr>
       <tr>
+        <td><strong>Send protest emails after every fill-up?</strong></td>
+        <td>[% IF member.in_protest %]Yes[% ELSE %]No[% END %]</td>
+      </tr>
+      <tr>
         <td><strong>Opted out of email?</strong></td>
         <td>[% IF member.email_optout %]Yes[% ELSE %]No[% END %]</td>
       </tr>

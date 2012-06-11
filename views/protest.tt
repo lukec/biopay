@@ -1,4 +1,8 @@
   <h1>Protest the Bogus Taxation of our Biofuel!</h1>
+  [% IF all_done %]
+  <p>Thanks for participating! We'll send a message out in the next few
+  minutes.</p>
+  [% ELSE %]
   <p>Click a button below to help protest the unfair taxation issues affecting our wonderful fuel.  We'll send a letter for you to the appropriate government officials.</p>
 
   <div class="well">
@@ -93,4 +97,5 @@
     Sincerely,<br />
     [% member.name %]
   </blockquote>
+  [% END %]
 

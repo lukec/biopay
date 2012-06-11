@@ -223,6 +223,35 @@ get '/protest/:hash' => sub {
     };
 };
 
+get '/protest/:hash/:choice' => sub {
+    my $hash = param('hash');
+    my $choice = param('choice') || '';
+    my $member = Biopay::Member->By_protest_hash($hash);
+
+    if ($choice) {
+        if ($choice eq 'auto') {
+            $member->in_protest(1);
+            $member->save;
+        }
+        Biopay::Command->Create(
+            command => 'send-protest',
+            member_id => $member->id,
+            bcc_member => 1,
+        );
+        return template 'protest' => { 
+            all_done => 1,
+            choice => $choice,
+        };
+    }
+
+    # No action, so just show the page.
+    template 'protest' => { 
+        member => $member,
+        hash => $hash,
+        last_receipt => $member->last_receipt,
+    };
+};
+
 post '/set-password' => sub {
     my $hash = param('hash');
     my $password1 = param('password1');
@@ -603,7 +632,7 @@ get '/members/:member_id/edit' => sub {
 post '/members/:member_id/edit' => sub {
     my $member = member();
     my $hs = HTML::Strip->new;
-    for my $key (qw/name phone_num email address email_optout notes/) {
+    for my $key (qw/name phone_num email address email_optout in_protest notes/) {
         $member->$key($hs->parse(params->{$key} || ''));
         $hs->eof;
     }
@@ -757,7 +786,7 @@ get '/member/edit' => sub {
 post '/member/edit' => sub {
     my $member = session_member();
     my $hs = HTML::Strip->new;
-    for my $key (qw/name phone_num email address email_optout/) {
+    for my $key (qw/name phone_num email address in_protest email_optout/) {
         $member->$key($hs->parse(params->{$key} || ''));
         $hs->eof;
     }

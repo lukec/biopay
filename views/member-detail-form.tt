@@ -71,6 +71,10 @@
       </div>
     [% END %]
     <div class="input">
+        Participate in our email protest about unfair taxation?
+        <input type="checkbox" name="in_protest" [% IF member.in_protest %]checked="checked"[% END %] value="1" />
+    </div>
+    <div class="input">
         Opt out of mass emails: 
         <input type="checkbox" name="email_optout" [% IF member.email_optout
         %]checked="checked"[% END %] value="1" />
