@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use Dancer qw/:syntax/;
+use Dancer::Plugin::Email;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::EmailReceipt qw/parse_email/;
+use Biopay::Member;
+use Getopt::Long;
+
+BEGIN {
+    Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+    Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+    Dancer::Config::load();
+}
+
+my %opts;
+GetOptions( \%opts,
+    'cc=s',
+);
+
+my $member_id = shift || die "USAGE: $0 <member_id>";;
+my $member = Biopay::Member->By_id($member_id);
+
+my @to = ('me@luk.ec'); # qw/Kevin.Falcon.MLA@leg.bc.ca premier@gov.bc.ca/;
+my @member_emails = parse_email($member->email);
+if ($opts{cc}) {
+    push @to, @member_emails;
+}
+my $html = template "email/protest", {
+    member => $member,
+    last_receipt => $member->last_receipt,
+}, { layout => 'email' };
+
+for my $recip (@to) {
+    warn "Sending mail to $recip";
+    email {
+        from => $member_emails[0],
+        to => $recip,
+        subject => "Taxation of Biofuels",
+        type => 'html',
+        message => $html,
+    };
+}
+exit;

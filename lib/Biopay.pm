@@ -236,7 +236,7 @@ get '/protest/:hash/:choice' => sub {
         Biopay::Command->Create(
             command => 'send-protest',
             member_id => $member->id,
-            bcc_member => 1,
+            cc_member => 1,
         );
         return template 'protest' => { 
             all_done => 1,

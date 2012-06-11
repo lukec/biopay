@@ -44,6 +44,15 @@ my $daemon = Biopay::Daemon->new(
             my ($job, $member) = @_;
             register_member($member, $job->args->{PIN});
         },
+        'send-protest' => sub { # member_id, bcc_member
+            my ($job, $member) = @_;
+            my $cc_member = $job->args->{cc_member};
+            print " (Protest for @{[$member->id]}) ";
+            # Shell out so we can avoid AE-style programming of the
+            # receipt code
+            system($^X, "$FindBin::Bin/send-protest", $member->id, '--cc', $cc_member)
+                and die "Could not send protest for member " . $member->id;
+        },
     },
     CVs => [
         AnyEvent->timer(
@@ -349,4 +358,3 @@ sub unfreeze_member {
         },
     );
 }
-

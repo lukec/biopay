@@ -72,8 +72,12 @@ method run {
                     print 'J';
                     Biopay::Command->Run_jobs( sub {
                         my $job = shift;
-                        my $cb = $self->job_handler($job->command);
-                        $job->run($cb) if $cb;
+                        if (my $cb = $self->job_handler($job->command)) {
+                            $job->run($cb);
+                        }
+                        else {
+                            warn "Sorry, do not know how to run: '@{[$job->command]}'";
+                        }
                     });
                 }
             );
