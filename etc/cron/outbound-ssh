@@ -1,0 +1,2 @@
+# "SSH Tunnel to Recollect.net"
+0 * * * * bio autossh -nNT -o ServerAliveInterval=15 -R 2222:localhost:22 -p 48022 lukec@recollect.net -M2322
