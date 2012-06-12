@@ -28,29 +28,55 @@ for my $t (@$txns) {
     push @{ $by_member{ $t->member_id } }, $t;
 }
 
-my @txns_by_member;
-my ($total_amount, $total_count) = (0,0);
-for my $mid (keys %by_member) {
-    my $mtxns = $by_member{$mid};
-    my $sum   = sum map { $_->price } @$mtxns;
-    next if $sum < 5;
-    my $m = Biopay::Member->By_id($mid);
-    push @txns_by_member, {
-        member => $m,
-        txns   => $mtxns,
-        count  => scalar(@$mtxns),
-        amount => sprintf('%.02f', $sum),
-    };
-    $total_amount += $sum;
-    $total_count  += @$mtxns;
+my %opts = (host => host());
+
+Unpaid_data: {
+    my @txns_by_member;
+    my ($total_amount, $total_count) = (0,0);
+    for my $mid (keys %by_member) {
+        my $mtxns = $by_member{$mid};
+        my $sum   = sum map { $_->price } @$mtxns;
+        next if $sum < 5;
+        my $m = Biopay::Member->By_id($mid);
+        push @txns_by_member, {
+            member => $m,
+            txns   => $mtxns,
+            count  => scalar(@$mtxns),
+            amount => sprintf('%.02f', $sum),
+        };
+        $total_amount += $sum;
+        $total_count  += @$mtxns;
+    }
+    @txns_by_member = sort { $b->{amount} <=> $a->{amount} } @txns_by_member;
+    $opts{unpaid}{txns} = \@txns_by_member;
+    $opts{unpaid}{total_amount} = sprintf('%.02f', $total_amount);
+    $opts{unpaid}{total_count} = $total_count;
 }
-@txns_by_member = sort { $b->{amount} <=> $a->{amount} } @txns_by_member;
-my $html = template "email/weekly-unpaid-summary", {
-    txns => \@txns_by_member,
-    total_amount => sprintf('%.02f', $total_amount),
-    total_count  => $total_count,
-    host => host(),
-}, { layout => 'email' };
+
+Summary: {
+    my $now = DateTime->now;
+    $now->set_time_zone('America/Vancouver');
+    while ($now->day_name ne 'Sunday') {
+        $now -= DateTime::Duration->new(days => 1);
+    }
+    $now->set_hour(0); $now->set_minute(0); $now->set_second(0);
+    my $week_start = $now - DateTime::Duration->new(weeks => 1);
+    my $week_end = $now - DateTime::Duration->new(seconds => 1);
+    my $txns = Biopay::Transaction->By_date({
+            startkey => $week_start->epoch,
+            endkey   => $week_end->epoch,
+        });
+    my $litres = 0;
+    my $txn_count = 0;
+    for my $txn (@$txns) {
+        $litres += $txn->litres;
+        $txn_count++;
+    }
+    $opts{litres_this_week} = $litres;
+    $opts{txns_this_week} = $txn_count;
+}
+
+my $html = template "email/weekly-unpaid-summary", \%opts, { layout => 'email' };
 email {
     to => $to,
     from => config->{email_from},

@@ -1,13 +1,18 @@
-<h1>Weekly un-paid fuel summary</h1>
+<h1>This week in Biodiesel</h1>
+<h2>Summary</h2>
+
+<p>This past week we sold [% litres_this_week %] litres in [% txns_this_week %] transactions.</p>
+
+<h2>Weekly un-paid fuel summary</h2>
 <p>This is an up-to-date list of <a href="[% host %]/txns">biodiesel purchases</a> which have <a href="[% host %]/unpaid">not been paid for</a>.  Please organize amongst yourselves to contact these members and have them update their billing info.</p>
 
 [% IF txns.size %]
 <h2>Summary</h2>
-<p>Right now, a total of $[% total_amount %] is un-paid across [% total_count %] transactions.</p>
+<p>Right now, a total of $[% unpaid.total_amount %] is un-paid across [% unpaid.total_count %] transactions.</p>
 
 <h2>Detailed Breakdown</h2>
 <ul>
-  [% FOREACH i IN txns %]
+  [% FOREACH i IN unpaid.txns %]
     <li>
       <strong><a href="[% host %]/members/[% i.member.id %]">Member #[% i.member.id %] - [% i.member.name %]</a> [% IF i.member.frozen %](FROZEN) [% END %]- owes $[% i.amount %] from <a href="[% host %]/members/[% i.member.id %]/unpaid">[% i.count %] purchases</a>.</strong>
       <ul>
