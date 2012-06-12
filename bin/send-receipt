@@ -21,26 +21,35 @@ GetOptions( \%opts,
 ) or usage();
 
 my $job_id = shift;
+my $member;
 if (my $mid = $opts{'resend-last'}) {
-    my $receipt = Biopay::Member->By_id($mid)->last_receipt;
+    $member = Biopay::Member->By_id($mid);
+    my $receipt = $member->last_receipt;
     die "Couldn't find any receipts for member #$mid" unless $receipt;
     Biopay::EmailReceipt->new(
         member_id => $mid,
         txn_ids => $receipt->txn_ids,
         dues => $receipt->dues,
     )->send;
-    exit;
+}
+elsif ($job_id) {
+    my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id";
+    die "Command is of the wrong type: " . $job->{command}
+        unless $job->{command} eq 'send-receipt';
+
+    Biopay::EmailReceipt->new($job->args)->send;
+    $member = Biopay::Member->By_id($job->args->{member_id});
+}
+else {
+    usage();
 }
 
-usage() unless $job_id;
+if ($member and $member->in_protest) {
+    print " (Protest from @{[$member->id]}) ";
+    system($^X, "$FindBin::Bin/send-protest", $member->id)
+        and die "Could not send protest for member " . $member->id;
+}
 
-
-my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id";
-
-die "Command is of the wrong type: " . $job->{command}
-    unless $job->{command} eq 'send-receipt';
-
-Biopay::EmailReceipt->new($job->args)->send;
 
 exit;
 

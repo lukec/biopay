@@ -39,11 +39,6 @@ my $daemon = Biopay::Daemon->new(
             # receipt code
             system($^X, "$FindBin::Bin/send-receipt", $job->_id)
                 and die "Could not send receipt for job " . $job->_id;
-            if ($member->in_protest) {
-                print " (Protest from @{[$member->id]}) ";
-                system($^X, "$FindBin::Bin/send-protest", $member->id)
-                    and die "Could not send protest for member " . $member->id;
-            }
         },
         'register-member' => sub {
             my ($job, $member) = @_;
@@ -309,13 +304,12 @@ sub process_transactions {
         $error = "Order '$order_num' processed, txns marked as paid, but "
                 . "receipt is not sent.";
             
-        Biopay::EmailReceipt->new(
-            member_id => $member->id,
-            member => $member,
-            txns => $txns,
+        Biopay::Command->Create(
+            command => 'send-receipt',
+            member_id => $mid,
+            txn_ids => [ map { $_->id } @$txns ],
             ($need_to_renew_membership ? (dues => $membership_price) : ())
-        )->send;
-        print " (Receipt to: " . $member->email . ") " if $member->email;
+        );
     }
     catch {
         my $err = $_;
