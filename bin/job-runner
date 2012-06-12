@@ -306,7 +306,7 @@ sub process_transactions {
             
         Biopay::Command->Create(
             command => 'send-receipt',
-            member_id => $mid,
+            member_id => $member->id,
             txn_ids => [ map { $_->id } @$txns ],
             ($need_to_renew_membership ? (dues => $membership_price) : ())
         );
