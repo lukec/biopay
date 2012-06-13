@@ -8,7 +8,6 @@ use Try::Tiny;
 use AnyEvent;
 use Dancer::Plugin::CouchDB;
 use AnyEvent::CouchDB::Stream;
-use Biopay::PaymentProcessor;
 use Biopay::Util qw/email_admin/;
 use Biopay::Command;
 use Biopay::Prices;
@@ -33,7 +32,6 @@ has 'prices' => (is => 'ro', isa => 'Object', default => sub {
 has 'want_stream' => (is => 'ro', isa => 'Bool', default => sub { 0 });
 
 has 'couch'  => (is => 'ro', isa => 'Object', lazy_build => 1);
-has 'processor'  => (is => 'ro', isa => 'Object', lazy_build => 1);
 
 has 'stream' => (is => 'rw', isa => 'Maybe[Object]');
 has '_last_seq' => (is => 'rw', isa => 'Num', default => 0);
@@ -197,5 +195,3 @@ method _build_couch {
     die "Could not connect to the couch!" unless $couch;
     return $couch;
 }
-
-method _build_processor { Biopay::PaymentProcessor->new }

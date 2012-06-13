@@ -1,0 +1,172 @@
+#!/usr/bin/env perl
+use 5.14.1;
+use Dancer qw/:syntax/;
+use Dancer::Plugin::Email;
+use FindBin;
+use Cwd qw/realpath/;
+use lib "$FindBin::Bin/../lib";
+use Biopay::Member;
+use Biopay::Prices;
+use Biopay::PaymentProcessor;
+use Biopay::Receipt;
+use Getopt::Long;
+
+BEGIN {
+    Dancer::Config::setting('appdir',realpath("$FindBin::Bin/.."));
+    Dancer::Config::setting('views',realpath("$FindBin::Bin/../views"));
+    Dancer::Config::load();
+}
+
+my $member_id = shift || die "USAGE: $0 <member_id>";;
+my $member = Biopay::Member->By_id($member_id);
+my $txns   = $member->unpaid_transactions;
+unless (@$txns) {
+    print "Member $member_id has no un-paid transactions.\n";
+    exit;
+}
+
+my $total = sum map { $_->price } @$txns;
+print ' (Bio-' . $member->id . ":\$$total) ";
+my $items = [
+    map { { amount => $_->price, type => 'txn', desc => $_->txn_id } }
+        @$txns
+];
+
+my $order_num = @$txns > 1 
+    ? sprintf("%d-txns-%d", @$txns+0, time)
+    : "txn-" . $txns->[0]->txn_id;
+
+my $need_to_renew_membership = $member->membership_is_expired;
+my $membership_price = Biopay::Prices->new->annual_membership_price;
+if ($need_to_renew_membership) {
+    $total += $membership_price;
+    push @$items, {
+        amount => $membership_price,
+        type   => 'dues',
+        desc   => 'Membership Dues',
+    };
+}
+
+my $error = "Order '$order_num' not yet processed.";
+try {
+    try {
+        Biopay::PaymentProcessor->new->process(
+            order_num => $order_num,
+            amount => $total,
+            hash => $member->payment_hash,
+        );
+        Biopay::Receipt->Create(
+            member_id => $member->id,
+            order_num => $order_num,
+            amount    => $total,
+            items     => $items,
+        );
+
+        $error = "Processed payment, but didn't update member yet.";
+        # Update the member, if necessary
+        if ($need_to_renew_membership) {
+            $member->renew_membership;
+            print ' (Renewed membership for: ' . $member->id . ') ';
+        }
+        unfreeze_member($member) if $member->frozen;
+    }
+    catch {
+        my $err = $_;
+        # There was an error processing payment for this member. Set their
+        # billing_error flag, so that we don't retry until it is cleared
+        $member->billing_error($err);
+        $member->billing_error_epoch(time());
+        $member->frozen(1);
+        create_freeze_job($member, 'freeze');
+        try {
+            $member->save;
+            print ' (Freeze:' . $member->id . ') ';
+        }
+        catch {
+            my $save_err = $_;
+            email_admin("Failed to set billing_error for member",
+                "I tried to mark member " . $member->id . " with a "
+                . "billing error for order '$order_num' but failed."
+                . "\nSave error was: $save_err"
+                . "\nPayment error was: $err");
+        };
+        $member->send_billing_error_email($err, $total);
+
+        # Re-raise error so that it is reported properly.
+        die $err;
+    };
+
+    $error = "Order '$order_num' processed but txns not marked as paid.";
+    for my $txn (@$txns) {
+        print " (Marking " . $txn->id . " as paid) ";
+        $txn->paid(1);
+        try {
+            $txn->save;
+        }
+        catch {
+            my $err = $_;
+            email_admin("Failed to mark txn:" . $txn->id . " as paid!",
+                "I was trying to mark it as paid after successfully "
+                . " processing order $order_num for \$$total\n\n$err"
+            );
+        };
+    }
+    $error = "Order '$order_num' processed, txns marked as paid, but "
+            . "receipt is not sent.";
+        
+    Biopay::Command->Create(
+        command => 'send-receipt',
+        member_id => $member->id,
+        txn_ids => [ map { $_->id } @$txns ],
+        ($need_to_renew_membership ? (dues => $membership_price) : ())
+    );
+}
+catch {
+    my $err = $_;
+    error $err;
+
+    email_admin("Error processing payment $order_num",
+        "Had a problem during payment processing: $error\n\n$err\n\n"
+        . "This payment was for member ID " . $member->id
+        . " (" . host() . '/members/' . $member->id . ') '
+        . " for transactions: " . join(', ', map { host() . '/txns/' . $_->id } @$txns)
+    );
+}
+
+exit;
+
+sub create_freeze_job {
+    my $member = shift;
+    my $type = shift;
+    try {
+        Biopay::Command->Create(
+            command => $type,
+            member_id => $member->id,
+        );
+    }
+    catch {
+        my $err = $_;
+        email_admin("Failed to $type @{[$member->id]}",
+            "I failed to create a $type job for $member->id.\n\n"
+            . "Error: $err");
+    };
+}
+
+sub unfreeze_member {
+    my $member = shift;
+    $member->frozen(0);
+    create_freeze_job($member, 'unfreeze');
+
+    try {
+        $member->save;
+        print ' (Un-freeze:' . $member->id . ') ';
+    }
+    catch {
+        my $err = $_;
+        email_admin("Failed to un-freeze member",
+            "I tried to un-freeze member " . $member->id
+            . " after a successful payment, but saving failed."
+            . "\nError was: $err");
+    };
+}
+

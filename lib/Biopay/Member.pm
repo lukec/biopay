@@ -38,6 +38,7 @@ has 'frozen' => (isa => 'Bool', is => 'rw');
 
 # Billing Error: 
 has 'billing_error' => (isa => 'Maybe[Str]', is => 'rw');
+has 'billing_error_epoch' => (isa => 'Maybe[Int]', is => 'rw');
 
 
 # Lazy Built Attributes:
@@ -69,8 +70,8 @@ method as_hash {
 
     map { $hash->{$_} = $self->$_ }
         qw/_id _rev address phone_num start_epoch dues_paid_until payment_hash
-           frozen PIN billing_error login_hash protest_hash password 
-           email_optout in_protest notes cancel_reason/;
+           frozen PIN billing_error billing_error_epoch login_hash protest_hash
+           password email_optout in_protest notes cancel_reason/;
     return $hash;
 }
 
