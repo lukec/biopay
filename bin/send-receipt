@@ -18,11 +18,12 @@ BEGIN {
 my %opts;
 GetOptions( \%opts,
     'resend-last|r=i',
+    'for=i',
 ) or usage();
 
 my $job_id = shift;
 my $member;
-if (my $mid = $opts{'resend-last'}) {
+if (my $mid = $opts{'resend-last'} || $opts{for}) {
     $member = Biopay::Member->By_id($mid);
     my $receipt = $member->last_receipt;
     die "Couldn't find any receipts for member #$mid" unless $receipt;

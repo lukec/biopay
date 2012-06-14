@@ -11,7 +11,6 @@ use Biopay::EmailReceipt qw/parse_email/;
 use Biopay::Transaction;
 use Biopay::Util qw/email_admin email_board host/;
 use Try::Tiny;
-use List::Util qw/sum/;
 
 my $daemon = Biopay::Daemon->new(
     name => 'job-runner',

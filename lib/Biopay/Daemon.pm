@@ -84,11 +84,13 @@ method run {
     }
     catch {
         (my $first_line = $_) =~ s/\n.+//s;
+        unless ($first_line =~ m/malformed JSON string/) {
         warn $self->name . " Error: $_";
         email_admin(
             "Un-caught cardlock error: $first_line",
             "Not sure what happened: $_",
         );
+        }
     };
     finally {
         print $self->name, " shutting down.\n";

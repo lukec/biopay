@@ -15,7 +15,7 @@ method process {
     my $msg = "Payment: $p{order_num} for \$$p{amount}";
     $msg .= " TEST" if config->{merchant_test};
     print " ($msg) ";
-    return if config->{merchant_test};
+    return (1, undef) if config->{merchant_test};
 
     my $resp = $self->ua->post(
         'https://www.beanstream.com/scripts/process_transaction.asp',
@@ -30,18 +30,17 @@ method process {
         my $qs = URI::Query->new($resp->content);
         my %result = $qs->hash;
         (my $msg = $result{messageText}||'') =~ s/\+/ /g;
-        return "Transaction $p{order_num} is approved." if $result{trnApproved};
+        return (1, "Transaction $p{order_num} is approved.") if $result{trnApproved};
 
         if ($msg =~ m/Duplicate Transaction/) {
             # This dup is an error, but we'll return success. This only 
             # should happen in testing.
-            return "Transaction $p{order_num} was a dup.";
+            return (1, "Transaction $p{order_num} was a dup.");
         }
-        die "Payment of \$$p{amount} failed. Reason: $msg\n";
+        return (0, "Payment of \$$p{amount} failed. Reason: $msg");
     }
     else {
-        die "Payment of \$$p{amount} failed. Reason: "
-            . $resp->status_line . "\n";
+        return (0, "Payment of \$$p{amount} failed. Reason: " . $resp->status_line);
     }
 }
 
