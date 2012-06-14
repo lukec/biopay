@@ -79,6 +79,9 @@ sub check_cardlock {
         $txn_hash->{price} = sprintf '%01.2f',
                                 round($txn_hash->{litres} * $p * 100) / 100;
         $txn_hash->{paid} = $txn_hash->{price} eq '0.00' ? 1 : 0;
+        
+        # Recycling Alternative (Member #1 pays themself directly.)
+        $txn_hash->{paid} = 1 if $txn_hash->{member_id} == 1;
 
         # It may exist already, so we should expect this to fail
         $daemon->couch->save_doc($txn_hash)->cb(
