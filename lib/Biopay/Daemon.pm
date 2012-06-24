@@ -73,9 +73,6 @@ method run {
                         if (my $cb = $self->job_handler($job->command)) {
                             $job->run($cb);
                         }
-                        else {
-                            warn "Sorry, do not know how to run: '@{[$job->command]}'";
-                        }
                     });
                 }
             );

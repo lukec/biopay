@@ -34,7 +34,7 @@ if (my $mid = $opts{'resend-last'} || $opts{for}) {
     )->send;
 }
 elsif ($job_id) {
-    my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command $job_id";
+    my $job = Biopay::Command->By_id($job_id) || die "Couldn't load command '$job_id'";
     die "Command is of the wrong type: " . $job->{command}
         unless $job->{command} eq 'send-receipt';
 
