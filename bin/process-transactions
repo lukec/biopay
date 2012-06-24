@@ -143,18 +143,11 @@ eval {
         print "Skipping receipt!\n";
     }
     else {
-        Biopay::Command->Create(
-            command => 'send-receipt',
-            member_id => $member->id,
-            txn_ids => [ map { $_->id } @$txns ],
-            ($need_to_renew_membership ? (dues => $membership_price) : ())
-        );
+        system($^X, "$FindBin::Bin/send-receipt", '--for', $member->id);
     }
 };
-if ($@) {
-    $err = $@;
+if (my $err = $@) {
     error $err;
-
     email_admin("Error processing payment $order_num",
         "Had a problem during payment processing: $error\n\n$err\n\n"
         . "This payment was for member ID " . $member->id
