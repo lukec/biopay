@@ -9,6 +9,7 @@ use Biopay::Member;
 use Biopay::Receipt;
 use Biopay::EmailReceipt qw/parse_email/;
 use Biopay::Transaction;
+use Biopay::PaymentProcessor;
 use Biopay::Util qw/email_admin email_board host/;
 use Try::Tiny;
 
@@ -112,11 +113,15 @@ sub register_member {
         print " (Register: $email) ";
         # Process sign-up fee
         my $order_num = 'signup:' . $member->id;
-        $daemon->processor->process(
+        my ($ok, $msg) = Biopay::PaymentProcessor->new->process(
             order_num => $order_num,
             amount => $signup_price,
             hash => $member->payment_hash,
         );
+        if (!$ok) {
+            die "Failed to process registration payment for " .
+                $member->id . ": $msg\n";
+        }
         Biopay::Receipt->Create(
             member_id => $member->id,
             order_num => $order_num,
@@ -145,7 +150,7 @@ sub register_member {
             "Hello Board, we just had a new member join the co-op: "
             . $member->name . ".\n\n"
             . "Details: " . host() . "/members/" . $member->id . "\n");
-    };
+    }
     catch {
         my $err = "Failed to register new member: $_";
         debug $err;
