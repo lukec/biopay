@@ -1,10 +1,10 @@
 package Biopay::PaymentProcessor;
-use Moose;
-use methods;
 use Dancer::Plugin::Email;
 use Dancer ':syntax';
+use Moose;
 use LWP::UserAgent;
 use URI::Query;
+use methods;
 
 has 'ua' => (is => 'ro', isa => 'LWP::UserAgent', lazy_build => 1);
 has 'payment_args' => (is => 'ro', isa => 'HashRef', lazy_build => 1);
