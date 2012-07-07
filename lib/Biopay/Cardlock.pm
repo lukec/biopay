@@ -146,7 +146,17 @@ method parse_line {
 
 #  0    1    2        3     4 5 6 7      8       9
 # 01,0118,0204,07/08/11,10:50,1,1,1,xxxxxx,0029.98,xxxxxx,xxxxxx,xxxxxx
-    
+    # Fields:
+    # 1 - txn id
+    # 2 - member id
+    # 3 - date
+    # 4 - time
+    # 5 - see below
+    # 6 - unused
+    # 7 - unused
+    # 8 - unused
+    # 9 - litres
+
     # Do not process transactions which are In Progress
     # Field 5 Values:
     # 0  In Progress – sale not complete 
