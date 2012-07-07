@@ -6,7 +6,7 @@
 <h2>Weekly un-paid fuel summary</h2>
 <p>This is an up-to-date list of <a href="[% host %]/txns">biodiesel purchases</a> which have <a href="[% host %]/unpaid">not been paid for</a>.  Please organize amongst yourselves to contact these members and have them update their billing info.</p>
 
-[% IF txns.size %]
+[% IF unpaid.txns.size %]
 <h2>Summary</h2>
 <p>Right now, a total of $[% unpaid.total_amount %] is un-paid across [% unpaid.total_count %] transactions.</p>
 
