@@ -41,11 +41,20 @@
   [% ELSE %]
     <p>Our co-op sells 100% recycled, <a href="http://astm.org">ASTM certified</a>, locally sourced biodiesel fuel to our members.</p>
     <dl>
-      <li><a href="http://www.vancouverbiodiesel.org/">Biodiesel Co-op Homepage</a></li>
+      <li><a href="/">Biodiesel Co-op Homepage</a></li>
       <li><a href="/biodiesel-faq">Co-op FAQ</a></li>
       <li><a href="http://twitter.com/vanbiodiesel/">Co-op on Twitter</a></li>
       <li><a href="http://en.wikipedia.org/wiki/Biodiesel">Biodiesel on Wikipedia</a></li>
       <li><a href="/biopay.pdf">Biopay Info Sheet</a></li>
+      <li><a href="http://twitter.com/vanbiodiesel" class="twitter-follow-button"
+              data-show-count="false">Follow @vanbiodiesel</a>
+            <script src="http://platform.twitter.com/widgets.js" type="text/javascript">
+            </script></li>
     </dl>
+    <p><a href="/login" class="large primary btn">Member Login</a></p>
+    <p><a href="/admin-login" class="large btn">Admin Login</a></p>
+    <h3>Co-op Stats</h3>
+    <div class="vbc_stats"></div>
+    <script src="/stats-widget.js?j=1"></script>
   [% END %]
 </div>

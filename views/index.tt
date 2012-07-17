@@ -3,19 +3,46 @@
 [% ELSIF member %]
   [% INCLUDE 'index-member.tt' %]
 [% ELSE %]
-  <h1>Biopay Co-op Centre</h1>
+  <h1>The Little Pump that Could</h1>
   [% INCLUDE message.tt %]
-  <p>Welcome to the Vancouver Biodiesel Co-op Billing system. This service tracks biodiesel purchases, processes payments and offers administration.</p>
-  <p>
-    This system is owned and operated for the Vancouver Biodiesel Co-op by the <a href="http://recyclingalternative.com">Recycling Alternative</a>.  For any problems or questions please contact the co-op <a href="mailto:info@vancouverbiodiesel.org">via email</a> or contact <a href="http://recyclingalternative.com">Recycling Alternative</a> directly.
-  </p>
-  <p>
-    <h3>Interested in joining the co-op?</h3>
+<p>The Vancouver Biodiesel Co-op is proud to be the lower mainland's only consumer source of B100 pure, locally sourced Biodiesel.</p>
+<p>With the strong support from <a href="http://recyclingalternative.com">Recycling Alternative</a> we have a 4220 Litre pump with 24/7 cardlock access.  Members can purchase fuel at any time in any amount!  You could <a href="/new-member">sign up right now</a> and then head down for a fill-up!</p>
+
+<div class="well">
+<h3>Real-time Co-op Stats</h3>
+<div class="vbc_stats"></div>
+</div>
+
+<address><strong>Pump Location</strong><br />
+Recycling Alternative<br />
+<a href="http://maps.google.ca/maps?q=360+Industrial+Ave,+Vancouver,+BC+V6A+2P3&hl=en&sll=49.287735,-123.045285&sspn=0.010931,0.041263&vpsrc=0&t=h&z=16">360 Industrial Ave, Vancouver.</a><br />
+<em>(near Terminal and Main in Vancouver.)</em><br />
+</address>
+
+<h3>What's the deal with Biodiesel?</h3>
+<p>
+Unlike "Waste Oil", Biodiesel requires NO special modifications to your diesel-engine car or truck. The biodiesel we use is made from locally sourced plant-based oils and is always <a href="http://www.astm.org/Standards/D975.htm">certified</a>. As biodiesel is much cleaner running in your engine, you should monitor your fuel filter (deposits from previous use of conventional diesel are flushed out). The more biodiesel you use, the longer your engine will last.
+</p>
+
+<p>
+If you have questions, please check out our <a target="_blank" rel="nofollow" title="(external link)" href="/biodiesel-faq">FAQ</a> or email <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a> or <a href="http://twitter.com/vanbiodiesel">tweet us!</a>
+</p>
+
+<h2>Joining the Co-op</h2>
+<p>You can join the co-op online! After you watch the online orientation video and read our <a href="/biodiesel-faq">Biodiesel FAQ</a>, you can head down to the pump to fill up!  If you have questions before you're ready to join, please <a href="mailto:info@vancouverbiodiesel.org">email us</a> and we'll do our best to help you out!</p>
+
+
+<p>Our co-op has an signup fee of $15 plus $10/year for annual membership.  At this time, only members are able to purchase biodiesel.</p>
+</p>
+<div class="actions">
+    <h3>Start enjoying the juice!</h3>
     <a class="btn large primary" href="/new-member">Sign up!</a>
-  </p>
+</div>
+
   <p>
+<div class="actions">
     <h3>Already a member?</h3>
     <a class="btn large primary" href="/login">Member Login</a> or 
     <a class="btn large" href="/admin-login">Admin Login</a>
-  </p>
+</div>
 [% END %]

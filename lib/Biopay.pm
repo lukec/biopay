@@ -24,7 +24,7 @@ our $VERSION = '0.1';
 
 my %public_paths = (
     map { $_ => 1 }
-    qw( / /login /logout /terms /refunds /privacy),
+    qw( / /login /logout /terms /refunds /privacy /news),
     '/forgot-password', '/admin-login', '/biodiesel-faq',
     '/new-member', '/stats-widget.js',
 );
@@ -81,7 +81,7 @@ get '/' => sub {
         stats => Biopay::Stats->new,
     };
 };
-for my $page (qw(privacy refunds terms biodiesel-faq)) {
+for my $page (qw(privacy refunds terms biodiesel-faq news)) {
     get "/$page" => sub { template $page };
 }
 
