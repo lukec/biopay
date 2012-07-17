@@ -1,0 +1,15 @@
+#!/bin/bash
+
+export INSTALL_DIR=/var/www/biopay
+
+# Copy files into place
+sudo cp etc/nginx/biopay.conf /etc/nginx/sites-available
+sudo cp -R etc/service/biopay /etc/service
+cp -R bin lib views environments etc app.psgi public $INSTALL_DIR
+
+# Set up config file
+./postinstall
+
+# Restart services
+sudo /etc/init.d/nginx restart
+sudo svc -h /etc/service/biopay

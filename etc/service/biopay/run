@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Set it up to use the locally installed Perl 5.16.0
+export PATH="/home/biopay/perl5/perlbrew/perls/perl-5.16.0/bin:$PATH"
+PERL_CPANM_OPT="--local-lib=/home/biopay/perl5"
+source /home/biopay/perl5/perlbrew/etc/bashrc
+
+BIO=/var/www/biopay
+export PERL5LIB="$BIO/lib"
+
+cd $BIO
+exec 2>&1 \
+    /home/biopay/perl5/perlbrew/perls/perl-5.16.0/bin/starman --listen 127.0.0.1:6000 --workers 2 --preload-app \
+        --user biopay --group www-data \
+        $BIO/app.psgi >> /var/log/biopay-web.log 2>&1
