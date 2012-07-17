@@ -7,7 +7,7 @@ appname: "biopay"
 merchant_id: "****____MERCHANT_ID____****"
 merchant_hash_key: "****____MERCHANT_HASH_KEY____****"
 email_from: 'Biodiesel Co-op <billing@vancouverbiodiesel.org>'
-sysadmin_email: 'info@vancouverbiodiesel.org'
+sysadmin_email: 'luke@vancouverbiodiesel.org'
 board_email: 'vancouver-biodiesel-board@googlegroups.com'
 
 
