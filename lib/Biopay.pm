@@ -35,7 +35,7 @@ sub is_public_path {
     return 0;
 }
 
-before sub {
+hook before => sub {
     # XXX hack to try to work around the 596 bug from AE::HTTP
     # If this issue persists using other couch instances
     # Let AE run until idle.
@@ -85,7 +85,7 @@ for my $page (qw(privacy refunds terms biodiesel-faq news)) {
     get "/$page" => sub { template $page };
 }
 
-before_template sub {
+hook before_template => sub {
     my $tokens = shift;
 
     $tokens->{info_email_link} = '<a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>';
