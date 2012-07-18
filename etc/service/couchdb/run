@@ -1,0 +1,5 @@
+#!/bin/bash
+
+exec 2>&1
+export HOME=/home/biopay
+exec /home/biopay/src/build-couchdb/build/bin/couchdb >> /var/log/couchdb.log 2>&1

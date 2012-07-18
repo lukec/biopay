@@ -6,6 +6,7 @@ export INSTALL_DIR=/var/www/biopay
 sudo cp etc/nginx/biopay.conf /etc/nginx/sites-available
 sudo cp etc/nginx/vancouverbiodiesel.* /etc/nginx/
 sudo cp -R etc/service/biopay /etc/service
+sudo cp -R etc/service/couchdb /etc/service
 cp -R bin lib views environments etc app.psgi public $INSTALL_DIR
 
 # Set up config file
