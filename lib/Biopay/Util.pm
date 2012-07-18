@@ -71,8 +71,7 @@ sub now_dt {
 sub host {
     return 'http://' . request->host
         if request && request->host =~ m/localhost/;
-    # Otherwise use the bona fide dotcloud SSL cert
-    return 'https://ssl-biopay.dotcloud.com';
+    return 'https://vancouverbiodiesel.org';
 }
 
 sub beanstream_url {

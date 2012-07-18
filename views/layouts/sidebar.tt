@@ -48,7 +48,7 @@
       <li><a href="/biopay.pdf">Biopay Info Sheet</a></li>
       <li><a href="http://twitter.com/vanbiodiesel" class="twitter-follow-button"
               data-show-count="false">Follow @vanbiodiesel</a>
-            <script src="http://platform.twitter.com/widgets.js" type="text/javascript">
+            <script src="https://platform.twitter.com/widgets.js" type="text/javascript">
             </script></li>
     </dl>
     <p><a href="/login" class="large primary btn">Member Login</a></p>

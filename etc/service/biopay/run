@@ -10,6 +10,6 @@ export PERL5LIB="$BIO/lib"
 
 cd $BIO
 exec 2>&1 \
-    /home/biopay/perl5/perlbrew/perls/perl-5.16.0/bin/starman --listen 127.0.0.1:6000 --workers 2 --preload-app \
+    /home/biopay/perl5/perlbrew/perls/perl-5.16.0/bin/plackup -s Starman -E production  --listen 127.0.0.1:6000 --workers 2 --preload-app \
         --user biopay --group www-data \
-        $BIO/app.psgi >> /var/log/biopay-web.log 2>&1
+        -a $BIO/app.psgi >> /var/log/biopay-web.log 2>&1
