@@ -70,10 +70,9 @@ hook before => sub {
     }
 
     debug "no bio session, redirecting to login (from $path)";
-    forward ($path =~ m{^/member/} ? '/login' : '/admin-login'), {
-        message => "Please log-in first.",
-        path => $path,
-    }, { method => 'GET' };
+    session message => 'Please log-in first.';
+    session path => $path;
+    return redirect $path =~ m{^/member/} ? '/login' : '/admin-login';
 };
 
 get '/' => sub {
@@ -138,8 +137,10 @@ get '/stats-widget.js' => sub {
 };
 
 get '/login' => sub {
+    my $msg = param('message') || session('message') || '';
+    session 'message' => '' if $msg;
     template 'login' => { 
-        message => param('message') || '',
+        message => $msg,
         path => param('path') || session('path'),
     };
 };
