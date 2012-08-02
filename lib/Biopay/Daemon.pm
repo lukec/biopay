@@ -65,7 +65,7 @@ method run {
         my $t;
         if (%{ $self->job_handlers }) {
             $t = AnyEvent->timer(
-                after => 0.1, interval => 3600,
+                after => 0.1, interval => 60,
                 cb => sub {
                     print 'J';
                     Biopay::Command->Run_jobs( sub {
