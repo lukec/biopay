@@ -8,3 +8,5 @@ stores everything in a CouchDB.  Biopay has a web application component, as well
 as background daemons to monitor the cardlock as well as other jobs such as 
 payment processing.
 
+
+If you'd like to see a demo of Biopay, go here: http://screenr.com/Yvls
