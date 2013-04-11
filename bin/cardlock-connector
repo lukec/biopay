@@ -38,6 +38,7 @@ my $daemon = Biopay::Daemon->new(
         },
     },
 );
+print "Starting at price: " . $daemon->prices->price_per_litre . "\n";
 
 my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,

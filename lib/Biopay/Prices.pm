@@ -40,7 +40,9 @@ method set_fuel_price {
 }
 
 method _build_price_per_litre {
-    return $self->_doc->{price_per_litre} || die "No price per litre found!";
+    my $ppl = $self->_doc->{price_per_litre} || die "No price per litre found!";
+    print 'Price_per_litre($ppl)';
+    return $ppl;
 }
 
 method _build_annual_membership_price {
