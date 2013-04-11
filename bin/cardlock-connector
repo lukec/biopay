@@ -44,6 +44,10 @@ my $cardlock_timer = AnyEvent->timer(
     after => 0.5, interval => 10,
     cb    => \&check_cardlock,
 );
+my $restart_timer = AnyEvent->timer(
+    after => 60*60, # restart every hour
+    cb    => sub { $daemon->main_loop->send },
+);
 my $stdin; $stdin = AnyEvent->io(
     fh => *STDIN,
     poll => 'r',
