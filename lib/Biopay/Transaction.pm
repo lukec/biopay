@@ -43,7 +43,7 @@ method All_most_recent {
     my $page_size = 200;
     my $txns = $self->All_for_view('/recent', 
         {
-            ($nsk ? (startkey => $nsk) : ()),
+            ($nsk ? (startkey => 2000000000 - $nsk) : ()),
             limit => $page_size + 1,
         }
     );

@@ -15,6 +15,6 @@
   [% PROCESS next_page %]
 [% ELSE %]
   <div class="alert-message warning">
-    <p>There are no transactions since July 8th, 2011.</p>
+    <p>Couldn't find any older transactions!</p>
   </div>
 [% END %]
