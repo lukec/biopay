@@ -23,7 +23,7 @@
   </tr>
   <tr>
     <td><strong>Taxes</strong></td>
-    <td>HST: $[% txn.HST %] &middot; Total: $[% txn.total_taxes %] - [% txn.tax_rate %]%</td>
+    <td>GST: $[% txn.GST %] &middot; Total: $[% txn.total_taxes %] - [% txn.tax_rate %]%</td>
   </tr>
   <tr>
     <td><strong>Price</strong></td>

@@ -22,7 +22,7 @@ has 'payment_notes'   => (isa => 'Maybe[Str]',  is => 'rw');
 
 with 'Biopay::Roles::HasMember';
 
-has 'HST'         => (is => 'ro', isa => 'Num',    lazy_build => 1);
+has 'GST'         => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'total_taxes' => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'tax_rate'    => (is => 'ro', isa => 'Num',    lazy_build => 1);
 has 'datetime'    => (is => 'ro', isa => 'Object', lazy_build => 1);
@@ -100,14 +100,15 @@ method _build_datetime {
     return $dt;
 }
 
-method _build_HST {
+method _build_GST {
     # Calculate the HST from the total
     # 2012-03-23 - changing HST from 1.05% to 1.12% as per Louise @ RA
-    sprintf '%0.02f', $self->price - ($self->price / 1.12);
+    # 2013-04-01 - changing the GST from 1.12% to 1.05 
+    sprintf '%0.02f', $self->price - ($self->price / 1.05);
 }
 
 method _build_total_taxes {
-    sprintf '%0.02f', $self->HST
+    sprintf '%0.02f', $self->GST
         + $self->litres * 0.24   # Road Fuels Tax
         + $self->litres * 0.0639 # Carbon Tax
 }
