@@ -49,17 +49,11 @@ $(function() {
 <div id="orientation">
   <h1>New Member Orientation</h1>
   <div class="alert-message info">
-    <p><strong>To join the Biodiesel co-op,</strong> we request that you watch the following orientation video.</p>
+    <p><strong>To join the Biodiesel co-op,</strong> we request that you watch the following <a href="http://youtu.be/ZB5KeOfwuSc">orientation video</a>.</p>
     <p><strong>If you are new to biodiesel,</strong> you should also <a
     href="/biodiesel-faq" target="_blank">read our Biodiesel FAQ</a>.
   </div>
-  <object width="480" height="390"><param name="movie"
-    value="http://www.youtube-nocookie.com/v/ZB5KeOfwuSc?version=3&amp;hl=en_US&amp;rel=0"></param><param
-    name="allowFullScreen" value="true"></param><param
-    name="allowscriptaccess" value="always"></param><embed
-    src="http://www.youtube-nocookie.com/v/ZB5KeOfwuSc?version=3&amp;hl=en_US&amp;rel=0"
-    type="application/x-shockwave-flash" width="480" height="390"
-    allowscriptaccess="always" allowfullscreen="true"></embed></object>
+  <iframe width="420" height="315" src="https://www.youtube-nocookie.com/embed/ZB5KeOfwuSc?rel=0" frameborder="0" allowfullscreen></iframe>
   <p>&nbsp;</p>
   <div class="alert-message warning">
     <p>If you have any questions or concerns, please email us at <a href="mailto:info@vancouverbiodiesel.org">info@vancouverbiodiesel.org</a>.</p>
@@ -81,8 +75,8 @@ $(function() {
         <p>This Membership Agreement ("Agreement") is made today, [% today_date %].</p>
         <p><strong>Between: the Vancouver Biodiesel Cooperative (the "VBC")</strong></p>
         <p><strong>AND member:</strong>
-          <input id="fname" type="text" name="first_name" size="12" value="[% first_name %]"/> 
-          <input id="lname" type="text" name="last_name" size="12" value="[% last_name %]"/> 
+          <input id="fname" type="text" name="first_name" size="12" value="[% first_name %]" placeholder="First Name"/> 
+          <input id="lname" type="text" name="last_name" size="12" value="[% last_name %]" placeholder="Last Name"/> 
         </p>
     </center>
     <p>Member agrees herein to the purchase of one membership unit of the Vancouver Biodiesel Cooperative, in accordance with the following terms and conditions: </p>
