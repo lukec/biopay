@@ -23,6 +23,7 @@ GetOptions( \%opts,
 my $member_id = shift || die "USAGE: $0 <member_id>";;
 my $member = Biopay::Member->By_id($member_id);
 
+# These emails likely need to be updated.
 my @to = qw/Kevin.Falcon.MLA@leg.bc.ca premier@gov.bc.ca/;
 my @member_emails = parse_email($member->email);
 if ($opts{cc}) {

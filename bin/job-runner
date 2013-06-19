@@ -49,7 +49,9 @@ my $daemon = Biopay::Daemon->new(
             print " (Protest for @{[$member->id]}) ";
             # Shell out so we can avoid AE-style programming of the
             # receipt code
-            run('send-protest', $member->id, ($cc_member ? '--cc' : ()));
+            # DISABLED protest emails because government has changed.  We may
+            # re-enable this later.
+            # run('send-protest', $member->id, ($cc_member ? '--cc' : ()));
         },
     },
     CVs => [
