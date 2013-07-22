@@ -79,6 +79,7 @@ Summary: {
 my $html = template "email/weekly-unpaid-summary", \%opts, { layout => 'email' };
 email {
     to => $to,
+    cc => config->{weekly_fuel_report_cc},
     from => config->{email_from},
     subject => "Weekly un-paid biodiesel summary",
     message => $html,
