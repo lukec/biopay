@@ -107,6 +107,7 @@ my $html = template "email/monthly-report", {
 email {
     to => config->{board_email},
     from => config->{email_from},
+    cc => config->{monthly_summary_cc},
     subject => "Bio Co-op monthly summary for " . $start->month_name . " " . $start->year,
     message => $html,
     type => 'html',
