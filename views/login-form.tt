@@ -3,7 +3,10 @@
     <legend>Log in to the [% area %] area:</legend>
     <label for="">[% name %]:</label>
     <div class="input">
-      <input id="username" class="xlInput" type="text" name="username" size=20 />
+      <input id="username" class="xlInput" type="text" name="username" size=20 [% IF NOT admin %]placeholder="Your member number"[% END %] />
+      [% IF NOT admin %]
+      <span class="help-block">Your member number is your ID at the pump!</span>
+      [% END %]
     </div>
 
     <label for="">Password:</label>

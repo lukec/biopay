@@ -1,5 +1,5 @@
 [% INCLUDE message.tt %]
-[% INCLUDE 'login-form.tt' action="admin-login" area="Admin" name="Admin username"%]
+[% INCLUDE 'login-form.tt' action="admin-login" area="Admin" name="Admin username" admin=1 %]
 
 <hr />
 <p><a href="/login">Member Login</a></p>
