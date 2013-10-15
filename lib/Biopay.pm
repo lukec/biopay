@@ -157,6 +157,7 @@ post '/login' => sub {
         }
         return forward "/login", {message => $msg}, { method => 'GET' };
     }
+    $user =~ s/^0+//; # remove leading 0's
     my $member = Biopay::Member->By_id($user);
     unless ($member) {
         return forward "/login", { error => "This user does not exist." },
@@ -189,6 +190,7 @@ get '/set-password' => sub {
     unless ($user) {
         return redirect "/login";
     }
+    $user =~ s/^0+//; # remove leading 0's
     my $member = Biopay::Member->By_id($user);
     if ($member and !$member->password) {
         $member->send_set_password_email;
@@ -878,6 +880,7 @@ post '/forgot-password' => sub {
         }, {method => 'GET'};
     }
 
+    $member_id =~ s/^0+//; # remove leading 0's
     my $m = Biopay::Member->By_id($member_id);
     unless ($m) {
         return forward '/forgot-password', {
