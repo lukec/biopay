@@ -24,11 +24,12 @@ sub authorize {
         }
         
         my $db = couchdb();
+        $login =~ s/^0+//g; # Remove leading 0's
         my $users = $db->view('auth/by_username', { key => "$login" })->recv;
         my $doc = $users->{rows}[0];
         my $user = defined $doc ? $doc->{value} : undef;
         unless ($user) {
-            $self->errors("Sorry, I couldn't find that account.");
+            $self->errors("Sorry, I couldn't find that account: '$login'");
             return 0;
         }
         unless ($user->{password}) {
