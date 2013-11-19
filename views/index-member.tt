@@ -1,6 +1,8 @@
 <h1>Welcome to the members area.</h1>
 [% INCLUDE message.tt %]
 
+<p><a href="http://carbonracingproject.com/"><img src="/images/CRP.jpg" width="500" /></a></p>
+
 <p><strong>Co-op Statistics</strong>
   (since July 8th, 2011)<br />
   <div id="homepage-data">
