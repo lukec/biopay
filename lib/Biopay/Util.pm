@@ -92,13 +92,17 @@ sub beanstream_url {
 sub beanstream_response_is_valid {
     my $uri = shift || request->request_uri;
     $uri =~ s/.+?\?//;
-    (my $query_str = $uri) =~ s#(.+?)&hashValue=(.+)$#$1#;
+    (my $query_str = $uri) =~ s#(.+?)&hashValue=([0-9a-fA-F]+).*$#$1#;
     my $hv = $2;
+    debug "Checking beanstream response";
     unless ($query_str and $hv) {
         debug "Couldn't extract the hashValue from the query_string in $uri";
         return 0;
     }
 
+    debug "Request uri  = $uri";
+    debug "Query string = $query_str";
+    debug "Merchant Key = @{[config->{merchant_hash_key}]}";
     my $q_hash = sha1_hex($query_str . config->{merchant_hash_key});
     if ($q_hash eq $hv) {
         return 1;
