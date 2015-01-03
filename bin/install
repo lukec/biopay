@@ -10,7 +10,7 @@ sudo cp -R etc/service/couchdb /etc/service
 cp -R bin lib views environments etc app.psgi public $INSTALL_DIR
 
 # Set up config file
-./postinstall
+perl ./postinstall
 
 # Restart services
 sudo /etc/init.d/nginx restart
